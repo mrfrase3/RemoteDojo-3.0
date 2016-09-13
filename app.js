@@ -26,7 +26,7 @@ var dojos = new storage(__dirname+'/dojos.json');
 //html templates are stored in the resources folder.
 var hb = require('handlebars');
 var getTemp = function(file){return hb.compile(fs.readFileSync('./resources/' + file + '.html') + '<div></div>', {noEscape: true});}
-var templates = {index: getTemp('index'), head: getTemp('head'), foot: getTemp('foot'), /*adminHead: getTemp('adminhead'), champHead: getTemp('champhead'),*/ 
+var templates = {404: getTemp('404'), head: getTemp('head'), foot: getTemp('foot'), /*adminHead: getTemp('adminhead'), champHead: getTemp('champhead'),*/ 
                  ninja: getTemp('ninja'), mentor: getTemp('mentor'), login: getTemp('login')};
 
 var mentorstats = {}; //keeps track of mentor statuses which are displayed to 
@@ -215,7 +215,7 @@ app.use('/', function(req, res){
     	return renderfile('admin');
     }*/
 
-	renderfile('index'); //this shouldn't have to run
+	renderfile('404'); //this shouldn't have to run
 });
 // End of main express processing
 
