@@ -139,7 +139,7 @@ app.use('/', function(req, res){
 			return renderfile('login');
 		}
     	if(req.body.type == 'user'){ // handle user based logins (mentors, champions and admins)
-			fill.usr = req.body.login_username.toLower(); //remember the username
+			fill.usr = req.body.login_username.toLowerCase(); //remember the username
 			if(!users[fill.usr]){ //check the username
 				fill.msg = genalert("danger", true, "Invalid username provided, please check and try again.");
 				return renderfile('login');
