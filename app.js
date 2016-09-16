@@ -14,7 +14,7 @@ var io = require("socket.io")(server);
 var bodyParser = require("body-parser");
 var helmet = require("helmet");
 var bcrypt = require("bcrypt");
-var config = require('config.json');
+var config = require("./config.json");
 
 // User and Dojo objects, contains the persistant info on users/dojos (see the Storage.js file in the lib folder)
 var storage = require("./lib/Storage.js");
@@ -61,7 +61,7 @@ app.use(session({
 	resave: false,
 	saveUninitialized: false,
 	store: new fstore(),
-	secret: "61_R*9P9RR;FM9_p!*18S!P0g2!SG93E26!%mjtw;S-052-8O2^77;I:17MK-_;PM6-ZN9=jeaP5~4ae765:256_676Z=3_r", //this should be imported from the config
+	secret: config.sessionSecret,
 	duration: 24 * 60 * 60 * 1000,
 	activeDuration: 24 * 60 * 60 * 1000,
 }));
@@ -372,10 +372,10 @@ setInterval(function(){
 			users.remove(i);
 		}
 	}
-}, 300000); // runs every 5 min (make configurable?)
+}, config.tempUserExpiryInterval);
 
-mediaSocketServer.listen(4001); // port should be from config // start socket server for RTC (it's super fussy and wont play with the main socket server)
+mediaSocketServer.listen(config.mediaServerPort); // start socket server for RTC (it's super fussy and wont play with the main socket server)
 require("./signaling-server.js")(mediaSocketServer);
 
-server.listen(4000); // port should be from config // start main server
+server.listen(config.mainServerPort); // start main server
 console.log("Server Started");
