@@ -6,6 +6,8 @@
   "keywords": [],
   "author": "Fraser Bullock <mrfrase3@gmail.com>",
   "license": "MIT",
+  "main": "app",
+  "private": true,
   "dependencies": {
   	"express": "x",
     "express-session": "x",
@@ -28,6 +30,4 @@
   "scripts": {
     "test": "grunt test"
   },
-  "main": "app",
-  "private": true
 }
