@@ -17,6 +17,17 @@
     "bcrypt": "x",
   	"handlebars": "x"
   },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "grunt": "^1.0.1",
+    "grunt-env": "^0.4.4",
+    "grunt-mocha-test": "^0.13.2",
+    "mocha": "^3.0.2",
+    "supertest": "^2.0.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
   "main": "app",
   "private": true
 }
