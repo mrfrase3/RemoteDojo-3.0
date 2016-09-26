@@ -5,11 +5,13 @@ $(function(){
 
 	var elem = {local: {}, foreign: {}};
 
-    elem.local.v = $('.dump video.dump-local').get(0);
+    elem.local.v = $('.dump video.dump-video-local').get(0);
+	elem.local.a = $('.dump audio.dump-audio-local').get(0);
     elem.local.c = $('.screen-local-canvas').get(0);
     elem.local.context = elem.local.c.getContext('2d');
 
-	elem.foreign.v = $('.dump video.dump-foreign').get(0);
+	elem.foreign.v = $('.dump video.dump-video-foreign').get(0);
+	elem.foreign.a = $('.dump audio.dump-audio-foreign').get(0);
     elem.foreign.c = $('.screen-foreign-canvas').get(0);
     elem.foreign.context = elem.foreign.c.getContext('2d');
 
@@ -22,7 +24,7 @@ $(function(){
 
     elem.local.v.addEventListener('play', function(){
         draw(this,elem.local.context,cw,ch);
-    	
+
     },false);
 	elem.foreign.v.addEventListener('play', function(){
         draw(this,elem.foreign.context,cw,ch);
@@ -36,17 +38,17 @@ $(function(){
 
 	/*function audiovis(v, b){
 		var analyser = audioCtx.createAnalyser();
-    
+
     	source = audioCtx.createMediaElementSource(v);
 		source.connect(analyser);
     	analyser.connect(audioCtx.destination);
-    
+
     	analyser.fftSize = 1024;
 		var bufferLength = analyser.frequencyBinCount;
 		console.log(bufferLength);
 		var dataArray = new Uint8Array(bufferLength);
     	analyser.getByteFrequencyData(dataArray);
-    
+
     	function drawvis(v,b) {
         	//if(v.paused || v.ended) return false;
         	setTimeout(drawvis,40,v,b);
@@ -64,13 +66,13 @@ $(function(){
         	console.log(p +' '+ b +' '+c+' '+t+' '+bufferLength);
         }
     	drawvis(v,b);
-    	
-    
+
+
     }
 	audiovis(elem.local.v, '.levels-local .progress-bar');
     audiovis(elem.foreign.v, '.levels-foreign .progress-bar');*/
 
-	
+
 
 var audio_vis = function(au, qu){
 
@@ -100,7 +102,7 @@ function visualize() {
     analyser.fftSize = 512;
     var bufferLength = analyser.fftSize;
     console.log(bufferLength);
-    
+
 
     function drawv() {
 
@@ -126,10 +128,14 @@ function visualize() {
 }
 visualize();
 }
-audio_vis(elem.local.v, '.levels-local .progress-bar');
+audio_vis(elem.local.a, '.levels-local .progress-bar');
+audio_vis(elem.foreign.a, '.levels-foreign .progress-bar');
+
 
 
 
 
 
 });
+
+window.getExternalIceServers = true;

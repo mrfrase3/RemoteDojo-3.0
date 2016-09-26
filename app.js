@@ -6,7 +6,7 @@ var session = require('express-session');
 var fstore = require('session-file-store')(session);
 var app = express();
 // get the SSL keys, change to location of your certificates
-// TODO replace SSL keys system with letsencrypt 
+// TODO replace SSL keys system with letsencrypt
 var keys = {key: fs.readFileSync('certs/server.key', 'utf8'), cert: fs.readFileSync('certs/server.crt', 'utf8')};
 var server = require('https').createServer(keys, app);
 var mediaSocketServer = require('https').createServer(keys, express());
@@ -26,14 +26,14 @@ var dojos = new storage(__dirname+'/dojos.json');
 //html templates are stored in the resources folder.
 var hb = require('handlebars');
 var getTemp = function(file){return hb.compile(fs.readFileSync('./resources/' + file + '.html') + '<div></div>', {noEscape: true});}
-var templates = {404: getTemp('404'), head: getTemp('head'), foot: getTemp('foot'), /*adminHead: getTemp('adminhead'), champHead: getTemp('champhead'),*/ 
+var templates = {404: getTemp('404'), head: getTemp('head'), foot: getTemp('foot'), /*adminHead: getTemp('adminhead'), champHead: getTemp('champhead'),*/
                  ninja: getTemp('ninja'), mentor: getTemp('mentor'), login: getTemp('login')};
 
-var mentorstats = {}; //keeps track of mentor statuses which are displayed to 
+var mentorstats = {}; //keeps track of mentor statuses which are displayed to
 
 // user permission structure:
 // 0: ninja, 1: mentor, 2: champion, 3: admin
-// 
+//
 
 //token generator, pretty random, but can be replaced if someone has something stronger
 var token = function() {
@@ -58,9 +58,9 @@ function genalert(type, diss, msg){
 // setup for express
 app.use(helmet());
 app.use(session({
-	resave: false, 
-	saveUninitialized: false, 
-	store: new fstore(), 
+	resave: false,
+	saveUninitialized: false,
+	store: new fstore(),
 	secret: '61_R*9P9RR;FM9_p!*18S!P0g2!SG93E26!%mjtw;S-052-8O2^77;I:17MK-_;PM6-ZN9=jeaP5~4ae765:256_676Z=3_r', //this should be imported from the config
 	duration: 24 * 60 * 60 * 1000,
 	activeDuration: 24 * 60 * 60 * 1000,
@@ -72,7 +72,7 @@ app.set('trust proxy', 1) // trust first proxy
 
 app.use('/common', express.static( __dirname + '/common' ));
 
-// socket authentication, a post or get request on /sockauth will return a socket authentication token 
+// socket authentication, a post or get request on /sockauth will return a socket authentication token
 // when the user receives the token, they can pass it through to the socket server which will link the
 // socket session to the user session. This was not being done in remotedojo 1 or 2
 // More info on socket auth: https://auth0.com/blog/auth-with-socket-io/
@@ -115,7 +115,7 @@ app.use('/', function(req, res){
 	}
 	if(req.path.indexOf('favicon.ico') !== -1){ //serve the favicon, which is usually ment to be at the root directory of an apache server
 		res.sendFile( __dirname + '/common/favicon.ico');
-		return; 
+		return;
 	}
 	// helper function, renders the templates and compiles them
 	// normally a file is renered as header + body + foot, except the login page due to its simplicity
@@ -134,7 +134,7 @@ app.use('/', function(req, res){
 	//Login processing
 	if(!req.session.loggedin){ // and not in demo mode
 		fill = {usr: '', msg: ''};
-		if(req.path.indexOf('login.html') === -1) req.session.loginpath = req.path; //save the path that the user was trying to access for after login 
+		if(req.path.indexOf('login.html') === -1) req.session.loginpath = req.path; //save the path that the user was trying to access for after login
 		if(!req.body.login_username && !req.body.login_dojo){ //if no data has been passed, simply show the login page
 			return renderfile('login');
 		}
@@ -187,7 +187,7 @@ app.use('/', function(req, res){
 	// From here it is assumed the user is authenticated and logged in (either as a user or temp user)
 	var user = users[req.session.user];
 	fill.user = {username: user.username, fullname: user.fullname}; //give some user info to the renderer, as well as common js files
-	fill.js += '<script src="https://cdn.webrtc-experiment.com/rmc3.min.js"></script><script src="./common/js/socks-general.js"></script>';
+	fill.js += '<script src="./common/js/rmc3.js"></script><script src="https://cdn.webrtc-experiment.com/getScreenId.js"></script><script src="./common/js/socks-general.js"></script>';
 	if(user.perm == 0){ //if the user is a ninja
     	dojo = user.dojos[0];
     	fill.mentors = [];
@@ -219,9 +219,9 @@ app.use('/', function(req, res){
 });
 // End of main express processing
 
-// Socket Processing 
+// Socket Processing
 
-// Helper function that validates a socket 
+// Helper function that validates a socket
 // takes the unauthorised socket and a callback
 // if the socket becomes authorised, the callback with the authorised socket is called
 // More info on socket auth: https://auth0.com/blog/auth-with-socket-io/
@@ -247,7 +247,7 @@ var socketValidate = function(socket, cb){
 }
 
 // basic object to hold info about ninja to mentor sessions (calls)
-// doesn't use the Storage object because calls are not persistent 
+// doesn't use the Storage object because calls are not persistent
 var nmsessions = {};
 // Helper Function to find a user's session, if any
 var nmsessions_getuser = function(username){
@@ -257,7 +257,7 @@ var nmsessions_getuser = function(username){
     }
 	return false;
 }
-// Helper Function to update a mentor's status, and pass that update to everyone relevant 
+// Helper Function to update a mentor's status, and pass that update to everyone relevant
 var updateStatus = function(stat, socket){
 	user = users[socket.user];
 	for(var i=0; i < user.dojos.length; i++){
@@ -266,8 +266,8 @@ var updateStatus = function(stat, socket){
 	mentorstats[socket.user] = stat;
 }
 
-var chatrooms = []; // an array of chatroom tokens currently being used 
-var mainio = io.of('/main'); //use the '/main' socket.io namespace 
+var chatrooms = []; // an array of chatroom tokens currently being used
+var mainio = io.of('/main'); //use the '/main' socket.io namespace
 mainio.on('connection', function(sock) { socketValidate(sock, function(socket){ //on connection, authorise the socket, then do the following once authorised
 	var user = users[socket.user];
 	for(var i=0; i < user.dojos.length; i++){ //make the socket join the relevant rooms for easy communication
@@ -277,17 +277,17 @@ mainio.on('connection', function(sock) { socketValidate(sock, function(socket){ 
 
 	if(user.perm == 1){ // if the user is a mentor
     	for(var i in nmsessions){ // update the mentor with current open ninja requests
-        	if(!nmsessions[i].mentor && user.dojos.indexOf(nmsessions[i].dojo) !== -1){ 
+        	if(!nmsessions[i].mentor && user.dojos.indexOf(nmsessions[i].dojo) !== -1){
             	socket.emit('mentor.requestMentor', {sessiontoken: i, dojo: nmsessions[i].dojo, fullname: users[nmsessions[i].ninja.user].fullname});
             }
         }
-    
+
     	// initiate the status update events
         updateStatus('available', socket);
     	socket.on('disconnect', function(){updateStatus('offline', socket);});
         socket.on('reconnect', function(){updateStatus('available', socket);});
         socket.on('mentor.updateStatus', function(stat){updateStatus(stat, socket);});
-    
+
     	// when a mentor accepts a ninja's call request
     	socket.on('mentor.acceptRequest', function(stok){
         	if(stok in nmsessions && !nmsessions[stok].mentor){ //check if request is still active
@@ -315,7 +315,7 @@ mainio.on('connection', function(sock) { socketValidate(sock, function(socket){ 
             	mainio.to(user.dojos[0]+'-1').emit('mentor.requestMentor', {sessiontoken: stok, dojo: user.dojos[0], fullname: user.fullname}); //emit the request to all relevant mentors
             }
         });
-    	socket.on('ninja.cancelRequest', function(stok){ //when a ninja decides to cancel a request 
+    	socket.on('ninja.cancelRequest', function(stok){ //when a ninja decides to cancel a request
            	if(stok in nmsessions && !nmsessions[stok].mentor){ //check that the ninja is actually requesting
                	mainio.to(nmsessions[stok].dojo+'-1').emit('mentor.cancelRequest', stok); //tell the mentors
                	delete nmsessions[stok]; // delete the request
@@ -328,7 +328,7 @@ mainio.on('connection', function(sock) { socketValidate(sock, function(socket){ 
                	delete nmsessions[stok];
             }
         });
-    	
+
     }/* else if(user.perm == 2){ //if the user is a champion
     	// do chamion socket processing here
     } else if(user.perm == 3){ //if the user is a admin
@@ -356,6 +356,14 @@ mainio.on('connection', function(sock) { socketValidate(sock, function(socket){ 
 		data.fill = data.fill || {};
 		socket.emit('general.template-' + data.token, {html: getTemp('template/'+data.template)(data.fill)});
 	});
+
+    socket.on('general.streamData', function(e){
+        stok = nmsessions_getuser(socket.user);
+    	if(stok && nmsessions[stok].mentor){ //check that the user is actually in a chat
+            console.log('broadcasting stream data: ' + JSON.stringify(e));
+        	mainio.to(stok).emit('general.streamData', e); // broadcast the message to room
+        }
+    });
 });});
 
 //Interval that expires expired users
