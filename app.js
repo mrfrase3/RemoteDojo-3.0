@@ -40,11 +40,12 @@ var token = function() {
 	return bcrypt.hashSync(Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2), 8).replace(/\W/g, "t");
 };
 
-// function that generates a new Ninja, can be easily copied/modified to create a new random, expirable user
-function newNinja(dojo){
-	var tok = "temp-" + token();
-	while(users[tok]){tok = "temp-" + token();}
-	users.add(tok, {username:tok,password:"temp",email:"temp",fullname:"Anonymous Ninja",token:[],perm:0,dojos:[dojo], expire: Date.now() + 24 * 60 * 60 * 1000});
+// function that generates a new User, can be easily copied/modified to create a new random, expirable user
+function tempUser(dojo, perm, expire){
+	var tok = "temp-" + perm + "-" + token();
+	var names = ["Ninja", "Mentor", "Champion", "Admin"];
+	while(users[tok]){tok = "temp-" + perm + "-" + token();}
+	users.add(tok, {username:tok,password:"temp",email:"temp",fullname:"Anonymous "+names[perm],token:[],perm:perm,dojos:[dojo], expire: Date.now() + expire});
 	return tok;
 }
 
@@ -171,7 +172,7 @@ app.use("/", function(req, res){
 					renderfile("login");
 				} else { // else the password check succeeded, setup the temp user session for the ninja
 					req.session.loggedin = true;
-					req.session.user = newNinja(dojo);
+					req.session.user = tempUser(dojo, 0, 24 * 60 * 60 * 1000);
 					if(req.session.loginpath) res.redirect(req.session.loginpath);
 					else res.redirect("/");
 				}
@@ -379,3 +380,7 @@ require("./signaling-server.js")(mediaSocketServer);
 
 server.listen(config.mainServerPort); // start main server
 console.log("Server Started");
+
+//exports for testing
+exports.testing.functions = {tempUser};
+exports.testing.vars = {};
