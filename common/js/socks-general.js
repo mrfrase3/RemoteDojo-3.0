@@ -1,6 +1,12 @@
 var socket = io.connect('/main');
 var chats = null;
-var joinDelay = 0;
+var rtcStreams = {local:[], remote:[]};
+var startChat;
+var iceservers = [{
+    url: 'turn:turn.anyfirewall.com:443?transport=tcp',
+    credential: 'webrtc',
+    username: 'webrtc'
+}];
 
 $('.hidden').hide(); //I'm lazy
 $('.hidden').removeClass('hidden');
@@ -17,7 +23,7 @@ var authSock = function(sock, cb){
 			} else sock.emit('sockauth.validate', res); //send the token to the server
 		});
 	});
-	
+
 	sock.on('sockauth.valid', function(){ //server says the token is valid
 		console.log('socket connection authorised');
     	if(cb) cb();
@@ -30,54 +36,101 @@ var authSock = function(sock, cb){
 	});
 }
 
+var peerconn;
 
-// RTC connection startup
-// Work in progress, more info at: http://www.rtcmulticonnection.org/
-var Mediaconn = new RTCMultiConnection();
-// Set the RTC socket server URL
-Mediaconn.socketURL = 'https://3mr.fr:4001/'; //this needs to be dynamic
-
-Mediaconn.sdpConstraints.mandatory = {
-	OfferToReceiveAudio: true,
-	OfferToReceiveVideo: true
+var offerOptions = {
+	offerToReceiveAudio: 1,
+	offerToReceiveVideo: 1,
+	voiceActivityDetection: false
 };
 
-Mediaconn.dontCaptureUserMedia = true;
-
-Mediaconn.onstream = function(e){
-	console.log(e.type +' Audio:'+ e.isAudio+' Video:'+e.isVideo+' '+JSON.stringify(e));
-	if(e.type == 'local'){
-    	document.querySelector('.dump video.dump-local').src = e.blobURL;
-    	document.querySelector('.dump video.dump-local').play();
-    	$('.screen-local-box').show();
-    } else if(e.type == 'remote'){
-    	//document.querySelector('.dump video.dump-foreign').src = e.blobURL;
-    	//document.querySelector('.dump video.dump-foreign').play();
-    	document.querySelector('.dump').appendChild(e.mediaElement);
-    	e.mediaElement.media.play();
-    }
-};
-
-Mediaconn.onMediaError = function() {
-    console.log(JSON.stringify(arguments, null, '\t'));
-};
-
-//callback for when the RTC joins or opens a room.
-var onJoin = function(exists, roomid){
-	console.log(JSON.stringify([exists, roomid]));
-	Mediaconn.addStream({audio:true, video:false});
+function iceCallback(event) {
+	console.log(event);
+	if (event.candidate) {
+		socket.emit("rtc.iceCandidate", event.candidate.toJSON());
+	}
 }
+
+socket.on("rtc.iceCandidate", function(candidate){
+	peerconn.addIceCandidate(
+		new RTCIceCandidate(candidate)
+	);
+});
+
+var onRemoteStream = function(e){
+	console.log(e);
+	$('.dump audio.dump-remote').get(0).srcObject = e.stream;
+	//$('.dump video.dump-remote').get(0).play();
+};
+
+var onLocalStream = function(stream){
+	console.log(stream);
+	$(".dump video.dump-local").get(0).srcObject = stream;
+	//$(".dump video.dump-local").get(0).play();
+	$(".screen-local-box").show();
+};
+
+socket.on("rtc.offer", function(desc){
+	//desc.sdp = forceChosenAudioCodec(desc.sdp);
+	peerconn.setRemoteDescription(desc).then( function() {
+		peerconn.createAnswer().then(function(desc2){
+			peerconn.setLocalDescription(desc2).then( function() {
+				//desc2.sdp = forceChosenAudioCodec(desc2.sdp);
+				socket.emit("rtc.answer", desc2);
+			}, function(){
+				alert("Could not set local desc, contact an admin.");
+				socket.emit("general.stopChat");
+			});
+		}, function(){
+			alert("Could not create an answer, contact an admin");
+			socket.emit("general.stopChat");
+		});
+	}, function(){
+		alert("Could not set the remote description, contact an admin.");
+		socket.emit("general.stopChat");
+	});
+});
+
+socket.on("rtc.answer", function(desc2){
+	peerconn.setRemoteDescription(desc2).then( function() {
+		socket.emit("rtc.connected");
+	}, function(){
+		alert("Could not set the remote description, contact an admin.");
+		socket.emit("general.stopChat");
+	});
+});
+
+socket.on("rtc.connected", function(){
+	console.log("RTC Signaling Completed!");
+});
+
+$(function(){
+	$.get("https://raw.githubusercontent.com/DamonOehlman/freeice/master/stun.json", function(data){
+		var servers = [];
+		try{
+			if(data instanceof Array) servers = data;
+			else servers = JSON.parse(data);
+		} catch(e){
+			alert("Cannot get ice server list: not json, contact an admin.");
+		}
+		for(var i = 0; i < servers.length; i++){
+			iceservers.push({url:"stun:"+servers[i]});
+		}
+	}).fail(function(){
+		alert("Cannot get ice server list: invalid link, contact an admin.");
+	});
+});
 
 // End of RTC connection startup
 
 //Helper Function for when the chat needs to stop
 var stopChat = function(){
 	if (!chats) return;
-    try{
-    	Mediaconn.leave(); //try to leave the RTC room
-    } catch(e){}
+	try{
+		Mediaconn.leave(); //try to leave the RTC room
+	} catch(e){}
 	chats = null;
-	$('.screen-foreign-box').hide();
+	$('.screen-remote-box').hide();
 	$('.presentations-panel').show();
 	$('.chat-body-stop').hide();
 	$('.chat-body-request').show();
@@ -112,9 +165,30 @@ socket.on('general.mentorStatus',function(data){ // change a mentors status if t
 socket.on('general.startChat',function(data){ //start a chat session when the server's made one
 	if (chats) return;
 	chats = data;
-	console.log(data.ninja +' ');
-	setTimeout(Mediaconn.openOrJoin,joinDelay,data.ninja, onJoin); // the ninja and mentor cannot connect at the same time, so one is delayed (look in their socks files)
-	$('.screen-foreign-box').show();
+	console.log(data.ninja +" ");
+	var pcConfig = null;
+	if(iceservers.length > 0) pcConfig = {iceServers: iceservers};
+	var pcConstraints = {
+		optional: []
+	};
+	peerconn = new RTCPeerConnection(pcConfig, pcConstraints);
+	peerconn.onicecandidate = iceCallback;
+	peerconn.onaddstream = onRemoteStream;
+	peerconn.onconnectionstatechange = function(){
+		console.log("New RTC connection state: " + peerconn.connectionState);
+	}
+	navigator.mediaDevices.getUserMedia({
+		audio: true,
+		video: false
+	}).then(function(stream){
+		onLocalStream(stream);
+		peerconn.addStream(stream);
+		if(startChat) startChat();
+	}).catch(function(e) {
+		alert("getUserMedia() error: " + e.name);
+	});
+	//setTimeout(Mediaconn.openOrJoin,joinDelay,data.ninja, onJoin); // the ninja and mentor cannot connect at the same time, so one is delayed (look in their socks files)
+	$('.screen-remote-box').show();
 	$('.presentations-panel').hide();
 	$('.chat-body-stop').show();
 	$('.chat-body-start').hide();
@@ -128,6 +202,3 @@ $(function(){
 	});
 
 });
-
-
-

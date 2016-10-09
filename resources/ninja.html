@@ -49,7 +49,7 @@
                     	</div>
                     	<div class="col-xs-12">
                         	Mentor's Microphone:<br>
-                    		<div class="progress levels-foreign">
+                    		<div class="progress levels-remote">
 								<div class="progress-bar progress-bar-success" style="width: 0%"></div>
 							</div>
                     	</div>
@@ -77,18 +77,20 @@
                     	~~ To Do ~~
                     </div>
                 </div>
-            	<div class="screen-foreign-box panel panel-primary hidden">
+            	<div class="screen-remote-box panel panel-primary hidden">
                     <div class="panel-heading">
                         <h3 class="panel-title">Mentor's Screen</h3>
                     </div>
-                    <div class="panel-body screen-foreign">
-                    	<canvas class="screen-foreign-canvas"></canvas>
+                    <div class="panel-body screen-remote">
+                    	<canvas class="screen-remote-canvas"></canvas>
                     </div>
                 </div>
             </div>
             <div class="dump hidden">
-        		<video class="dump-local"></video>
-            	<video class="dump-foreign"></video>
+        		<video class="dump-local" controls autoplay muted></video>
+            	<video class="dump-remote" controls autoplay></video>
+                <audio class="dump-local" controls autoplay muted></audio>
+            	<audio class="dump-remote" controls autoplay></audio>
         	</div>
         </div>
     </div>

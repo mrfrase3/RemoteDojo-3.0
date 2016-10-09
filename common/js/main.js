@@ -3,29 +3,29 @@ $(function(){
 
 	//var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-	var elem = {local: {}, foreign: {}};
+	var elem = {local: {}, remote: {}};
 
     elem.local.v = $('.dump video.dump-local').get(0);
     elem.local.c = $('.screen-local-canvas').get(0);
     elem.local.context = elem.local.c.getContext('2d');
 
-	elem.foreign.v = $('.dump video.dump-foreign').get(0);
-    elem.foreign.c = $('.screen-foreign-canvas').get(0);
-    elem.foreign.context = elem.foreign.c.getContext('2d');
+	elem.remote.v = $('.dump video.dump-remote').get(0);
+    elem.remote.c = $('.screen-remote-canvas').get(0);
+    elem.remote.context = elem.remote.c.getContext('2d');
 
     var cw = 1280;
     var ch = 720;
     elem.local.c.width = cw;
     elem.local.c.height = ch;
-	elem.foreign.c.width = cw;
-    elem.foreign.c.height = ch;
+	elem.remote.c.width = cw;
+    elem.remote.c.height = ch;
 
     elem.local.v.addEventListener('play', function(){
         draw(this,elem.local.context,cw,ch);
-    	
+
     },false);
-	elem.foreign.v.addEventListener('play', function(){
-        draw(this,elem.foreign.context,cw,ch);
+	elem.remote.v.addEventListener('play', function(){
+        draw(this,elem.remote.context,cw,ch);
     },false);
 
 	function draw(v,c,w,h) {
@@ -36,17 +36,17 @@ $(function(){
 
 	/*function audiovis(v, b){
 		var analyser = audioCtx.createAnalyser();
-    
+
     	source = audioCtx.createMediaElementSource(v);
 		source.connect(analyser);
     	analyser.connect(audioCtx.destination);
-    
+
     	analyser.fftSize = 1024;
 		var bufferLength = analyser.frequencyBinCount;
 		console.log(bufferLength);
 		var dataArray = new Uint8Array(bufferLength);
     	analyser.getByteFrequencyData(dataArray);
-    
+
     	function drawvis(v,b) {
         	//if(v.paused || v.ended) return false;
         	setTimeout(drawvis,40,v,b);
@@ -64,18 +64,18 @@ $(function(){
         	console.log(p +' '+ b +' '+c+' '+t+' '+bufferLength);
         }
     	drawvis(v,b);
-    	
-    
+
+
     }
 	audiovis(elem.local.v, '.levels-local .progress-bar');
-    audiovis(elem.foreign.v, '.levels-foreign .progress-bar');*/
+    audiovis(elem.remote.v, '.levels-remote .progress-bar');*/
 
-	
+
 
 var audio_vis = function(au, qu){
 
 var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-if(au == null){
+if(!au){
   var myAudio = document.querySelector('audio');
 } else {
   var myAudio = au;
@@ -100,7 +100,7 @@ function visualize() {
     analyser.fftSize = 512;
     var bufferLength = analyser.fftSize;
     console.log(bufferLength);
-    
+
 
     function drawv() {
 
