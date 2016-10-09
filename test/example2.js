@@ -15,6 +15,6 @@ describe('Array', function() {
     it('Should return 2 when popping  [1,2]', function() {
       assert.equal(2, [1,2,3].pop());
     done();
-    })
+  });
   });
 });
