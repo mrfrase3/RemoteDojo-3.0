@@ -9,7 +9,6 @@ var app = express();
 // TODO replace SSL keys system with letsencrypt
 var keys = {key: fs.readFileSync("certs/server.key", "utf8"), cert: fs.readFileSync("certs/server.crt", "utf8")};
 var server = require("https").createServer(keys, app);
-var mediaSocketServer = require("https").createServer(keys, express());
 var io = require("socket.io")(server);
 var bodyParser = require("body-parser");
 var helmet = require("helmet");
@@ -188,7 +187,10 @@ app.use("/", function(req, res){
 	// From here it is assumed the user is authenticated and logged in (either as a user or temp user)
 	var user = users[req.session.user];
 	fill.user = {username: user.username, fullname: user.fullname}; //give some user info to the renderer, as well as common js files
-	fill.js += "<script src=\"https://cdn.webrtc-experiment.com/rmc3.min.js\"></script><script src=\"./common/js/socks-general.js\"></script>";
+	fill.js += "<script src=\"https://webrtc.github.io/adapter/adapter-latest.js\"></script>"+
+		"<script src=\"https://cdn.webrtc-experiment.com/getScreenId.js\"></script>"+
+		"<script src=\"./common/js/socks-general.js\"></script>"+
+		"<script src=\"./common/js/rtc.js\"></script>";
 	if(user.perm == 0){ //if the user is a ninja
 		dojo = user.dojos[0];
 		fill.mentors = [];
@@ -353,6 +355,38 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 	socket.on("general.stopChat", stopChat);
 	socket.on("disconnect", stopChat);
 
+	// Signaling Server
+	socket.on("rtc.offer", function(desc){
+		var stok = nmsessions_getuser(socket.user);
+		if( stok && nmsessions[stok].mentor){
+			socket.broadcast.to(stok).emit("rtc.offer", desc);
+		}
+	});
+	socket.on("rtc.answer", function(desc2){
+		var stok = nmsessions_getuser(socket.user);
+		if( stok && nmsessions[stok].mentor){
+			socket.broadcast.to(stok).emit("rtc.answer", desc2);
+		}
+	});
+	socket.on("rtc.connected", function(){
+		var stok = nmsessions_getuser(socket.user);
+		if( stok && nmsessions[stok].mentor){
+			mainio.to(stok).emit("rtc.connected");
+		}
+	});
+	socket.on("rtc.negotiate", function(){
+		var stok = nmsessions_getuser(socket.user);
+		if( stok && nmsessions[stok].mentor){
+			mainio.to(stok).emit("rtc.negotiate");
+		}
+	});
+	socket.on("rtc.iceCandidate", function(candidate){
+		var stok = nmsessions_getuser(socket.user);
+		if( stok && nmsessions[stok].mentor){
+			socket.broadcast.to(stok).emit("rtc.iceCandidate", candidate);
+		}
+	});
+
 	socket.on("general.template", function(data){ //socket call to request a rendered template (used for dynamic forms in another project)(not yet fully implemented)
 		data.fill = data.fill || {};
 		socket.emit("general.template-" + data.token, {html: getTemp("template/"+data.template)(data.fill)});
@@ -375,12 +409,10 @@ setInterval(function(){
 	}
 }, config.tempUserExpiryInterval);
 
-mediaSocketServer.listen(config.mediaServerPort); // start socket server for RTC (it's super fussy and wont play with the main socket server)
-require("./signaling-server.js")(mediaSocketServer);
-
 server.listen(config.mainServerPort); // start main server
 console.log("Server Started");
 
 //exports for testing
-exports.testing.functions = {tempUser};
+exports.testing = {};
+exports.testing.functions = {tempUser: tempUser};
 exports.testing.vars = {};
