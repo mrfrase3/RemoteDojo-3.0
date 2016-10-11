@@ -189,7 +189,8 @@ app.use("/", function(req, res){
 	fill.user = {username: user.username, fullname: user.fullname}; //give some user info to the renderer, as well as common js files
 	fill.js += "<script src=\"https://webrtc.github.io/adapter/adapter-latest.js\"></script>"+
 		"<script src=\"https://cdn.webrtc-experiment.com/getScreenId.js\"></script>"+
-		"<script src=\"./common/js/socks-general.js\"></script>";
+		"<script src=\"./common/js/socks-general.js\"></script>"+
+		"<script src=\"./common/js/rtc.js\"></script>";
 	if(user.perm == 0){ //if the user is a ninja
 		dojo = user.dojos[0];
 		fill.mentors = [];

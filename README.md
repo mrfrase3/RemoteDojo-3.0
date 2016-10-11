@@ -25,4 +25,3 @@ Settings can be found in `config.json`.
 | sessionSecret         | The session's secret                                                             |
 | tempUserExpiryInterval| The amount of time (in milliseconds) a temporary user exists before it is deleted|
 | mainServerPort        | The port that the main server runs on                                            |
-| mediaServerPort       | The port that the media server runs on                                           |

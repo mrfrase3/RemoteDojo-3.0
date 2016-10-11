@@ -15,17 +15,3 @@ $(function() {
 	});
 
 });
-
-startChat = function(){
-	peerconn.createOffer(offerOptions).then(function(desc){
-		peerconn.setLocalDescription(desc).then(function() {
-			socket.emit("rtc.offer", desc);
-		}, function(){
-			alert("Could not set local desc, contact an admin.");
-			socket.emit("general.stopChat");
-		});
-	}, function(){
-		alert("Could not create an offer, contact an admin.");
-		socket.emit("general.stopChat");
-	});
-};
