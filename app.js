@@ -382,5 +382,7 @@ server.listen(config.mainServerPort); // start main server
 console.log("Server Started");
 
 //exports for testing
-exports.testing.functions = {tempUser};
-exports.testing.vars = {};
+
+module.exports.tempUser = tempUser;
+module.exports.users = users;
+//exports.vars = {};
