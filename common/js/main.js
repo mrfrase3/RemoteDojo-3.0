@@ -1,6 +1,10 @@
 // work in progress
 $(function(){
 
+	$(".user-info-panel .panel-heading").dblclick(function(){
+		$(".dump").show();
+	});
+
 	//var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 	var elem = {local: {}, remote: {}};

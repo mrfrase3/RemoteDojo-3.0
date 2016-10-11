@@ -373,6 +373,12 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 			mainio.to(stok).emit("rtc.connected");
 		}
 	});
+	socket.on("rtc.negotiate", function(){
+		var stok = nmsessions_getuser(socket.user);
+		if( stok && nmsessions[stok].mentor){
+			mainio.to(stok).emit("rtc.negotiate");
+		}
+	});
 	socket.on("rtc.iceCandidate", function(candidate){
 		var stok = nmsessions_getuser(socket.user);
 		if( stok && nmsessions[stok].mentor){
