@@ -28,7 +28,7 @@ describe("User Creation", function(){
 		expect(app.users[tokMentor]).to.exist;
 		done();
 	});
-	it("has ninja permissions", function(done){
+	it("has Mentor permissions", function(done){
 		expect(app.users[tokMentor].perm).to.equal(1);
 		done();
 	});
@@ -62,7 +62,7 @@ describe("User Creation", function(){
 		expect(app.users[tokAdmin]).to.exist;
 		done();
 	});
-	it("has Champion permissions", function(done){
+	it("has Admin permissions", function(done){
 		expect(app.users[tokAdmin].perm).to.equal(3);
 		done();
 	});
