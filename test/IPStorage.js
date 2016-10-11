@@ -1,24 +1,27 @@
 /*global describe, it*/
 
 var assert = require("assert");
-describe("Array", function() {
-	describe("#indexOf()", function() {
-		it("Should return 2 when taking the index of 3 in [1,2,3]", function(done) {
-			assert.equal(2, [1,2,3].indexOf(3));
+describe("Test to ensure IP's are logged and limited.", function() {
+	describe("Can log one IP - ", function() {
+		it("Create one IP and ensure it has been stored to JSON file - Should pass by reading JSON File", function(done) {
 			done();
 		});
-		it("Should return 0 when taking the index of 1 in [1,2,3]", function(done) {
-			assert.equal(0, [1,2,3].indexOf(1));
+		it("Simulate multiple accesses from one IP address - Should pass without throwing any errors", function(done) {
+			done();
+		});
+		it("Revoke access after * accesses - Should pass by catching any permission denied like errors", function(done) {
 			done();
 		});
 	});
-	describe("#pop()",function() {
-		it("Should return 3 when popping	[1,2,3]", function(done) {
-			assert.equal(3, [1,2,3].pop());
+	describe("Can log multiple IPs - ",function() {
+		it("Creates multiple IPs and ensure that it has been stored to JSON file - Should pass by reading JSON File", function(done) {
 			done();
 		});
-		it("Should return 2 when popping	[1,2]", function(done) {
-			assert.equal(2, [1,2].pop());
+		it("Simulate multiple accesses over multiple IP address, with different values - Should pass without throwing any errors", function(done) {
+
+			done();
+		});
+		it("Revoke IPs with values over the defined threshold - Should pass by catching any permission denied like errors", function(done) {
 			done();
 		});
 	});
