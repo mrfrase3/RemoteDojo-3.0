@@ -27,18 +27,18 @@ $(document).ready(function() {
 		$(".img-caption-mentor").show("slow");
 	});
 
+	$("#mentorCopyButton").click(function(){
+    	copyToClipboard($("#mentorCopyTarget").get(0));
+    	$("#mentorCopyButton b").text("COPIED");
+    	$("#ninjaCopyButton b").text("COPY");
+    });
+    $("#ninjaCopyButton").click(function(){
+    	copyToClipboard($("#ninjaCopyTarget").get(0));
+    	$("#ninjaCopyButton b").text("COPIED");
+    	$("#mentorCopyButton b").text("COPY");
+	});
+
 })
-
-
-//Copy link
-
-document.getElementById("ninjaCopyButton").addEventListener("click", function() {
-    copyToClipboard(document.getElementById("ninjaCopyTarget"));
-});
-
-document.getElementById("mentorCopyButton").addEventListener("click", function() {
-    copyToClipboard(document.getElementById("mentorCopyTarget"));
-});
 
 
 /* Reference: http://stackoverflow.com/questions/22581345/click-button-copy-to-clipboard-using-jquery */

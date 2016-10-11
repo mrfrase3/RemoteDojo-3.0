@@ -52,9 +52,9 @@
 					<div class="table-row">
 						<div clas="table-cell">
 							<div class="input-group">
-							   <input id="ninjaCopyTarget" type="text" class="form-control" value="{{ninja}}">
+							   <input id="ninjaCopyTarget" type="text" class="form-control" value="">
 							   <span class="input-group-btn">
-							        <button id="ninjaCopyButton" class="btn btn-copy" type="button" onclick="copyToClipboard('#ninja-url')"><b>COPY</b></button>
+							        <button id="ninjaCopyButton" class="btn btn-copy" type="button"><b>COPY</b></button>
 							   </span>
 							</div>
 						</div>
@@ -79,9 +79,9 @@
 					<div class="table-row">
 						<div clas="table-cell">
 							<div class="input-group">
-							   <input id="mentorCopyTarget" type="text" class="form-control" value="{{mentor}}">
+							   <input id="mentorCopyTarget" type="text" class="form-control" value="">
 							   <span class="input-group-btn">
-							        <button id="mentorCopyButton" class="btn btn-copy" type="button" onclick="copyToClipboard('#mentor-url')"><b>COPY</b></button>
+							        <button id="mentorCopyButton" class="btn btn-copy" type="button"><b>COPY</b></button>
 							   </span>
 							</div>
 						</div>
@@ -97,6 +97,16 @@
 
 	<!-- jQurey Effects -->
 	<script src="common/js/effects.js"></script>
+            
+    <!-- URL Stuff -->
+	<script>
+    	$(function(){
+        	var ninjaURL = "https://" + location.host + "{{ninja}}";
+        	var mentorURL = "https://" + location.host + "{{mentor}}";
+        	$("#mentorCopyTarget").val(mentorURL);
+        	$("#ninjaCopyTarget").val(ninjaURL);
+        });
+    </script>
 </body>
 
 </html>

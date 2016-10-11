@@ -9,7 +9,7 @@ $('.hidden').removeClass('hidden');
 // socket and callback are passed, callback is called if the socket is authenticated
 var authSock = function(sock, cb){
 	sock.on('sockauth.request', function(){ //when the server requests authentication
-		$.get('/sockauth', function(res){ //get the user session token to prove identity
+		$.get('/sockauth'+window.location.search, function(res){ //get the user session token to prove identity
 			if(res.err){
 				sock.close();
 				alert('Authentication with server failed, please log back in.');
