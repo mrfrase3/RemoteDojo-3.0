@@ -1,6 +1,6 @@
 /*global describe, it*/
 
-var storage = require("../lib/storage.js");
+var storage = require("../lib/Storage.js");
 var file = new storage(__dirname+"/testFile.json");
 var expect = require("chai").expect;
 var assert = require("chai").assert;
