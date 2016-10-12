@@ -5,12 +5,15 @@ node_js:
   - 4
 env:
   - CXX=g++-4.8
+sudo: required
 addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
-before_install: npm install -g grunt-cli
+before_install:
+    npm install -g grunt-cli
+    sudo bash sscerts.sh
 notifications:
   slack: 'remodojo:biDRg2mBA2rploOFg8oXV6Pj'
