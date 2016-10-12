@@ -13,7 +13,7 @@ addons:
     packages:
     - g++-4.8
 before_install:
-    sudo bash sscerts.sh ;
+    sudo bash sscerts.sh localhost;
     npm install -g grunt-cli
 notifications:
   slack: 'remodojo:biDRg2mBA2rploOFg8oXV6Pj'
