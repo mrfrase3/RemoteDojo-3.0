@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%;">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Redojo - Login</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Custom CSS -->
+    <link href="common/css/theme/cosmo.css" rel="stylesheet">
+	<link href="common/css/main.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+	<!-- Google Font -->
+	<link href='https://fonts.googleapis.com/css?family=Roboto:400,300,700,500' rel='stylesheet' type='text/css'>
+	<link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+	
+	<div class="container">
+		<div class="col-md-12 top-margin">
+			<div class="row">
+				<div class="col-md-5 col-md-offset-1 table-main">
+				
+					
+					<div class="table-row">
+						<div class="table-cell center">
+							<a href="#" class="mode-link-ninja">
+								<img src="common/images/CDWA-Get-Coding.jpg" class="select-mode">
+								<div class="img-caption-ninja">NINJA</div>
+								<div class="img-caption-ninja-detail"><p class="detail-title">NINJA</p><hr>Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit</div>
+							</a>
+						</div>
+					</div>
+					
+					<div class="table-row">
+						<div clas="table-cell">
+							<div class="input-group">
+							   <input id="ninjaCopyTarget" type="text" class="form-control" value="">
+							   <span class="input-group-btn">
+							        <button id="ninjaCopyButton" class="btn btn-copy" type="button"><b>COPY</b></button>
+							   </span>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				
+				<div class="col-md-5 table-main">
+					
+
+					
+					<div class="table-row">
+						<div class="table-cell center">
+							<a href="#" class="mode-link-mentor">
+								<img src="common/images/CDWA-Help-Out.jpg" id="img-ninja" class="select-mode">
+								<div class="img-caption-mentor">MENTOR</div>
+								<div class="img-caption-mentor-detail"><p class="detail-title">MENTOR</p><hr>Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit</div>
+							</a>
+						</div>
+					</div>
+					
+					<div class="table-row">
+						<div clas="table-cell">
+							<div class="input-group">
+							   <input id="mentorCopyTarget" type="text" class="form-control" value="">
+							   <span class="input-group-btn">
+							        <button id="mentorCopyButton" class="btn btn-copy" type="button"><b>COPY</b></button>
+							   </span>
+							</div>
+						</div>
+					</div>
+				</div>
+	
+		
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+	<!-- jQurey Effects -->
+	<script src="common/js/effects.js"></script>
+            
+    <!-- URL Stuff -->
+	<script>
+    	$(function(){
+        	var ninjaURL = "https://" + location.host + "{{ninja}}";
+        	var mentorURL = "https://" + location.host + "{{mentor}}";
+        	$("#mentorCopyTarget").val(mentorURL);
+        	$("#ninjaCopyTarget").val(ninjaURL);
+        });
+    </script>
+</body>
+
+</html>
