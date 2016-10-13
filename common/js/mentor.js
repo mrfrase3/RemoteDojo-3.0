@@ -13,7 +13,7 @@ $(function(){
 
 
 		$(".chat-panel div.panel-heading").popover({"title" : "Chat Panel",
-																								"content" : "If any Ninjas need help, their names will appear here. When that happens, click the green \"Answer\" button to start a conversation.",
+																								"content" : "If any Ninjas need help, their names will appear here.",
 																								"trigger" : "hover",
 																								"container" : "body"});
 
@@ -26,6 +26,7 @@ $(function(){
 																								"content" : "To do",
 																								"trigger" : "hover",
 																								"container" : "body"});
+																								screen-local-stop
 
 		var alertdiv = "<div class=\"alert alert-info alert-dismissible\" role=\"alert\"> \
 				<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button> \
