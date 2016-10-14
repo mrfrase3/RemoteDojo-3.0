@@ -19,6 +19,7 @@ var config = require("./config.json");
 var storage = require("./lib/Storage.js");
 var users = new storage(__dirname+"/users.json");
 var dojos = new storage(__dirname+"/dojos.json");
+var ipaddresses = [];
 
 
 //load in the renderer, handlebars, and then load in the html templates
@@ -44,6 +45,32 @@ if(config.runInDemoMode){
 // user permission structure:
 // 0: ninja, 1: mentor, 2: champion, 3: admin
 //
+
+//This will check the ip address of the clients. If they are not able to connect
+//it will return false and if they are able to connect it will return true
+//Verify the return value and then establish the connection
+var ipverification = function(ipaddress, maxtoday) {
+	var today = new Date();
+	var dd = today.getDate();
+	var testip = {
+		address: ipaddress,
+		count: 0,
+		date: dd
+	};
+	if(ipaddresses.indexOf(testip.address) == -1){
+		ipaddresses.push(testip);
+		return true;
+	}else if(ipaddresses.indexOf(testip.address) != -1){
+		var index = ipaddresses.indexOf(testip.address);
+		if(ipaddresses[index].count >= maxtoday) return false;
+		if(ipaddresses[index].date != dd){
+			ipaddresses[index].count = 0;
+			ipaddresses[index].date = dd;
+		}
+		ipaddresses[index].count = ipaddresses[index].count + 1;
+		return true;
+	}
+}
 
 // token generator, pretty random, but can be replaced if someone has something stronger
 var token = function() {
@@ -221,7 +248,9 @@ app.use("/", function(req, res){
 		if(req.query.u){
         	uid = demoUserAuth(req.query.u);
         } else if(req.method == "POST"){
-        	if(true){ //check ip here to see if max
+		var ip = req.ip;
+		if(req.ips.length) ip = req.ips[0]; //detects through proxies
+        	if(ipverification(ip,5)){ //check ip here to see if max CHECK123
             	dojo = tempDojo(config.demoDuration);
             	fill.mentor = "/?u=" + users[tempUser(dojo, 1, config.demoDuration)].authtok;
             	fill.ninja = "/?u=" + users[tempUser(dojo, 0, config.demoDuration)].authtok;
