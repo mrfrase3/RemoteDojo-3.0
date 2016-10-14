@@ -112,7 +112,7 @@ app.use("/sockauth", function(req, res){
 			var tok = token();
 			if(!users[user].token) users[user].token = [];
 			users[user].token.push(tok);
-			 ({usr: user, token: tok});
+			res.json({usr: user, token: tok});
 			users.save();
 			return;
         }
