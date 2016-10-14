@@ -3,7 +3,7 @@ var addPreCallTutorialPopups = function() {
 
 	var alertdiv = "<div class=\"alert alert-info alert-dismissible\" role=\"alert\"> \
 			<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button> \
-			Great! Hover your mouse over anything you'd like to know more about. Try the blue panel labelled \"Mentors\". To end the tutorial, reload the page.\
+			Hover your mouse over anything you'd like to know more about. Try the blue panel labelled \"Mentors\". To end the tutorial, reload the page.\
 	</div>";
 			$(".container").before(alertdiv);
 	doTutorial = true;
