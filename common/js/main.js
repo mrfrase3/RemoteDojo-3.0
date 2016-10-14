@@ -30,17 +30,23 @@ $(function(){
     elem.remote.c.height = ch;
 
     elem.local.v.addEventListener('play', function(){
-        draw(this,elem.local.context,cw,ch);
-
+        draw(this,elem.local.context,cw,ch,true);
     },false);
 	elem.remote.v.addEventListener('play', function(){
-        draw(this,elem.remote.context,cw,ch);
+        draw(this,elem.remote.context,cw,ch,false);
     },false);
 
-	function draw(v,c,w,h) {
+  var cursorImg = new Image();
+  cursorImg.src = "common/images/cursor.png";
+	var cursorShowing = true; // TODO tie to button or checkbox, set to false if sharing webcam
+  function draw(v,c,w,h,l) {
 	    if(v.paused || v.ended) return false;
-	    c.drawImage(v,0,0,w,h);
-	    setTimeout(draw,20,v,c,w,h);
+      c.drawImage(v,0,0,w,h);
+      // Draw the remote cursor on the local canvas
+      if (cursorShowing && l && rtcCursorRX && rtcCursorRY) {
+        c.drawImage(cursorImg, rtcCursorRX * cw, rtcCursorRY * ch);
+      }
+	    setTimeout(draw,20,v,c,w,h,l);
 	}
 
 	/*function audiovis(v, b){
