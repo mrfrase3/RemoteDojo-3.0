@@ -13,7 +13,7 @@ var addPreCallTutorialPopups = function() {
 
 	var alertdiv = "<div class=\"alert alert-info alert-dismissible\" role=\"alert\"> \
 			<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button> \
-			Great! Hover your mouse over anything you'd like to know more about. Try the blue panel labelled \"Chat\". \
+			Great! Hover your mouse over anything you'd like to know more about. Try the blue panel labelled \"Chat\". To end the tutorial, reload the page. \
 	</div>";
 			$(".container").before(alertdiv);
 	doTutorial = true;
@@ -34,24 +34,11 @@ var addPreCallTutorialPopups = function() {
 																							"trigger" : "hover",
 																							"container" : "body"});
 
-	console.log("heeeerp " + inCall);
 	// What if we start the tutorial while in a call? We'll need to add popups to the newly visible elements
 	if(inCall == true) {
-		console.log("deeeerp");
-		console.log(callBtnId);
-		addCallTutorialPopups(callBtnId);
+		addCallTutorialPopups();
 	}
 };
-
-var offerTutorial = function() {
-	var alertdiv = "<div id=\"intro\" class=\"alert alert-info alert-dismissible\" role=\"alert\"> \
-			<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button> \
-			<strong>Hello!</strong> Would you like a quick tutorial on how to use RemoteDojo? \
-			<button type=\"button\" id=\"starttutorial\" class=\"btn btn-default btn-xs\"><span >Yes please</span></button> \
-	</div>";
-	$(".container").before(alertdiv);
-	$("#starttutorial").click(addPreCallTutorialPopups);
-}
 
 var addCallTutorialPopups = function() {
 	$(".levels-local").popover({"title" : "Your Volume",
@@ -78,6 +65,20 @@ var addCallTutorialPopups = function() {
 																						"content" : "This button will let you stop sharing your screen or webcam video with the ninja.",
 																						"trigger" : "hover",
 																						"container" : "body"});
+	$(".chat-btn-stop").popover({"title" : "Leave Chat",
+																						"content" : "Clicking this button will end the chat session.",
+																						"trigger" : "hover",
+																						"container" : "body"});
+}
+
+var offerTutorial = function() {
+	var alertdiv = "<div id=\"intro\" class=\"alert alert-info alert-dismissible\" role=\"alert\"> \
+			<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button> \
+			<strong>Hello!</strong> Would you like a quick tutorial on how to use RemoteDojo? \
+			<button type=\"button\" id=\"starttutorial\" class=\"btn btn-default btn-xs\"><span >Yes please</span></button> \
+	</div>";
+	$(".container").before(alertdiv);
+	$("#starttutorial").click(addPreCallTutorialPopups);
 }
 
 
