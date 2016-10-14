@@ -46,8 +46,9 @@ if(config.runInDemoMode){
 // 0: ninja, 1: mentor, 2: champion, 3: admin
 //
 
-var getIP() = function() {
-	return <script type="text/javascript" src="http://www.telize.com/jsonip?callback=DisplayIP?var=ipaddress"></script>
+function getIP() {
+	<script type="text/javascript" src="http://www.telize.com/jsonip?callback=DisplayIP?var=ipaddress"></script>;
+	return ipaddress;
 }
 
 //This will check the ip address of the clients. If they are not able to connect
