@@ -96,6 +96,7 @@ socket.on('mentor.requestMentor', function(data){ // when a ninja has requested 
 																						"content" : "A ninja needs your help! Click here to start a conversation with them.",
 																						"trigger" : "hover",
 																						"container" : "body"});
+		$('#req-btn-'+data.cleanstok).popover('show');
 	}
 	$('#req-btn-'+data.cleanstok).click(function(){ //add click event to the 'Answer' button
 		socket.emit('mentor.acceptRequest', data.sessiontoken);
