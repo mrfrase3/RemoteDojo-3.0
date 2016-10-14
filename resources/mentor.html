@@ -4,7 +4,7 @@
     <div class="container" style="margin-top: 50px;">
         <div class="row">
             <div class="col-md-3 controls">
-                <div class="user-info-panel panel panel-primary">
+                <div class="user-info-panel panel panel-primary" data-type="mentor">
                     <div class="panel-heading">
                         <h3 class="panel-title">CoderDojo</h3>
                     </div>
@@ -38,22 +38,26 @@
                     	</div>
                     	<div class="col-xs-12">
                         	Ninja's Microphone:<br>
-                    		<div class="progress levels-foreign">
+                    		<div class="progress levels-remote">
 								<div class="progress-bar progress-bar-success" style="width: 0%"></div>
 							</div>
                     	</div>
                     	<div class="col-xs-12 screen-local-box hidden">
                         	Your Screen/Webcam:<br>
                     		<div class="screen-local">
-								<canvas class="screen-local-canvas"></canvas>
+								<canvas class="screen-local-canvas" style="width:100%;"></canvas>
 							</div>
                         	<br>
                         	<div class="btn btn-warning screen-local-stop">Stop Screen Sharing</div>
                     	</div>
                     	<br>
-                    	<div class="col-xs-12 btn btn-default screen-local-start">Share Your Screen</div>
+											<div class="webcam-controls panel-body">
+	                    	<div class="col-xs-6 btn btn-default screen-local-start">Screen</div>
+	                        <div class="col-xs-6 btn btn-default webcam-local-start">Webcam</div>
+											</div>
                     	<br>
                     	<div class="col-xs-12 btn btn-default chat-btn-stop">Leave Chat</div>
+
                     </div>
                 </div>
             </div>
@@ -66,18 +70,20 @@
                     	~~ To Do ~~
                     </div>
                 </div>
-            	<div class="screen-foreign-box panel panel-primary hidden">
+            	<div class="screen-remote-box panel panel-primary hidden">
                     <div class="panel-heading">
                         <h3 class="panel-title">Ninja's Screen</h3>
                     </div>
-                    <div class="panel-body screen-foreign">
-                    	<canvas class="screen-foreign-canvas"></canvas>
+                    <div class="panel-body screen-remote">
+                    	<canvas class="screen-remote-canvas"></canvas>
                     </div>
                 </div>
             </div>
             <div class="dump hidden">
-        		<video class="dump-local"></video>
-            	<video class="dump-foreign"></video>
+        		<video class="dump-local" controls autoplay muted></video>
+            	<video class="dump-remote" controls autoplay></video>
+                <audio class="dump-local" controls autoplay muted></audio>
+            	<audio class="dump-remote" controls autoplay></audio>
         	</div>
         </div>
     </div>

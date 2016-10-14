@@ -9,7 +9,6 @@ var app = express();
 // TODO replace SSL keys system with letsencrypt
 var keys = {key: fs.readFileSync("certs/server.key", "utf8"), cert: fs.readFileSync("certs/server.crt", "utf8")};
 var server = require("https").createServer(keys, app);
-var mediaSocketServer = require("https").createServer(keys, express());
 var io = require("socket.io")(server);
 var bodyParser = require("body-parser");
 var helmet = require("helmet");
@@ -26,10 +25,21 @@ var dojos = new storage(__dirname+"/dojos.json");
 //html templates are stored in the resources folder.
 var hb = require("handlebars");
 var getTemp = function(file){return hb.compile(fs.readFileSync("./resources/" + file + ".html") + "<div></div>", {noEscape: true});};
-var templates = {404: getTemp("404"), head: getTemp("head"), foot: getTemp("foot"), /*adminHead: getTemp('adminhead'), champHead: getTemp('champhead'),*/
-								ninja: getTemp("ninja"), mentor: getTemp("mentor"), login: getTemp("login")};
+var templates = {404: getTemp("404"), index: getTemp("index"), head: getTemp("head"), foot: getTemp("foot"), /*adminHead: getTemp('adminhead'), champHead: getTemp('champhead'),*/
+								ninja: getTemp("ninja"), mentor: getTemp("mentor"), login: getTemp("login"), demo: getTemp("demo")};
 
 var mentorstats = {}; //keeps track of mentor statuses which are displayed to
+if(config.runInDemoMode){
+	var demoUserAuth = function(atok){
+		for(var j=0; j < users._indexes.length; j++){
+			i = users._indexes[j];
+			if(users[i].authtok && users[i].authtok == atok){
+				return i;
+			}
+		}
+    	return null;
+    }
+}
 
 // user permission structure:
 // 0: ninja, 1: mentor, 2: champion, 3: admin
@@ -42,10 +52,26 @@ var token = function() {
 
 // function that generates a new User, can be easily copied/modified to create a new random, expirable user
 function tempUser(dojo, perm, expire){
+	if(expire < 0) return "no";
 	var tok = "temp-" + perm + "-" + token();
 	var names = ["Ninja", "Mentor", "Champion", "Admin"];
-	while(users[tok]){tok = "temp-" + perm + "-" + token();}
+	while(users[tok]) tok = "temp-" + perm + "-" + token();
 	users.add(tok, {username:tok,password:"temp",email:"temp",fullname:"Anonymous "+names[perm],token:[],perm:perm,dojos:[dojo], expire: Date.now() + expire});
+	setTimeout(removeUser, expire, tok);
+
+	if(config.runInDemoMode){
+    	var atok = token();
+    	while(demoUserAuth(atok) != null) atok = token();
+    	users[tok].authtok = atok;
+    }
+	return tok;
+}
+
+function tempDojo(expire){
+	var tok = "temp-dojo-" + token();
+	while(dojos[tok]) tok = "temp-dojo-" + token();
+	dojos.add(tok, {dojoname: tok, name:"A Demo Dojo", password: "temp", location: "temp", email: "temp", expire: Date.now() + expire});
+	setTimeout(removeDojo, expire, tok);
 	return tok;
 }
 
@@ -78,13 +104,18 @@ app.use("/common", express.static( __dirname + "/common" ));
 // socket session to the user session. This was not being done in remotedojo 1 or 2
 // More info on socket auth: https://auth0.com/blog/auth-with-socket-io/
 app.use("/sockauth", function(req, res){
-	if(req.session.loggedin){
-		var tok = token();
-		if(!users[req.session.user].token) users[req.session.user].token = [];
-		users[req.session.user].token.push(tok);
-		res.json({usr: req.session.user, token: tok});
-		users.save();
-		return;
+	if(req.session.loggedin || ( config.runInDemoMode && req.query.u) ){
+    	var user;
+    	if(config.runInDemoMode) user = demoUserAuth(req.query.u);
+    	else user = req.session.user;
+    	if(user){
+			var tok = token();
+			if(!users[user].token) users[user].token = [];
+			users[user].token.push(tok);
+			res.json({usr: user, token: tok});
+			users.save();
+			return;
+        }
 	}
 	res.json({err: "Not Logged in"});
 });
@@ -111,6 +142,7 @@ app.get("/logout", function(req, res){
 // Main express processing
 app.use("/", function(req, res){
 	var fill = {js: " ", css: " "}; //fill, the object passed to the renderer, custom js and css files can be added based on circumstance
+	var uid;
 	if(req.path.indexOf("common/") !== -1){
 		return; //fixes an error
 	}
@@ -122,18 +154,22 @@ app.use("/", function(req, res){
 	// normally a file is renered as header + body + foot, except the login page due to its simplicity
 	var renderfile = function(f){
 		fill.permhead = "";
-		if(req.session.loggedin){
+		if(uid){
 			fill.head = templates.head(fill, {noEscape: true});
 			fill.foot = templates.foot(fill, {noEscape: true});
 			res.send(templates[f](fill, {noEscape: true}));
 		} else {
-			fill.dojos = dojos._indexes; //this is the list of dojos shown to ninjas on the login page
+			fill.dojos = []; //this is the list of dojos shown to ninjas on the login page
+        	for(var i = 0; i < dojos._indexes.length; i++){
+            	var d = dojos._indexes[i];
+            	fill.dojos.push({dojoname: d, name: dojos[d].name});
+            }
 			res.send(templates[f](fill, {noEscape: true}));
 		}
 	};
 
 	//Login processing
-	if(!req.session.loggedin){ // and not in demo mode
+	if(!req.session.loggedin && !config.runInDemoMode){
 		fill = {usr: "", msg: ""};
 		if(req.path.indexOf("login.html") === -1) req.session.loginpath = req.path; //save the path that the user was trying to access for after login
 		if(!req.body.login_username && !req.body.login_dojo){ //if no data has been passed, simply show the login page
@@ -181,14 +217,28 @@ app.use("/", function(req, res){
 		}
 		fill.msg = genalert("danger", true, "¯\_(ツ)_/¯"); //this code should never run
 		return renderfile("login");
-	} /* else if(!req.session.loggedin && not in demo mode){
-			serve demo landing page and do demo authentication
-		}*/
+	} else if(config.runInDemoMode){
+		if(req.query.u){
+        	uid = demoUserAuth(req.query.u); 
+        } else if(req.method == "POST"){
+        	if(true){ //check ip here to see if max
+            	dojo = tempDojo(config.demoDuration);
+            	fill.mentor = "/?u=" + users[tempUser(dojo, 1, config.demoDuration)].authtok;
+            	fill.ninja = "/?u=" + users[tempUser(dojo, 0, config.demoDuration)].authtok;
+            	return renderfile("demo");
+            }
+        }
+    	if(!uid) return renderfile("index");
+	}
 	// Login end
 	// From here it is assumed the user is authenticated and logged in (either as a user or temp user)
-	var user = users[req.session.user];
+	if(!uid) uid = req.session.user;
+    var user = users[uid];
 	fill.user = {username: user.username, fullname: user.fullname}; //give some user info to the renderer, as well as common js files
-	fill.js += "<script src=\"https://cdn.webrtc-experiment.com/rmc3.min.js\"></script><script src=\"./common/js/socks-general.js\"></script>";
+	fill.js += "<script src=\"https://webrtc.github.io/adapter/adapter-latest.js\"></script>"+
+		"<script src=\"https://cdn.webrtc-experiment.com/getScreenId.js\"></script>"+
+		"<script src=\"./common/js/socks-general.js\"></script>"+
+		"<script src=\"./common/js/rtc.js\"></script>";
 	if(user.perm == 0){ //if the user is a ninja
 		dojo = user.dojos[0];
 		fill.mentors = [];
@@ -313,7 +363,7 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 				while(stok in nmsessions) stok = token();
 				nmsessions[stok] = {ninja: socket, mentor: false, dojo: user.dojos[0], chatrooms: null}; //make the session
 				socket.join(stok); // join the room for the session
-				mainio.to(user.dojos[0]+"-1").emit("mentor.requestMentor", {sessiontoken: stok, dojo: user.dojos[0], fullname: user.fullname}); //emit the request to all relevant mentors
+				mainio.to(user.dojos[0]+"-1").emit("mentor.requestMentor", {sessiontoken: stok, dojo: dojos[user.dojos[0]].name, fullname: user.fullname}); //emit the request to all relevant mentors
 			}
 		});
 		socket.on("ninja.cancelRequest", function(stok){ //when a ninja decides to cancel a request
@@ -353,34 +403,89 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 	socket.on("general.stopChat", stopChat);
 	socket.on("disconnect", stopChat);
 
+	// Signaling Server
+	socket.on("rtc.offer", function(desc){
+		var stok = nmsessions_getuser(socket.user);
+		if( stok && nmsessions[stok].mentor){
+			socket.broadcast.to(stok).emit("rtc.offer", desc);
+		}
+	});
+	socket.on("rtc.answer", function(desc2){
+		var stok = nmsessions_getuser(socket.user);
+		if( stok && nmsessions[stok].mentor){
+			socket.broadcast.to(stok).emit("rtc.answer", desc2);
+		}
+	});
+	socket.on("rtc.connected", function(){
+		var stok = nmsessions_getuser(socket.user);
+		if( stok && nmsessions[stok].mentor){
+			mainio.to(stok).emit("rtc.connected");
+		}
+	});
+	socket.on("rtc.negotiate", function(){
+		var stok = nmsessions_getuser(socket.user);
+		if( stok && nmsessions[stok].mentor){
+			mainio.to(stok).emit("rtc.negotiate");
+		}
+	});
+	socket.on("rtc.iceCandidate", function(candidate){
+		var stok = nmsessions_getuser(socket.user);
+		if( stok && nmsessions[stok].mentor){
+			socket.broadcast.to(stok).emit("rtc.iceCandidate", candidate);
+		}
+	});
+
 	socket.on("general.template", function(data){ //socket call to request a rendered template (used for dynamic forms in another project)(not yet fully implemented)
 		data.fill = data.fill || {};
 		socket.emit("general.template-" + data.token, {html: getTemp("template/"+data.template)(data.fill)});
 	});
 });});
 
-//Interval that expires expired users
-setInterval(function(){
+var removeUser = function(uid){
+	if(!users[uid]) return;
+	for(var s in io.of("/main").connected){
+		if(io.of("/main").connected[s].user && io.of("/main").connected[s].user == uid){
+			io.of("/main").connected[s].disconnect();
+		}
+	}
+	users.remove(uid);
+}
+
+var removeDojo = function(uid){
+	if(!dojos[uid]) return;
+	dojos.remove(uid);
+}
+
+//check that expires expired users
+var checkExpired = function(){
 	var t = Date.now();
 	for(var j=0; j < users._indexes.length; j++){
 		i = users._indexes[j];
-		if(users[i].expire > 0 && users[i].expire < t){
-			for(var s in mainio.sockets.connected){
-				if(mainio.sockets.connected[s].user && mainio.sockets.connected[s].user == i){
-					mainio.sockets.connected[s].disconnect();
-				}
-			}
-			users.remove(i);
+		if(users[i].expire > 0){
+			if(users[i].expire <= t){
+            	removeUser(i);
+            } else {
+            	setTimeout(removeUser, users[i].expire - t, i);
+            }
 		}
 	}
-}, config.tempUserExpiryInterval);
-
-mediaSocketServer.listen(config.mediaServerPort); // start socket server for RTC (it's super fussy and wont play with the main socket server)
-require("./signaling-server.js")(mediaSocketServer);
+	for(var j=0; j < dojos._indexes.length; j++){
+		i = dojos._indexes[j];
+		if(dojos[i].expire > 0){
+        	if(dojos[i].expire <= t){
+				removeDojo(i);
+            } else {
+            	setTimeout(removeDojo, users[i].expire - t, i);
+            }
+		}
+	}
+};
+checkExpired();
 
 server.listen(config.mainServerPort); // start main server
 console.log("Server Started");
 
 //exports for testing
-exports.testing.functions = {tempUser};
+exports.testing = {};
+exports.testing.functions = {tempUser: tempUser};
 exports.testing.vars = {};
