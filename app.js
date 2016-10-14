@@ -19,7 +19,7 @@ var config = require("./config.json");
 var storage = require("./lib/Storage.js");
 var users = new storage(__dirname+"/users.json");
 var dojos = new storage(__dirname+"/dojos.json");
-var ipaddresses = [ipaddress, count, firstdate];
+var ipaddresses = [];
 
 
 //load in the renderer, handlebars, and then load in the html templates
@@ -50,22 +50,43 @@ if(config.runInDemoMode){
 //it will return false and if they are able to connect it will return true
 //if they are not able to connect then it will return false.
 //Verify the return value and then establish the connection
-var ipverification() = function() {
-	<script type="text/javascript" src="http://www.telize.com/jsonip?callback=DisplayIP?var=ipaddress"></script>
+var getip = function() {
+	$ipaddress = '';
+    if (getenv('HTTP_CLIENT_IP'))
+        $ipaddress = getenv('HTTP_CLIENT_IP');
+    else if(getenv('HTTP_X_FORWARDED_FOR'))
+        $ipaddress = getenv('HTTP_X_FORWARDED_FOR');
+    else if(getenv('HTTP_X_FORWARDED'))
+        $ipaddress = getenv('HTTP_X_FORWARDED');
+    else if(getenv('HTTP_FORWARDED_FOR'))
+        $ipaddress = getenv('HTTP_FORWARDED_FOR');
+    else if(getenv('HTTP_FORWARDED'))
+        $ipaddress = getenv('HTTP_FORWARDED');
+    else if(getenv('REMOTE_ADDR'))
+        $ipaddress = getenv('REMOTE_ADDR');
+    else
+        $ipaddress = 'UNKNOWN';
+
+    return $ipaddress;
+}
+
+var ipverification = function(ipaddress, maxtoday) {
 	var today = new Date();
 	var dd = today.getDate();
-	if(ipaddresses.indexOf(ipaddress) == -1){
-		ipaddresses.push(ipaddress);
-		var index = ipaddresses.indexOf(ipaddress);
-		ipaddresses[index].count = 1;
-		ipaddresses[index].firstdate = dd;
+	var testip = {
+		address: ipaddress,
+		count: 0,
+		date: dd
+	};
+	if(ipaddresses.indexOf(testip.address) == -1){
+		ipaddresses.push(testip);
 		return true;
-	}else if(ipaddresses.indexOf(ipaddress) != -1){
-		var index = ipaddresses.indexOf(ipaddress);
-		if(ipaddresses[index].count >= 5) return false;
-		if(ipaddresses[index].firstdate != dd){
+	}else if(ipaddresses.indexOf(testip.address) != -1){
+		var index = ipaddresses.indexOf(testip.address);
+		if(ipaddresses[index].count >= maxtoday) return false;
+		if(ipaddresses[index].date != dd){
 			ipaddresses[index].count = 0;
-			ipaddresses[index].firstdate = dd;
+			ipaddresses[index].date = dd;
 		}
 		ipaddresses[index].count = ipaddresses[index].count + 1;
 		return true;
@@ -248,7 +269,7 @@ app.use("/", function(req, res){
 		if(req.query.u){
         	uid = demoUserAuth(req.query.u);
         } else if(req.method == "POST"){
-        	if(ipverification == true){ //check ip here to see if max
+        	if(ipverification(getip(),5)){ //check ip here to see if max CHECK123
             	dojo = tempDojo(config.demoDuration);
             	fill.mentor = "/?u=" + users[tempUser(dojo, 1, config.demoDuration)].authtok;
             	fill.ninja = "/?u=" + users[tempUser(dojo, 0, config.demoDuration)].authtok;
