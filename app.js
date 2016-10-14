@@ -48,28 +48,7 @@ if(config.runInDemoMode){
 
 //This will check the ip address of the clients. If they are not able to connect
 //it will return false and if they are able to connect it will return true
-//if they are not able to connect then it will return false.
 //Verify the return value and then establish the connection
-var getip = function() {
-	$ipaddress = '';
-    if (getenv('HTTP_CLIENT_IP'))
-        $ipaddress = getenv('HTTP_CLIENT_IP');
-    else if(getenv('HTTP_X_FORWARDED_FOR'))
-        $ipaddress = getenv('HTTP_X_FORWARDED_FOR');
-    else if(getenv('HTTP_X_FORWARDED'))
-        $ipaddress = getenv('HTTP_X_FORWARDED');
-    else if(getenv('HTTP_FORWARDED_FOR'))
-        $ipaddress = getenv('HTTP_FORWARDED_FOR');
-    else if(getenv('HTTP_FORWARDED'))
-        $ipaddress = getenv('HTTP_FORWARDED');
-    else if(getenv('REMOTE_ADDR'))
-        $ipaddress = getenv('REMOTE_ADDR');
-    else
-        $ipaddress = 'UNKNOWN';
-
-    return $ipaddress;
-}
-
 var ipverification = function(ipaddress, maxtoday) {
 	var today = new Date();
 	var dd = today.getDate();
@@ -269,7 +248,9 @@ app.use("/", function(req, res){
 		if(req.query.u){
         	uid = demoUserAuth(req.query.u);
         } else if(req.method == "POST"){
-        	if(ipverification(getip(),5)){ //check ip here to see if max CHECK123
+		var ip = req.ip;
+		if(req.ips.length) ip = req.ips[0]; //detects through proxies
+        	if(ipverification(ip,5)){ //check ip here to see if max CHECK123
             	dojo = tempDojo(config.demoDuration);
             	fill.mentor = "/?u=" + users[tempUser(dojo, 1, config.demoDuration)].authtok;
             	fill.ninja = "/?u=" + users[tempUser(dojo, 0, config.demoDuration)].authtok;
