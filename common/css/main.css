@@ -320,4 +320,37 @@ p.title {
 	color: #fff;
 }
 
+/* Ninja and Mentor Page Colors adjusting */
 
+.alert-danger, .btn-danger {
+	background-color: #DB4D6D;
+	border-color: #DB4D6D;
+}
+
+.btn-warning {
+	background-color: #FC9F4D;
+	border-color: #FC9F4D;
+}
+
+.btn-success {
+	background-color: #00AA90;
+	border-color: #00AA90;
+}
+
+.btn-success:hover {
+	background-color: #66BAB7;
+	border-color: #66BAB7;
+}
+
+.btn-default, .label-default {
+	background-color: #333;
+	border-color: #333;
+}
+
+.panel-heading {
+	background-color: #2EA9DF !important;
+}
+
+.panel-primary {
+	border-color: #2EA9DF !important;
+}
