@@ -15,7 +15,6 @@ var offerOptions = {
 };
 
 var iceCallback = function(event) {
-	console.log(event);
 	if (event.candidate) {
 		socket.emit("rtc.iceCandidate", event.candidate.toJSON());
 	}
@@ -137,12 +136,14 @@ socket.on("rtc.answer", function(desc2){
 socket.on("rtc.connected", function(){
 	if(negotiating) negotiating = false;
 	console.log("RTC Signaling Completed!");
-    if(!live) setTimeout( function(){
+    if(!live){
         navigator.mediaDevices.getUserMedia({
             audio: true,
     		video: false
     	}).then(onLocalStream).catch(console.error);
-    }, 2000);
+    	$(".loading-overlay").hide(200);
+		$(".loading-overlay h3").text("Loading...");
+    }
     live = true;
 });
 
@@ -203,6 +204,8 @@ var stopStream = function(stream, element){
 
 //Helper Function for when the chat needs to stop
 var stopRTC = function(){
+	$(".loading-overlay").hide(200);
+	$(".loading-overlay h3").text("Loading...");
 	if (!live) return;
 	stopStream(rtcStreams.local.a, $(".dump audio.dump-local").get(0));
 	stopStream(rtcStreams.local.v, $(".dump video.dump-local").get(0));
@@ -216,6 +219,8 @@ var stopRTC = function(){
 }
 
 var startRTC = function(offer){
+	$(".loading-overlay h3").text("Connecting Call...");
+	$(".loading-overlay").show(200);
     var pcConfig = null;
 	if(iceservers.length > 0) pcConfig = {iceServers: iceservers};
 	var pcConstraints = {
