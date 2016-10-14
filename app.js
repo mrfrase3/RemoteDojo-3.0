@@ -112,7 +112,7 @@ app.use("/sockauth", function(req, res){
 			var tok = token();
 			if(!users[user].token) users[user].token = [];
 			users[user].token.push(tok);
-			res.json({usr: user, token: tok});
+			 ({usr: user, token: tok});
 			users.save();
 			return;
         }
@@ -219,7 +219,7 @@ app.use("/", function(req, res){
 		return renderfile("login");
 	} else if(config.runInDemoMode){
 		if(req.query.u){
-        	uid = demoUserAuth(req.query.u); 
+        	uid = demoUserAuth(req.query.u);
         } else if(req.method == "POST"){
         	if(true){ //check ip here to see if max
             	dojo = tempDojo(config.demoDuration);
@@ -475,7 +475,7 @@ var checkExpired = function(){
         	if(dojos[i].expire <= t){
 				removeDojo(i);
             } else {
-            	setTimeout(removeDojo, users[i].expire - t, i);
+            	setTimeout(removeDojo, dojos[i].expire - t, i);
             }
 		}
 	}
@@ -486,6 +486,6 @@ server.listen(config.mainServerPort); // start main server
 console.log("Server Started");
 
 //exports for testing
-exports.testing = {};
+exports.testing = {app: app};
 exports.testing.functions = {tempUser: tempUser};
-exports.testing.vars = {};
+exports.testing.vars = {users: users, dojos: dojos};
