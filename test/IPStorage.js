@@ -1,9 +1,13 @@
 /*global describe, it*/
 
 var assert = require("assert");
+var app = require("../app.js");
 describe("Test to ensure IP's are logged and limited.", function() {
 	describe("Can log one IP - ", function() {
-		it("Create one IP and ensure it has been stored to JSON file - Should pass by reading JSON File", function(done) {
+		it("Create one IP and ensure it has been stored to relavant array - Should pass by reading JSON File", function(done) {
+			var singleIP = "1.1.1.1";
+			app.ipverification(singleIP);
+			expect(app.ipaddress).to.contaian(singleIP);
 			done();
 		});
 		it("Simulate multiple accesses from one IP address - Should pass without throwing any errors", function(done) {

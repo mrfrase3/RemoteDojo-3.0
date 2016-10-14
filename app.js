@@ -46,12 +46,15 @@ if(config.runInDemoMode){
 // 0: ninja, 1: mentor, 2: champion, 3: admin
 //
 
+var getIP() = function() {
+	return <script type="text/javascript" src="http://www.telize.com/jsonip?callback=DisplayIP?var=ipaddress"></script>
+}
+
 //This will check the ip address of the clients. If they are not able to connect
 //it will return false and if they are able to connect it will return true
 //if they are not able to connect then it will return false.
 //Verify the return value and then establish the connection
-var ipverification() = function() {
-	<script type="text/javascript" src="http://www.telize.com/jsonip?callback=DisplayIP?var=ipaddress"></script>
+var ipverification(ipaddress) = function() {
 	var today = new Date();
 	var dd = today.getDate();
 	if(ipaddresses.indexOf(ipaddress) == -1){
@@ -248,7 +251,7 @@ app.use("/", function(req, res){
 		if(req.query.u){
         	uid = demoUserAuth(req.query.u);
         } else if(req.method == "POST"){
-        	if(ipverification == true){ //check ip here to see if max
+        	if(ipverification(getIP) == true){ //check ip here to see if max
             	dojo = tempDojo(config.demoDuration);
             	fill.mentor = "/?u=" + users[tempUser(dojo, 1, config.demoDuration)].authtok;
             	fill.ninja = "/?u=" + users[tempUser(dojo, 0, config.demoDuration)].authtok;
@@ -514,5 +517,5 @@ console.log("Server Started");
 
 //exports for testing
 exports.testing = {};
-exports.testing.functions = {tempUser: tempUser};
-exports.testing.vars = {};
+exports.testing.functions = {ipverification: ipverification};
+exports.testing.vars = {ipaddresses: ipaddresses};
