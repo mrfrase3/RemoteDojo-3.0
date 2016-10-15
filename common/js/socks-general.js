@@ -94,6 +94,22 @@ socket.on('general.startChat',function(data){ //start a chat session when the se
 	$('.screen-remote-box').show();
 	$('.presentations-panel').hide();
 	$('.chat-body-stop').show();
+
+	// will only work on mentor's screen while in tutorial mode. otherwiwse, will do nothing.
+	$(".webcam-controls").popover("show");
+	// will only work on ninja's screen while in tutorial mode. otherwiwse, will do nothing.
+	$(".screen-local-start").popover("show");
+	setTimeout(function() {
+			$(".webcam-controls").popover("hide");
+			$(".screen-local-start").popover("hide");
+			$(".chat-btn-stop").popover("show");
+
+			setTimeout(function() {
+				$(".chat-btn-stop").popover("hide");
+			}, 3000);
+	}, 4000);
+
+
 	$('.chat-body-start').hide();
 });
 
@@ -102,6 +118,7 @@ socket.on('general.stopChat',stopChat); //stop a current chat if the server says
 $(function(){
 	$('.chat-btn-stop').click(function(){ //allow the leave chat button to request the server to stop the chat
 		socket.emit('general.stopChat');
+		$(".chat-btn-stop").popover("hide"); //for tutorial, hide leave chat popup if it's still showing
 	});
 
 });
