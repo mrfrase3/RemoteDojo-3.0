@@ -52,7 +52,9 @@ body {
 .detached-elements .button-menu{
 	bottom: 0px;
 	width: 100%;
-	z-index:9999;
+	z-index: 9999;
+	padding-top: 10px;
+	background-color: white;
 }
 
 .detached-elements .chat-list-wrap{
@@ -61,8 +63,12 @@ body {
 }
 
 .chat-list-wrap .chat-list{
-	max-height: 300px;
+	max-height: 200px;
     overflow-y: scroll;
+	white-space: pre;
+	border-style: solid;
+	border-width: 1px;
+	padding: 0;
 }
 
 .chat-list-wrap .chat-item-remote{
@@ -82,6 +88,11 @@ body {
 
 .button-menu-buttons .chat-open{
 	position: relative;
+}
+
+.chat-input {
+	resize: none;
+	max-height: 10em;
 }
 
 .button-menu-buttons .badge{

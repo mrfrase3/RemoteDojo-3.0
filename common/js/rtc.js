@@ -106,10 +106,25 @@ var negotiateRTC = function(){
 	});
 };
 
-var addMessage = function(msg) {
+var addMessage = function(msg, l) {
 	var item = document.createElement("li");
 	$(item).text(msg.name + ": " + msg.data);
-	$(".chat-list-wrap .chat-list").append(item);
+	if (l) {
+		$(item).css({
+			"background-color": "beige",
+			"margin": "1px"
+		}); // TODO add class rather than add individual stylings here
+	}
+	else {
+		$(item).css({
+			"background-color": "lightcyan",
+			"margin": "1px"
+		});	
+    	$(".button-menu .chat-list-wrap").toggle(true);
+	} 
+	var chatList = $(".chat-list-wrap .chat-list");
+	chatList.append(item);
+	chatList.scrollTop(chatList.get(0).scrollHeight); // scroll to the latest message
 };
 
 var updateCoords = function(msg) {
@@ -130,7 +145,7 @@ var updateCoords = function(msg) {
 var onRemoteMessage = function(e) {
 	//console.log("Received message: " + e.data);
 	var msg = JSON.parse(e.data);
-	if (msg.type == "chat")	addMessage(msg);
+	if (msg.type == "chat")	addMessage(msg, false);
 	else if (msg.type == "cursorCoords") updateCoords(msg);
 };
 
@@ -307,20 +322,29 @@ var startRTC = function(offer){
     }
 }
 
-// Record and send the content of the text input
-$(".input-group .chat-send").click(function(){
+var rtcSendMessage = function(){
 	var txtInput = $(".input-group .chat-input");
+	//txtInput.get(0).style.height = "auto";
+	txtInput.css("height","auto");
+	var msg = txtInput.val();
+	if (msg.length == 0) return;
 	var e = {
 		"type": "chat",
 		"name": $(".user-info-panel").data("name"),
-		"data": txtInput.val()
+		"data": msg
 	};
 	txtInput.val("");
 
-	addMessage(e);
+	addMessage(e, true);
 	e = JSON.stringify(e);
 	//console.log("Sending message: " + e);
 	dataChannel.send(e);
+}
+
+// Record and send the content of the text input
+$(".input-group .chat-send").click(function(){
+	rtcSendMessage();
+	$(".input-group .chat-input").focus();
 });
 
 // Send coordinates of the user's cursor if within the remote canvas element
