@@ -1,9 +1,15 @@
 .screen-local-canvas,
-.screen-foreign-canvas{
-	width: 100%;
+.screen-remote-canvas{
+	width: 100%!important;
 }
 
 /* Common Style */
+
+.vcenter{
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
 
 body {
 	font-family: 'Lato', sans-serif;
@@ -20,6 +26,111 @@ body {
 	-o-transition: color 1s ease;
 	transition: color 1s ease;
 
+}
+
+::-webkit-scrollbar {
+    width: 9px;
+}
+
+/* Scrollbar Handle */
+::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.2);
+    /*-webkit-box-shadow: inset 0 0 1px rgba(0,0,0,1); border:0px;*/
+}
+::-webkit-scrollbar-thumb:window-inactive {
+	background: rgba(0,0,0,0.0);
+}
+
+/* Ninja/Mentor session stuff */
+
+.detached-elements > div{
+	position: fixed;
+}
+
+.detached-elements .button-menu{
+	bottom: 0px;
+	width: 100%;
+	z-index:9999;
+}
+
+.detached-elements .chat-list-wrap{
+	padding: 0;
+    border: 0;
+}
+
+.chat-list-wrap .chat-list{
+	max-height: 300px;
+    overflow-y: scroll;
+}
+
+.chat-list-wrap .chat-item-remote{
+	background-color: #eee;
+    text-align: right;
+}
+
+.button-menu-buttons,
+.chat-list-wrap .input-group{
+    float: right;
+	padding: 0px;
+}
+
+.chat-list-wrap .input-group > input{
+	width: 100%;
+}
+
+.button-menu-buttons .chat-open{
+	position: relative;
+}
+
+.button-menu-buttons .badge{
+    font-size: 9px;
+    position: absolute;
+    z-index: 10000;
+    top: 3px;
+    right: 2px;
+    padding: 2px 4px;
+    color: #fff;
+    background-color: #d51b16;
+}
+
+.button-menu-buttons .expiry-count-down{
+    font-family: monospace;
+}
+
+.detached-elements .loading-overlay{
+	width: 100%;
+    height: 100%;
+	background-color: rgba(0,0,0,0.9);
+	z-index:99999;
+	color: white;
+}
+
+.detached-elements .alert-wrapper{
+	z-index:999999;
+}
+
+/* Fancy Loading (by mrfrase3 :P) */
+
+.fancy-loading{
+  text-align: center;
+}
+
+.fancy-loading .loading-block{
+  width: 35px;
+  display: inline-block;
+  font-size: 0px;
+}
+
+.fancy-loading  .loading-block-half{
+  background-color: orange;
+  width:10px;
+}
+
+.fancy-loading .loading-block > div{
+  height: 20px;
+  display: inline-block;
 }
 
 /* Homepage style */
@@ -213,4 +324,39 @@ p.title {
 
 #starttutorial {
 	margin-left: 10px;
+
+/* Ninja and Mentor Page Colors adjusting */
+
+.alert-danger, .btn-danger {
+	background-color: #DB4D6D;
+	border-color: #DB4D6D;
+}
+
+.btn-warning {
+	background-color: #FC9F4D;
+	border-color: #FC9F4D;
+}
+
+.btn-success {
+	background-color: #00AA90;
+	border-color: #00AA90;
+}
+
+.btn-success:hover {
+	background-color: #66BAB7;
+	border-color: #66BAB7;
+}
+
+.btn-default, .label-default {
+	background-color: #333;
+	border-color: #333;
+}
+
+.panel-heading {
+	background-color: #2EA9DF !important;
+}
+
+.panel-primary {
+	border-color: #2EA9DF !important;
+>>>>>>> master
 }

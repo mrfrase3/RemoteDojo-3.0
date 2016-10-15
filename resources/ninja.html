@@ -1,10 +1,11 @@
 {{head}}
 <body style="height: 100%;">
 
-    <div class="container" style="margin-top:50px;">
+	<div class="heading-spacer" style="height:42px;width:100%"></div>
+    <div class="container">
         <div class="row">
             <div class="col-md-3 controls">
-                <div class="user-info-panel panel panel-primary" data-type="ninja">
+                <div class="user-info-panel panel panel-primary" data-type="ninja" {{user.expire}} {{user.demomode}}>
                     <div class="panel-heading">
                         <h3 class="panel-title">CoderDojo</h3>
                     </div>
@@ -38,6 +39,9 @@
                 	<div class="panel-body chat-body-start hidden">
                     	<div class="col-xs-4" style="font-size: 3em;"><i class="fa fa-comments fa-3"></i></div>
                     	<div class="col-xs-8">Finding a mentor, hold on a moment!<br><br></div>
+                    	<div class="col-xs-12 progress" style="margin: 0; height: 3px; padding: 0;">
+							<div class="progress-bar progress-bar-warning" style="width:0%"></div>
+						</div>
                     	<div class="col-xs-12 btn btn-default chat-btn-cancel">Leave Chat</div>
                     </div>
                 	<div class="panel-body chat-body-stop hidden">
