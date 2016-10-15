@@ -322,7 +322,7 @@ p.title {
 
 /* Tutorial alert style */
 
-#starttutorial {
+.starttutorial {
 	margin-left: 10px;
 
 /* Ninja and Mentor Page Colors adjusting */
@@ -358,5 +358,4 @@ p.title {
 
 .panel-primary {
 	border-color: #2EA9DF !important;
->>>>>>> master
 }

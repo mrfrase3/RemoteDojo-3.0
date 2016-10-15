@@ -4,12 +4,12 @@ var request_template = Handlebars.compile(request_source);
 
 var doTutorial = false;
 var inCall = false;
-var callBtnId;
 
 joinDelay = 1000; //delay for joining the RTC room
 
 var addPreCallTutorialPopups = function() {
 	$('[data-toggle="popover"]').popover();
+	$(".starttutorial").popover('hide');
 
 	var alertdiv = "<div class=\"alert alert-info alert-dismissible\" role=\"alert\"> \
 			<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button> \
@@ -72,13 +72,15 @@ var addCallTutorialPopups = function() {
 }
 
 var offerTutorial = function() {
-	var alertdiv = "<div id=\"intro\" class=\"alert alert-info alert-dismissible\" role=\"alert\"> \
-			<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button> \
-			<strong>Hello!</strong> Would you like a quick tutorial on how to use RemoteDojo? \
-			<button type=\"button\" id=\"starttutorial\" class=\"btn btn-default btn-xs\"><span >Yes please</span></button> \
-	</div>";
-	$(".container").before(alertdiv);
-	$("#starttutorial").click(addPreCallTutorialPopups);
+	$(".starttutorial").popover({"title" : "Start Tutorial",
+																						"content" : "Click here to start the tutorial!",
+																						"trigger" : "hover",
+																						"container" : "body"});
+	$(".starttutorial").click(addPreCallTutorialPopups);
+	$	(".starttutorial").popover('show');
+	setTimeout(function() {
+		$(".starttutorial").popover('hide');
+	}, 3000);
 }
 
 
