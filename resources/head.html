@@ -33,17 +33,20 @@
 
 <div class="detached-elements">
 	<div class="button-menu">
-    	<div class="chat-list-wrap panel col-md-offset-10 col-md-2 hidden">
+        <!-- TODO changing grid for demonstration
+        <div class="chat-list-wrap panel col-md-offset-10 col-md-2 hidden">
+        -->
+        <div class="chat-list-wrap panel col-md-offset-2 col-md-8 hidden">
     		<ul class="list-group chat-list panel-body"></ul>
         	<div class="input-group panel-body">
-				<input type="text" class="input-sm chat-input">
+                <textarea class="form-control resizeBox chat-input" placeholder="Type a message" rows="1"></textarea>
 				<span class="input-group-btn">
 					<button class="btn btn-default btn-sm chat-send" type="button">Send</button>
 				</span>
 			</div>
     	</div>
     	<br>
-    	<div class="button-menu-buttons">
+    	<div class="button-menu-buttons col-md-offset-1">
     		<div class="btn btn-warning hidden expiry-wrap">Time Left: <span class="expiry-count-down">xx:xx</span></div>
     		<div class="btn btn-info hidden chat-open" data-toggle="tooltip" data-placement="top" title="" data-original-title="Open Chat">
             	<i class="fa fa-terminal"></i>

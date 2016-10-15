@@ -30,17 +30,26 @@ $(function(){
     elem.remote.c.height = ch;
 
     elem.local.v.addEventListener('play', function(){
-        draw(this,elem.local.context,cw,ch);
-
+        draw(this,elem.local.context,cw,ch,true);
     },false);
 	elem.remote.v.addEventListener('play', function(){
-        draw(this,elem.remote.context,cw,ch);
+        draw(this,elem.remote.context,cw,ch,false);
     },false);
 
-	function draw(v,c,w,h) {
-	    if(v.paused || v.ended) return false;
-	    c.drawImage(v,0,0,w,h);
-	    setTimeout(draw,20,v,c,w,h);
+  var cursorImg = new Image();
+  cursorImg.src = "common/images/cursor.png";
+	var cursorShowing = true; // TODO tie to button or checkbox, set to false if sharing webcam
+  function draw(v,c,w,h,l) {
+	    if(v.paused || v.ended) {
+        c.clearRect(0, 0, cw, ch);
+        return false;
+      }
+      c.drawImage(v,0,0,w,h);
+      // Draw the remote cursor on the local canvas
+      if (cursorShowing && l && rtcCursorRX && rtcCursorRY) {
+        c.drawImage(cursorImg, rtcCursorRX * cw, rtcCursorRY * ch);
+      }
+	    setTimeout(draw,20,v,c,w,h,l);
 	}
 
 	/*function audiovis(v, b){
@@ -162,6 +171,7 @@ audio_vis(elem.local.a, '.levels-local .progress-bar');
     }
 	$(".button-menu-buttons .chat-open").click(function(){
     	$(".button-menu .chat-list-wrap").toggle();
+      $(".input-group .chat-input").focus();
     });
 
 	fancyLoading();
@@ -198,8 +208,63 @@ var genalert = function(type, havediss, msg, timeout){
 	return "<div id='"+eid+"' class='alert alert-"+type+" "+diss+">"+msg+"</div>";
 }
 
+// Resize text box to match content
+function resizeTextBox(o){
+  if (o.scrollHeight > 50) {
+    o.style.height = "1px";
+    o.style.height = (12 + o.scrollHeight) + "px";
+    $(o).scrollTop(o.scrollHeight);
+  }
+}
 
+$(".resizeBox").keyup(function() {
+  resizeTextBox(this);
+});
 
+// TODO Rework this function
+var videosOutOfPosition = false;
 
+var switchVideoPositions = function(){
+  videosOutOfPosition = !videosOutOfPosition;
+  var lc = $(".screen-local-canvas");
+  var rc = $(".screen-remote-canvas");
+  var lcp = lc.parent();
+  console.log(lc);
+  console.log(rc);
+  console.log(lcp);
+  rc.before(lc);
+  lcp.prepend(rc);
+};
 
+// TODO tmp function used for demonstration. Need to switch 'nina's screen' title with 'your screenshare' etc.
+$(".chat-body-stop .switch-canvas").click(switchVideoPositions);
 
+// Keybinings
+$(document).keydown(function(e) {
+  var chatInput = $(".input-group .chat-input");
+  if (e.which == 13) {  // if enter
+    if (e.shiftKey || e.ctrlKey || !chats) return true; // continue if not in chat or additional keys held.
+    if (chatInput.is(':focus')) {
+      if (chatInput.val().length != 0) {
+        // if the chat has focus and isn't empty, send the message
+        rtcSendMessage();
+        return false; // return false prevents default actions
+      } else {
+        // if the chat is empty, enter hides the chat
+        $(".button-menu .chat-list-wrap").toggle(false);
+        return false;
+      }
+    } else if (!($('input').is(':focus')  || $('button').is(':focus'))) {
+      // if no inputs have focus, show the chat
+      $(".button-menu .chat-list-wrap").toggle(true);
+      chatInput.focus();
+      return false;
+    }
+  } else if (e.which == 27) { // if esc
+    // hide the chat if chat has focus, and blurs the active element
+    if (chatInput.is(':focus')) {
+      $(".button-menu .chat-list-wrap").toggle(false);
+    }
+    document.activeElement.blur();
+  }
+});

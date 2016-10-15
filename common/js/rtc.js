@@ -1,4 +1,5 @@
 var peerconn;
+var dataChannel;
 var rtcStreams = {local: {a:null,v:null}, remote:{a:null,v:null}};
 var isofferer = false;
 var iceservers = [{
@@ -13,6 +14,12 @@ var offerOptions = {
 	offerToReceiveVideo: 1,
 	voiceActivityDetection: false
 };
+
+var rtcCursorRX;
+var rtcCursorRY;
+var lastCursorUpdate;
+var lastCursorInCanvas;
+var cursorUpdateInterval = 33; // TODO find suitable update rate.
 
 var iceCallback = function(event) {
 	if (event.candidate) {
@@ -99,11 +106,71 @@ var negotiateRTC = function(){
 	});
 };
 
+var addMessage = function(msg, l) {
+	var item = document.createElement("li");
+	$(item).text(msg.name + ": " + msg.data);
+	if (l) {
+		$(item).css({
+			"background-color": "beige",
+			"margin": "1px"
+		}); // TODO add class rather than add individual stylings here
+	}
+	else {
+		$(item).css({
+			"background-color": "lightcyan",
+			"margin": "1px"
+		});	
+    	$(".button-menu .chat-list-wrap").toggle(true);
+	} 
+	var chatList = $(".chat-list-wrap .chat-list");
+	chatList.append(item);
+	chatList.scrollTop(chatList.get(0).scrollHeight); // scroll to the latest message
+};
+
+var updateCoords = function(msg) {
+	rtcCursorRX = msg.rx;
+	rtcCursorRY = msg.ry;
+
+	// If using electron move remoteCursor
+	if (remoteCursor) {
+		if (cursorShowing) { // declared in main.js
+			remoteCursor.show();
+			remoteCursor.setpos(rtcCursorRX*100, rtcCursorRY*100);
+		} else {
+			remoteCursor.hide();
+		}
+	}
+};
+
+var onRemoteMessage = function(e) {
+	//console.log("Received message: " + e.data);
+	var msg = JSON.parse(e.data);
+	if (msg.type == "chat")	addMessage(msg, false);
+	else if (msg.type == "cursorCoords") updateCoords(msg);
+};
+
+var setDataChannelListeners = function() {
+	dataChannel.onmessage = onRemoteMessage;
+	dataChannel.onopen = function(){
+		console.log("Data channel open");
+	};
+	dataChannel.onclose = function(){
+		console.log("Data channel closed");
+		dataChannel = null; // TODO This may be unnecessary.
+	};
+}
+
+var onRemoteDataChannel = function(e) {
+	dataChannel = e.channel;
+	setDataChannelListeners();
+};
+
+
 socket.on("rtc.offer", function(desc){
 	//desc.sdp = forceChosenAudioCodec(desc.sdp);
-	peerconn.setRemoteDescription(desc).then( function() {
+	peerconn.setRemoteDescription(desc).then(function() {
 		peerconn.createAnswer().then(function(desc2){
-			peerconn.setLocalDescription(desc2).then( function() {
+			peerconn.setLocalDescription(desc2).then(function() {
 				//desc2.sdp = forceChosenAudioCodec(desc2.sdp);
 				socket.emit("rtc.answer", desc2);
 			}, function(e){
@@ -124,7 +191,7 @@ socket.on("rtc.offer", function(desc){
 });
 
 socket.on("rtc.answer", function(desc2){
-	peerconn.setRemoteDescription(desc2).then( function() {
+	peerconn.setRemoteDescription(desc2).then(function() {
 		socket.emit("rtc.connected");
 	}, function(e){
         console.error(e);
@@ -211,6 +278,8 @@ var stopRTC = function(){
 	stopStream(rtcStreams.local.v, $(".dump video.dump-local").get(0));
 	stopStream(rtcStreams.remote.a, $(".dump audio.dump-remote").get(0));
 	stopStream(rtcStreams.remote.v, $(".dump video.dump-remote").get(0));
+	if(dataChannel) dataChannel.close();
+	dataChannel = null;
 	rtcStreams = {local: {a:null,v:null}, remote:{a:null,v:null}};
 	live = false;
 	negotiating = null;
@@ -240,5 +309,76 @@ var startRTC = function(offer){
         else socket.emit("rtc.negotiate");
 	};
     isofferer = offer;
-    if(isofferer) negotiateRTC();
+    if(isofferer) {
+    	negotiateRTC();
+		var dataConstraints = {
+			ordered: false, // TODO consider two channels for TCP/UDP
+			maxRetransmitTime: 1000 // milliseconds TODO find a suitable limit, if any at all is required.
+		};
+		dataChannel = peerconn.createDataChannel('dataChannel', dataConstraints);
+		setDataChannelListeners();
+    } else {
+		peerconn.ondatachannel = onRemoteDataChannel;
+    }
 }
+
+var rtcSendMessage = function(){
+	var txtInput = $(".input-group .chat-input");
+	//txtInput.get(0).style.height = "auto";
+	txtInput.css("height","auto");
+	var msg = txtInput.val();
+	if (msg.length == 0) return;
+	var e = {
+		"type": "chat",
+		"name": $(".user-info-panel").data("name"),
+		"data": msg
+	};
+	txtInput.val("");
+
+	addMessage(e, true);
+	e = JSON.stringify(e);
+	//console.log("Sending message: " + e);
+	dataChannel.send(e);
+}
+
+// Record and send the content of the text input
+$(".input-group .chat-send").click(function(){
+	rtcSendMessage();
+	$(".input-group .chat-input").focus();
+});
+
+// Send coordinates of the user's cursor if within the remote canvas element
+$(document).mousemove(function(event) {
+	if (!dataChannel || !rtcStreams.remote.v) return;
+	// Send coord update if enough time has passed
+	var currTime = Date.now();
+	if (lastCursorUpdate &&  currTime - lastCursorUpdate < cursorUpdateInterval) return;
+	lastCursorUpdate = currTime;
+	// Find ratio of cursor position along canvas
+	var c = $('.screen-remote-canvas');
+	var pos = c.offset();
+	var rx = (event.pageX - pos.left) / c.width();
+	var ry = (event.pageY - pos.top) / c.height();
+	// Send null coordinates once the cursor leaves the canvas
+	if (rx < 0 || rx > 1 || ry < 0 || ry > 1) {
+		if (lastCursorInCanvas) {
+			lastCursorInCanvas = false;
+			rx = null;
+			ry = null;
+		} else {
+			return;
+		}
+	} else {
+		lastCursorInCanvas = true;
+	}
+	// Create message
+	var e = {
+		"type": "cursorCoords",
+		"rx": rx,
+		"ry": ry
+	};
+	e = JSON.stringify(e);
+	//console.log("sending message: " + e);
+	dataChannel.send(e);
+});
+

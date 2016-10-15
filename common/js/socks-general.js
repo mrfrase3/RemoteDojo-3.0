@@ -48,7 +48,15 @@ var stopChat = function(){
 	$(".button-menu-buttons .chat-open").hide();
 	$('.presentations-panel').show();
 	$('.chat-body-stop').hide();
-	$('.chat-body-request').show();
+	// TODO Show for ninja
+	var isNinja = $(".user-info-panel").data("type") == "ninja";
+	if (isNinja) {
+		$('.chat-body-request').show();
+	} else {
+		$(".chat-btn-start").removeClass("disabled");
+	}
+	$(".chat-list-wrap .chat-list").empty(); // TODO Only the mentor forgets the chat, ninja sends on connection to a mentor.
+	if(videosOutOfPosition) switchVideoPositions();
 }
 
 // Socket Processing
@@ -87,14 +95,14 @@ socket.on('general.startChat',function(data){ //start a chat session when the se
 	if (chats) return;
 	chats = data;
 	console.log(data.ninja +" ");
-	startRTC($(".user-info-panel").data("type") == "ninja");
+	var isNinja = $(".user-info-panel").data("type") == "ninja";
+	startRTC(isNinja);
 	//setTimeout(Mediaconn.openOrJoin,joinDelay,data.ninja, onJoin); // the ninja and mentor cannot connect at the same time, so one is delayed (look in their socks files)
 	$('.chat-body-start').data("calling", false);
 	$(".button-menu-buttons .chat-open").show();
 	$('.screen-remote-box').show();
 	$('.presentations-panel').hide();
 	$('.chat-body-stop').show();
-
 	// will only work on mentor's screen while in tutorial mode. otherwiwse, will do nothing.
 	$(".webcam-controls").popover("show");
 	// will only work on ninja's screen while in tutorial mode. otherwiwse, will do nothing.
@@ -109,8 +117,8 @@ socket.on('general.startChat',function(data){ //start a chat session when the se
 			}, 3000);
 	}, 4000);
 
-
-	$('.chat-body-start').hide();
+	if (isNinja) $('.chat-body-start').hide();
+	else $(".chat-btn-start").addClass("disabled");
 });
 
 socket.on('general.stopChat',stopChat); //stop a current chat if the server says to

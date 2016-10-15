@@ -86,10 +86,12 @@ var offerTutorial = function() {
 
 socket.on('mentor.requestMentor', function(data){ // when a ninja has requested for a mentor
 	console.log('recieved mentor request. ' + JSON.stringify(data));
+	/* TODO queue now visible during chat
 	if (!chats){ // dont show or hide anything if in the middle of a chat session already
-		$('.chat-body-request').hide();
-		$('.chat-body-start').show();
     }
+    */
+	$('.chat-body-request').hide();
+	$('.chat-body-start').show();
 	data.cleanstok = JSON.stringify(data.sessiontoken).replace(/\W/g, ''); //make sure the username is classname friendly
 	$('.req-list').append(request_template(data));
 	if(doTutorial) {
@@ -101,13 +103,15 @@ socket.on('mentor.requestMentor', function(data){ // when a ninja has requested 
 		$('#req-btn-'+data.cleanstok).popover('show');
 	}
 	$('#req-btn-'+data.cleanstok).click(function(){ //add click event to the 'Answer' button
-    	socket.emit('mentor.acceptRequest', data.sessiontoken);
+    	if (!chats) socket.emit('mentor.acceptRequest', data.sessiontoken);
 			inCall = true;
 			if(doTutorial == true) {
 				$('#req-btn-'+data.cleanstok).popover("hide");
 				addCallTutorialPopups();
 			}
     });
+    var answerbtn = $('#req-btn-'+data.cleanstok);
+    if (chats) answerbtn.addClass("disabled");
 	$('#req-ignore-btn-'+data.cleanstok).click(function(){ //add click event to the 'Answer' button
     	$('#req-'+data.cleanstok).remove();
     	request_checkEmpty();
@@ -117,10 +121,12 @@ socket.on('mentor.requestMentor', function(data){ // when a ninja has requested 
 // Helper function, that really shouldn't exist
 var request_checkEmpty = function(){
 	if($('.req-list-item').length < 1){ //make sure there are no other requests active
-    	if (!chats){
-    		$('.chat-body-request').show();
-			$('.chat-body-start').hide();
-        }
+    	/* TODO queue now visible during chat
+		if (!chats){ // dont show or hide anything if in the middle of a chat session already
+	    }
+	    */
+    	$('.chat-body-request').show();
+		$('.chat-body-start').hide();
     }
 }
 
