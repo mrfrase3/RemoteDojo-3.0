@@ -6,7 +6,7 @@ var config = require("../config.json");
 var maxAccessesPerDay = config.maxAccessesPerDay;
 expect(app.testing.vars.ipaddresses).to.exist;
 describe("Test to ensure IP's are logged and limited.", function() {
-	describe("Can log one IP - ", function() {
+	describe("Can log one IP", function() {
 		var singleIP = "1.1.1.1";
 		it("Create one IP and ensure it has been stored to relavant array", function(done) {
 			expect(app.testing.vars.ipaddresses.length).to.equal(0);
@@ -30,27 +30,27 @@ describe("Test to ensure IP's are logged and limited.", function() {
 			done();
 		});
 	});
-	describe("Can log multiple IPs - ",function() {
+	describe("Can log multiple IPs",function() {
 		var multipleIPs = ["1.1.1.1","1.1.1.2","2.1.1.1","100.11.0.51"];
 		var accessAmounts = [10000,maxAccessesPerDay-1,maxAccessesPerDay+1,1]; //should be "absurdly high", config+1, config-1, 1
 		while (app.testing.vars.ipaddresses.length!=0) {}//put test on hold while waiting for first array to empty out
 		expect(app.testing.vars.ipaddresses.length).to.equal(0);
 		it("Creates multiple IPs and ensure that it has been stored to the relevant array", function(done) {
-			for(var currentIP in multipleIPs){
-				app.testing.functions.ipverification(currentIP,maxAccessesPerDay);
+			for(var i = 0; i < multipleIPs.length;i++){
+				app.testing.functions.ipverification(multipleIPs[i],maxAccessesPerDay);
+			}
+			for(var j = 0; j < multipleIPs.length;j++){
+				expect(app.testing.vars.ipaddresses[j].address).to.equal(multipleIPs[j]);
 			}
 			expect(app.testing.vars.ipaddresses.length).to.equal(multipleIPs.length);
-			for(var i = 0; i < multipleIPs.length;i++){
-				expect(app.testing.vars.ipaddresses[i].address).to.equal(multipleIPs[i]);
-			}
 			done();
 		});
-		it("Simulate multiple accesses over multiple IP address, with different values - Should pass without throwing any errors", function(done) {
+		it("Simulate multiple accesses from multile IP addresses and check it is allowed upto the max allocated by config file", function(done) {
 			for(var i = 0; i < multipleIPs.length;i++){
 				var currentIP = multipleIPs[i];
 				var currentAccesses = accessAmounts[i];
 				for(var j = 0;j<currentAccesses;j++) {
-					if(i <= maxAccessesPerDay){
+					if(j <= maxAccessesPerDay){
 						expect(app.testing.functions.ipverification(currentIP,maxAccessesPerDay)).to.equal.true;
 					}
 					else{
