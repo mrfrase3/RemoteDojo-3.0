@@ -1,62 +1,64 @@
 /*global describe, it*/
 
 var expect = require("chai").expect;
-//var app = require("../app.js");
+var app = require("../app.js");
+var config = require("../config.json");
+var maxAccessesPerDay = config.maxAccessesPerDay;
+expect(app.testing.vars.ipaddresses).to.exist;
 describe("Test to ensure IP's are logged and limited.", function() {
 	describe("Can log one IP - ", function() {
+		var singleIP = "1.1.1.1";
 		it("Create one IP and ensure it has been stored to relavant array", function(done) {
-			var singleIP = "1.1.1.1";
-			//app.ipverification(singleIP);
-			//expect(app.ipaddress).to.contaian(singleIP);
+			expect(app.testing.vars.ipaddresses.length).to.equal(0);
+			expect(app.testing.functions.ipverification(singleIP,maxAccessesPerDay)).to.equal.true;
+			expect(app.testing.vars.ipaddresses.length).to.equal(1);
+			expect(app.testing.vars.ipaddresses[0].address).to.equal(singleIP);
 			done();
 		});
-		it("Simulate multiple accesses from one IP address - Should pass without throwing any errors", function(done) {
-		//	for(i = 0,i<5,i++) { //change 5 to show whatever config file is
-		//		app.ipverification(singleIP);
-		//	}
-		//	expect(app.ipaddress[0].count).to.equal(5);
-
-			done();
-		});
-		it("Revoke access after * accesses - Should pass by catching any permission denied like errors", function(done) {
-			//insert function to deny access to an ip with count exceeding array count
+		it("Simulate multiple accesses from one IP address and check it is allowed upto the max allocated by config file", function(done) {
+			for(var i = 0;i<maxAccessesPerDay*2;i++) {
+				if(i <= maxAccessesPerDay){
+					expect(app.testing.functions.ipverification(singleIP,maxAccessesPerDay)).to.equal.true;
+				}
+				else{
+					expect(app.testing.functions.ipverification(singleIP,maxAccessesPerDay)).to.not.equal.true;
+				}
+			}
+			while (app.testing.vars.ipaddresses.length!=0) { //empty out ipaddresses variable for later testing
+				app.testing.vars.ipaddresses.pop();
+			}
 			done();
 		});
 	});
 	describe("Can log multiple IPs - ",function() {
 		var multipleIPs = ["1.1.1.1","1.1.1.2","2.1.1.1","100.11.0.51"];
-		var accessAmounts = [10000,6,4,0]; //should be "absurdly high", config+1, config-1, 1
-		while (app.ipaddresses.size()!=0) {}//put test on hold while waiting for first array to empty out
+		var accessAmounts = [10000,maxAccessesPerDay-1,maxAccessesPerDay+1,1]; //should be "absurdly high", config+1, config-1, 1
+		while (app.testing.vars.ipaddresses.length!=0) {}//put test on hold while waiting for first array to empty out
+		expect(app.testing.vars.ipaddresses.length).to.equal(0);
 		it("Creates multiple IPs and ensure that it has been stored to the relevant array", function(done) {
-			for(currentIP in multipleIPs){
-				/*
-				//	app.ipverification(currentIP);
-				*/
+			for(var currentIP in multipleIPs){
+				app.testing.functions.ipverification(currentIP,maxAccessesPerDay);
 			}
-			for(currentIP in multipleIPs){
-				/*
-				//expect(app.ipaddress).to.contaian(currentIP);
-				*/
+			expect(app.testing.vars.ipaddresses.length).to.equal(multipleIPs.length);
+			for(var i = 0; i < multipleIPs.length;i++){
+				expect(app.testing.vars.ipaddresses[i].address).to.equal(multipleIPs[i]);
 			}
 			done();
 		});
 		it("Simulate multiple accesses over multiple IP address, with different values - Should pass without throwing any errors", function(done) {
-			for(var i = 0; i < multipleIPs.length();i++){
-				currentIP = multipleIPs[i];
-				currentAccesses = accessAmounts[i];
-				while(app.ipaddress[i].count > currentAccesses){
-					/*
-					//	app.ipverification(currentIP);
-					*/
+			for(var i = 0; i < multipleIPs.length;i++){
+				var currentIP = multipleIPs[i];
+				var currentAccesses = accessAmounts[i];
+				for(var j = 0;j<currentAccesses;j++) {
+					if(i <= maxAccessesPerDay){
+						expect(app.testing.functions.ipverification(currentIP,maxAccessesPerDay)).to.equal.true;
+					}
+					else{
+						expect(app.testing.functions.ipverification(currentIP,maxAccessesPerDay)).to.not.equal.true;
+					}
 				}
 
 			}
-			for(var i = 0; i < multipleIPs.length();i++){
-				//expect(app.ipaddress[i].count).to.equal(accessAmounts[i]);
-			}
-			done();
-		});
-		it("Revoke IPs with values over the defined threshold - Should pass by catching any permission denied like errors", function(done) {
 			done();
 		});
 	});

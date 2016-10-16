@@ -19,7 +19,7 @@ var config = require("./config.json");
 var storage = require("./lib/Storage.js");
 var users = new storage(__dirname+"/users.json");
 var dojos = new storage(__dirname+"/dojos.json");
-var ipaddresses = [ipaddress, count, firstdate];
+var ipaddresses = [];
 
 
 //load in the renderer, handlebars, and then load in the html templates
@@ -39,42 +39,38 @@ if(config.runInDemoMode){
 			}
 		}
     	return null;
-    }
+	};
 }
 
 // user permission structure:
 // 0: ninja, 1: mentor, 2: champion, 3: admin
 //
 
-function getIP() {
-	<script type="text/javascript" src="http://www.telize.com/jsonip?callback=DisplayIP?var=ipaddress"></script>;
-	return ipaddress;
-}
-
 //This will check the ip address of the clients. If they are not able to connect
 //it will return false and if they are able to connect it will return true
-//if they are not able to connect then it will return false.
 //Verify the return value and then establish the connection
-var ipverification(ipaddress) = function() {
+var ipverification = function(ipaddress, maxtoday) {
 	var today = new Date();
 	var dd = today.getDate();
-	if(ipaddresses.indexOf(ipaddress) == -1){
-		ipaddresses.push(ipaddress);
-		var index = ipaddresses.indexOf(ipaddress);
-		ipaddresses[index].count = 1;
-		ipaddresses[index].firstdate = dd;
+	var testip = {
+		address: ipaddress,
+		count: 0,
+		date: dd
+	};
+	if(ipaddresses.indexOf(testip.address) == -1){
+		ipaddresses.push(testip);
 		return true;
-	}else if(ipaddresses.indexOf(ipaddress) != -1){
-		var index = ipaddresses.indexOf(ipaddress);
-		if(ipaddresses[index].count >= 5) return false;
-		if(ipaddresses[index].firstdate != dd){
+	}else if(ipaddresses.indexOf(testip.address) != -1){
+		var index = ipaddresses.indexOf(testip.address);
+		if(ipaddresses[index].count >= maxtoday) return false;
+		if(ipaddresses[index].date != dd){
 			ipaddresses[index].count = 0;
-			ipaddresses[index].firstdate = dd;
+			ipaddresses[index].date = dd;
 		}
 		ipaddresses[index].count = ipaddresses[index].count + 1;
 		return true;
 	}
-}
+};
 
 // token generator, pretty random, but can be replaced if someone has something stronger
 var token = function() {
@@ -91,10 +87,10 @@ function tempUser(dojo, perm, expire){
 	setTimeout(removeUser, expire, tok);
 
 	if(config.runInDemoMode){
-    	var atok = token();
-    	while(demoUserAuth(atok) != null) atok = token();
-    	users[tok].authtok = atok;
-    }
+		var atok = token();
+		while(demoUserAuth(atok) != null) atok = token();
+		users[tok].authtok = atok;
+	}
 	return tok;
 }
 
@@ -136,17 +132,17 @@ app.use("/common", express.static( __dirname + "/common" ));
 // More info on socket auth: https://auth0.com/blog/auth-with-socket-io/
 app.use("/sockauth", function(req, res){
 	if(req.session.loggedin || ( config.runInDemoMode && req.query.u) ){
-    	var user;
-    	if(config.runInDemoMode) user = demoUserAuth(req.query.u);
-    	else user = req.session.user;
-    	if(user){
+		var user;
+		if(config.runInDemoMode) user = demoUserAuth(req.query.u);
+		else user = req.session.user;
+		if(user){
 			var tok = token();
 			if(!users[user].token) users[user].token = [];
 			users[user].token.push(tok);
 			res.json({usr: user, token: tok});
 			users.save();
 			return;
-        }
+		}
 	}
 	res.json({err: "Not Logged in"});
 });
@@ -194,7 +190,7 @@ app.use("/", function(req, res){
         	for(var i = 0; i < dojos._indexes.length; i++){
             	var d = dojos._indexes[i];
             	fill.dojos.push({dojoname: d, name: dojos[d].name});
-            }
+	}
 			res.send(templates[f](fill, {noEscape: true}));
 		}
 	};
@@ -250,21 +246,23 @@ app.use("/", function(req, res){
 		return renderfile("login");
 	} else if(config.runInDemoMode){
 		if(req.query.u){
-        	uid = demoUserAuth(req.query.u);
-        } else if(req.method == "POST"){
-        	if(ipverification(getIP) == true){ //check ip here to see if max
-            	dojo = tempDojo(config.demoDuration);
-            	fill.mentor = "/?u=" + users[tempUser(dojo, 1, config.demoDuration)].authtok;
-            	fill.ninja = "/?u=" + users[tempUser(dojo, 0, config.demoDuration)].authtok;
-            	return renderfile("demo");
-            }
-        }
-    	if(!uid) return renderfile("index");
+			uid = demoUserAuth(req.query.u);
+		} else if(req.method == "POST"){
+			var ip = req.ip;
+			if(req.ips.length) ip = req.ips[0]; //detects through proxies
+			if(ipverification(ip,config.maxAccessesPerDay)){ //check ip here to see if max CHECK123
+				dojo = tempDojo(config.demoDuration);
+				fill.mentor = "/?u=" + users[tempUser(dojo, 1, config.demoDuration)].authtok;
+				fill.ninja = "/?u=" + users[tempUser(dojo, 0, config.demoDuration)].authtok;
+				return renderfile("demo");
+			}
+		}
+		if(!uid) return renderfile("index");
 	}
 	// Login end
 	// From here it is assumed the user is authenticated and logged in (either as a user or temp user)
 	if(!uid) uid = req.session.user;
-    var user = users[uid];
+	var user = users[uid];
 	fill.user = {username: user.username, fullname: user.fullname}; //give some user info to the renderer, as well as common js files
 	fill.js += "<script src=\"https://webrtc.github.io/adapter/adapter-latest.js\"></script>"+
 		"<script src=\"https://cdn.webrtc-experiment.com/getScreenId.js\"></script>"+
@@ -480,12 +478,12 @@ var removeUser = function(uid){
 		}
 	}
 	users.remove(uid);
-}
+};
 
 var removeDojo = function(uid){
 	if(!dojos[uid]) return;
 	dojos.remove(uid);
-}
+};
 
 //check that expires expired users
 var checkExpired = function(){
@@ -494,20 +492,20 @@ var checkExpired = function(){
 		i = users._indexes[j];
 		if(users[i].expire > 0){
 			if(users[i].expire <= t){
-            	removeUser(i);
-            } else {
-            	setTimeout(removeUser, users[i].expire - t, i);
-            }
+				removeUser(i);
+			} else {
+				setTimeout(removeUser, users[i].expire - t, i);
+			}
 		}
 	}
 	for(var j=0; j < dojos._indexes.length; j++){
 		i = dojos._indexes[j];
 		if(dojos[i].expire > 0){
         	if(dojos[i].expire <= t){
-				removeDojo(i);
-            } else {
+		removeDojo(i);
+	} else {
             	setTimeout(removeDojo, users[i].expire - t, i);
-            }
+	}
 		}
 	}
 };
@@ -517,6 +515,6 @@ server.listen(config.mainServerPort); // start main server
 console.log("Server Started");
 
 //exports for testing
-exports.testing = {};
-exports.testing.functions = {ipverification: ipverification};
+exports.testing = {app: app};
+exports.testing.functions = {tempUser: tempUser, ipverification: ipverification};
 exports.testing.vars = {ipaddresses: ipaddresses};
