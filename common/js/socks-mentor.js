@@ -73,6 +73,7 @@ var addCallTutorialPopups = function() {
 
 var offerTutorial = function() {
 	$(".starttutorial").popover({"title" : "Start Tutorial",
+																						"placement" : "top",
 																						"content" : "Click here to start the tutorial!",
 																						"trigger" : "hover",
 																						"container" : "body"});
@@ -92,14 +93,6 @@ socket.on('mentor.requestMentor', function(data){ // when a ninja has requested 
     }
 	data.cleanstok = JSON.stringify(data.sessiontoken).replace(/\W/g, ''); //make sure the username is classname friendly
 	$('.req-list').append(request_template(data));
-	if(doTutorial) {
-		// We have to add the popover to the answer button after the mentor recieves a request from a ninja (so that it is visible), but before the answer button is clicked.
-		$('#req-btn-'+data.cleanstok).popover({"title" : "Start a Conversation",
-																						"content" : "A ninja needs your help! Click here to start a conversation with them.",
-																						"trigger" : "hover",
-																						"container" : "body"});
-		$('#req-btn-'+data.cleanstok).popover('show');
-	}
 	$('#req-btn-'+data.cleanstok).click(function(){ //add click event to the 'Answer' button
     	socket.emit('mentor.acceptRequest', data.sessiontoken);
 			inCall = true;
@@ -130,4 +123,7 @@ socket.on('mentor.cancelRequest', function(stok){ // when a ninja cancels a requ
 	request_checkEmpty();
 });
 
-offerTutorial();
+
+$( document ).ready(function() {
+	offerTutorial();
+});
