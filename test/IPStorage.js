@@ -9,6 +9,9 @@ describe("Test to ensure IP's are logged and limited.", function() {
 	describe("Can log one IP", function() {
 		var singleIP = "1.1.1.1";
 		it("Create one IP and ensure it has been stored to relavant array", function(done) {
+			while (app.testing.vars.ipaddresses.length!=0) { //empty out ipaddresses variable for later testing
+				app.testing.vars.ipaddresses.pop();
+			}
 			expect(app.testing.vars.ipaddresses.length).to.equal(0);
 			expect(app.testing.functions.ipverification(singleIP,maxAccessesPerDay)).to.equal.true;
 			expect(app.testing.vars.ipaddresses.length).to.equal(1);
