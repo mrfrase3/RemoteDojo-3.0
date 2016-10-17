@@ -50,3 +50,6 @@ certs/*.csr
 
 # User Sessions
 sessions/*.json
+
+# User Database
+users.json

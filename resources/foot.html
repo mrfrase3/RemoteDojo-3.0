@@ -1,4 +1,6 @@
 <footer>
+	<!-- Electron Compatibility-->
+	<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
     <!-- jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 
@@ -11,5 +13,18 @@
 
 	<script src="./common/js/main.js"></script>
 	{{js}}
+
+	<script>
+		try{
+        	console.log(__dirname);
+        	var remoteCursor = require("../../../../../../desktop");
+        	if(remoteCursor){
+            	setTimeout(function(){
+                	remoteCursor.show();
+                	remoteCursor.setpos(50, 80);
+                }, 1000);
+            }
+        }catch(e){console.log(e)};
+	</script>
 </footer>
 </html>

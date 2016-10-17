@@ -246,6 +246,7 @@ app.use("/", function(req, res){
 		return renderfile("login");
 	} else if(config.runInDemoMode){
 		if(req.query.u){
+<<<<<<< HEAD
 			uid = demoUserAuth(req.query.u);
 		} else if(req.method == "POST"){
 			var ip = req.ip;
@@ -258,12 +259,33 @@ app.use("/", function(req, res){
 			}
 		}
 		if(!uid) return renderfile("index");
+=======
+        	uid = demoUserAuth(req.query.u);
+        } else if(req.method == "POST"){
+		var ip = req.ip;
+		if(req.ips.length) ip = req.ips[0]; //detects through proxies
+        	if(ipverification(ip,5)){ //check ip here to see if max CHECK123
+            	dojo = tempDojo(config.demoDuration);
+            	fill.mentor = "/?u=" + users[tempUser(dojo, 1, config.demoDuration)].authtok;
+            	fill.ninja = "/?u=" + users[tempUser(dojo, 0, config.demoDuration)].authtok;
+            	return renderfile("demo");
+            }
+        }
+    	if(!uid) return renderfile("index");
+>>>>>>> master
 	}
 	// Login end
 	// From here it is assumed the user is authenticated and logged in (either as a user or temp user)
 	if(!uid) uid = req.session.user;
+<<<<<<< HEAD
 	var user = users[uid];
 	fill.user = {username: user.username, fullname: user.fullname}; //give some user info to the renderer, as well as common js files
+=======
+    var user = users[uid];
+	fill.user = {username: user.username, fullname: user.fullname, expire: " ", demomode: " "}; //give some user info to the renderer, as well as common js files
+	if(user.expire > -1) fill.user.expire = " data-expire=\"" + user.expire + "\" ";
+	if(config.runInDemoMode) fill.user.demomode = " data-demo-mode=\"true\" ";
+>>>>>>> master
 	fill.js += "<script src=\"https://webrtc.github.io/adapter/adapter-latest.js\"></script>"+
 		"<script src=\"https://cdn.webrtc-experiment.com/getScreenId.js\"></script>"+
 		"<script src=\"./common/js/socks-general.js\"></script>"+
@@ -271,7 +293,6 @@ app.use("/", function(req, res){
 	if(user.perm == 0){ //if the user is a ninja
 		dojo = user.dojos[0];
 		fill.mentors = [];
-		console.log(dojo);
 		for(var i=0; i < users._indexes.length; i++){ //find all
 			u = users[users._indexes[i]];
 			if(u.perm == 1 && u.dojos.indexOf(dojo) !== -1){ //the mentors that belong to the ninja's dojo
@@ -305,25 +326,54 @@ app.use("/", function(req, res){
 // takes the unauthorised socket and a callback
 // if the socket becomes authorised, the callback with the authorised socket is called
 // More info on socket auth: https://auth0.com/blog/auth-with-socket-io/
-var socketValidate = function(socket, cb){
+var socketValidate = function(socket, cb, nodupe, ns){
+	if(!ns) ns = "/"
 	socket.authorised = false;
 
 	socket.emit("sockauth.request");//initiate the authentication process
 
-	socket.on("sockauth.validate", function(data){ //when the client responds with a auth token, validate it with the user session
-		console.log("validating socket connection for: " + data.usr);
+	socket.once("sockauth.validate", function(data){ //when the client responds with a auth token, validate it with the user session
 		if(users[data.usr] && users[data.usr].token && users[data.usr].token.indexOf(data.token) !== -1){ //token's valid
 			users[data.usr].token.splice(users[data.usr].token.indexOf(data.token), 1); //remove the token now that it's used
-			socket.user = data.usr;
-			socket.authorised = true;
-			cb(socket); // call the callback, passing the now authorised socket
-			socket.emit("sockauth.valid");
+        	if(nodupe){
+        		for(var s in io.of(ns).connected){
+					if(io.of(ns).connected[s].user && io.of(ns).connected[s].user == data.usr){
+                		if(!socket.other) socket.other = [];
+        				socket.other.push( io.of(ns).connected[s]);
+					}
+				}
+            }
+        	socket.user = data.usr;
+        	if(socket.other){
+               	socket.once("sockauth.dupeResolution", function(r){
+                   	if(r && socket.other){
+                       	for(var i = 0; i < socket.other.length; i++){
+            	           	socket.other[i].emit("general.disconnect", "A newer duplicate session has kicked this session.");
+                            socket.other[i].disconnect();
+                        }
+                    	socket.other = null;
+                    	socket.authorised = true;
+						cb(socket); // call the callback, passing the now authorised socket
+						socket.emit("sockauth.valid");
+                    } else {
+            	       	socket.emit("general.disconnect", "An older duplicate session has kicked this session.");
+                        socket.disconnect();
+                    }
+                });
+            	socket.emit("sockauth.dupeConflict");
+            } else {
+				socket.authorised = true;
+				cb(socket); // call the callback, passing the now authorised socket
+				socket.emit("sockauth.valid");
+            }
 			users.save();
 		} else { // token's not valid
 			socket.emit("sockauth.invalid");
+        	socket.emit("general.disconnect", "Invalid authorisation details.");
 			socket.disconnect(true);
 		}
 	});
+
 };
 
 // basic object to hold info about ninja to mentor sessions (calls)
@@ -395,14 +445,15 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 				mainio.to(user.dojos[0]+"-1").emit("mentor.requestMentor", {sessiontoken: stok, dojo: dojos[user.dojos[0]].name, fullname: user.fullname}); //emit the request to all relevant mentors
 			}
 		});
-		socket.on("ninja.cancelRequest", function(stok){ //when a ninja decides to cancel a request
-			if(stok in nmsessions && !nmsessions[stok].mentor){ //check that the ninja is actually requesting
+		socket.on("ninja.cancelRequest", function(){ //when a ninja decides to cancel a request
+        	var stok = nmsessions_getuser(socket.user);
+			if(stok && !nmsessions[stok].mentor){ //check that the ninja is actually requesting
 				mainio.to(nmsessions[stok].dojo+"-1").emit("mentor.cancelRequest", stok); //tell the mentors
 				delete nmsessions[stok]; // delete the request
 			}
 		});
 		socket.on("disconnect", function(){ //if the ninja disconnects
-			stok = nmsessions_getuser(socket.user);
+			var stok = nmsessions_getuser(socket.user);
 			if( stok && !nmsessions[stok].mentor){ //check that the ninja is requesting, if so, cancel it
 				mainio.to(nmsessions[stok].dojo+"-1").emit("mentor.cancelRequest", stok);
 				delete nmsessions[stok];
@@ -468,12 +519,13 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 		data.fill = data.fill || {};
 		socket.emit("general.template-" + data.token, {html: getTemp("template/"+data.template)(data.fill)});
 	});
-});});
+}, true, "/main");});
 
 var removeUser = function(uid){
 	if(!users[uid]) return;
 	for(var s in io.of("/main").connected){
 		if(io.of("/main").connected[s].user && io.of("/main").connected[s].user == uid){
+        	io.of("/main").connected[s].emit("general.disconnect", "your user session has expired. <a class='btn btn-success' href='/' style='position:absolute;top:10px;right:25px;'><i class='fa fa-refresh'></i></a>");
 			io.of("/main").connected[s].disconnect();
 		}
 	}
@@ -502,10 +554,17 @@ var checkExpired = function(){
 		i = dojos._indexes[j];
 		if(dojos[i].expire > 0){
         	if(dojos[i].expire <= t){
+<<<<<<< HEAD
 		removeDojo(i);
 	} else {
             	setTimeout(removeDojo, users[i].expire - t, i);
 	}
+=======
+				removeDojo(i);
+            } else {
+            	setTimeout(removeDojo, dojos[i].expire - t, i);
+            }
+>>>>>>> master
 		}
 	}
 };
@@ -516,5 +575,10 @@ console.log("Server Started");
 
 //exports for testing
 exports.testing = {app: app};
+<<<<<<< HEAD
 exports.testing.functions = {tempUser: tempUser, ipverification: ipverification};
 exports.testing.vars = {ipaddresses: ipaddresses};
+=======
+exports.testing.functions = {tempUser: tempUser};
+exports.testing.vars = {users: users, dojos: dojos};
+>>>>>>> master

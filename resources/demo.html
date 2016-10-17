@@ -44,7 +44,7 @@
 							<a href="#" class="mode-link-ninja">
 								<img src="common/images/CDWA-Get-Coding.jpg" class="select-mode">
 								<div class="img-caption-ninja">NINJA</div>
-								<div class="img-caption-ninja-detail"><p class="detail-title">NINJA</p><hr>Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit</div>
+								<div class="img-caption-ninja-detail"><p class="detail-title">NINJA</p><hr>A Ninja connects to a Mentor from their Dojo asking for help and are able to share their screen. Click here to try it out!</div>
 							</a>
 						</div>
 					</div>
@@ -71,7 +71,7 @@
 							<a href="#" class="mode-link-mentor">
 								<img src="common/images/CDWA-Help-Out.jpg" id="img-ninja" class="select-mode">
 								<div class="img-caption-mentor">MENTOR</div>
-								<div class="img-caption-mentor-detail"><p class="detail-title">MENTOR</p><hr>Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit</div>
+								<div class="img-caption-mentor-detail"><p class="detail-title">MENTOR</p><hr>A Mentor will receive help requests from a Ninja from their Dojos and answer to their call for help. Click here to try it out!</div>
 							</a>
 						</div>
 					</div>
@@ -105,6 +105,8 @@
         	var mentorURL = "https://" + location.host + "{{mentor}}";
         	$("#mentorCopyTarget").val(mentorURL);
         	$("#ninjaCopyTarget").val(ninjaURL);
+			$(".mode-link-mentor").attr("href", mentorURL);
+			$(".mode-link-ninja").attr("href", ninjaURL);
         });
     </script>
 </body>
