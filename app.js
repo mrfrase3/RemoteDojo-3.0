@@ -259,33 +259,14 @@ app.use("/", function(req, res){
 			}
 		}
 		if(!uid) return renderfile("index");
-=======
-        	uid = demoUserAuth(req.query.u);
-        } else if(req.method == "POST"){
-		var ip = req.ip;
-		if(req.ips.length) ip = req.ips[0]; //detects through proxies
-        	if(ipverification(ip,5)){ //check ip here to see if max CHECK123
-            	dojo = tempDojo(config.demoDuration);
-            	fill.mentor = "/?u=" + users[tempUser(dojo, 1, config.demoDuration)].authtok;
-            	fill.ninja = "/?u=" + users[tempUser(dojo, 0, config.demoDuration)].authtok;
-            	return renderfile("demo");
-            }
-        }
-    	if(!uid) return renderfile("index");
->>>>>>> master
 	}
 	// Login end
 	// From here it is assumed the user is authenticated and logged in (either as a user or temp user)
 	if(!uid) uid = req.session.user;
-<<<<<<< HEAD
-	var user = users[uid];
-	fill.user = {username: user.username, fullname: user.fullname}; //give some user info to the renderer, as well as common js files
-=======
     var user = users[uid];
 	fill.user = {username: user.username, fullname: user.fullname, expire: " ", demomode: " "}; //give some user info to the renderer, as well as common js files
 	if(user.expire > -1) fill.user.expire = " data-expire=\"" + user.expire + "\" ";
 	if(config.runInDemoMode) fill.user.demomode = " data-demo-mode=\"true\" ";
->>>>>>> master
 	fill.js += "<script src=\"https://webrtc.github.io/adapter/adapter-latest.js\"></script>"+
 		"<script src=\"https://cdn.webrtc-experiment.com/getScreenId.js\"></script>"+
 		"<script src=\"./common/js/socks-general.js\"></script>"+
@@ -553,18 +534,11 @@ var checkExpired = function(){
 	for(var j=0; j < dojos._indexes.length; j++){
 		i = dojos._indexes[j];
 		if(dojos[i].expire > 0){
-        	if(dojos[i].expire <= t){
-<<<<<<< HEAD
-		removeDojo(i);
-	} else {
-            	setTimeout(removeDojo, users[i].expire - t, i);
-	}
-=======
+        		if(dojos[i].expire <= t){
 				removeDojo(i);
-            } else {
-            	setTimeout(removeDojo, dojos[i].expire - t, i);
-            }
->>>>>>> master
+            		} else {
+            			setTimeout(removeDojo, dojos[i].expire - t, i);
+            		}
 		}
 	}
 };
@@ -575,10 +549,5 @@ console.log("Server Started");
 
 //exports for testing
 exports.testing = {app: app};
-<<<<<<< HEAD
 exports.testing.functions = {tempUser: tempUser, ipverification: ipverification};
-exports.testing.vars = {ipaddresses: ipaddresses};
-=======
-exports.testing.functions = {tempUser: tempUser};
-exports.testing.vars = {users: users, dojos: dojos};
->>>>>>> master
+exports.testing.vars = {ipaddresses: ipaddresses, users: users, dojos: dojos};
