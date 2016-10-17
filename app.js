@@ -39,7 +39,7 @@ if(config.runInDemoMode){
 			}
 		}
     	return null;
-    }
+	};
 }
 
 // user permission structure:
@@ -70,7 +70,7 @@ var ipverification = function(ipaddress, maxtoday) {
 		ipaddresses[index].count = ipaddresses[index].count + 1;
 		return true;
 	}
-}
+};
 
 // token generator, pretty random, but can be replaced if someone has something stronger
 var token = function() {
@@ -87,10 +87,10 @@ function tempUser(dojo, perm, expire){
 	setTimeout(removeUser, expire, tok);
 
 	if(config.runInDemoMode){
-    	var atok = token();
-    	while(demoUserAuth(atok) != null) atok = token();
-    	users[tok].authtok = atok;
-    }
+		var atok = token();
+		while(demoUserAuth(atok) != null) atok = token();
+		users[tok].authtok = atok;
+	}
 	return tok;
 }
 
@@ -132,17 +132,17 @@ app.use("/common", express.static( __dirname + "/common" ));
 // More info on socket auth: https://auth0.com/blog/auth-with-socket-io/
 app.use("/sockauth", function(req, res){
 	if(req.session.loggedin || ( config.runInDemoMode && req.query.u) ){
-    	var user;
-    	if(config.runInDemoMode) user = demoUserAuth(req.query.u);
-    	else user = req.session.user;
-    	if(user){
+		var user;
+		if(config.runInDemoMode) user = demoUserAuth(req.query.u);
+		else user = req.session.user;
+		if(user){
 			var tok = token();
 			if(!users[user].token) users[user].token = [];
 			users[user].token.push(tok);
 			res.json({usr: user, token: tok});
 			users.save();
 			return;
-        }
+		}
 	}
 	res.json({err: "Not Logged in"});
 });
@@ -190,7 +190,7 @@ app.use("/", function(req, res){
         	for(var i = 0; i < dojos._indexes.length; i++){
             	var d = dojos._indexes[i];
             	fill.dojos.push({dojoname: d, name: dojos[d].name});
-            }
+	}
 			res.send(templates[f](fill, {noEscape: true}));
 		}
 	};
@@ -246,6 +246,20 @@ app.use("/", function(req, res){
 		return renderfile("login");
 	} else if(config.runInDemoMode){
 		if(req.query.u){
+<<<<<<< HEAD
+			uid = demoUserAuth(req.query.u);
+		} else if(req.method == "POST"){
+			var ip = req.ip;
+			if(req.ips.length) ip = req.ips[0]; //detects through proxies
+			if(ipverification(ip,config.maxAccessesPerDay)){ //check ip here to see if max CHECK123
+				dojo = tempDojo(config.demoDuration);
+				fill.mentor = "/?u=" + users[tempUser(dojo, 1, config.demoDuration)].authtok;
+				fill.ninja = "/?u=" + users[tempUser(dojo, 0, config.demoDuration)].authtok;
+				return renderfile("demo");
+			}
+		}
+		if(!uid) return renderfile("index");
+=======
         	uid = demoUserAuth(req.query.u);
         } else if(req.method == "POST"){
 		var ip = req.ip;
@@ -258,14 +272,20 @@ app.use("/", function(req, res){
             }
         }
     	if(!uid) return renderfile("index");
+>>>>>>> master
 	}
 	// Login end
 	// From here it is assumed the user is authenticated and logged in (either as a user or temp user)
 	if(!uid) uid = req.session.user;
+<<<<<<< HEAD
+	var user = users[uid];
+	fill.user = {username: user.username, fullname: user.fullname}; //give some user info to the renderer, as well as common js files
+=======
     var user = users[uid];
 	fill.user = {username: user.username, fullname: user.fullname, expire: " ", demomode: " "}; //give some user info to the renderer, as well as common js files
 	if(user.expire > -1) fill.user.expire = " data-expire=\"" + user.expire + "\" ";
 	if(config.runInDemoMode) fill.user.demomode = " data-demo-mode=\"true\" ";
+>>>>>>> master
 	fill.js += "<script src=\"https://webrtc.github.io/adapter/adapter-latest.js\"></script>"+
 		"<script src=\"https://cdn.webrtc-experiment.com/getScreenId.js\"></script>"+
 		"<script src=\"./common/js/socks-general.js\"></script>"+
@@ -510,12 +530,12 @@ var removeUser = function(uid){
 		}
 	}
 	users.remove(uid);
-}
+};
 
 var removeDojo = function(uid){
 	if(!dojos[uid]) return;
 	dojos.remove(uid);
-}
+};
 
 //check that expires expired users
 var checkExpired = function(){
@@ -524,20 +544,27 @@ var checkExpired = function(){
 		i = users._indexes[j];
 		if(users[i].expire > 0){
 			if(users[i].expire <= t){
-            	removeUser(i);
-            } else {
-            	setTimeout(removeUser, users[i].expire - t, i);
-            }
+				removeUser(i);
+			} else {
+				setTimeout(removeUser, users[i].expire - t, i);
+			}
 		}
 	}
 	for(var j=0; j < dojos._indexes.length; j++){
 		i = dojos._indexes[j];
 		if(dojos[i].expire > 0){
         	if(dojos[i].expire <= t){
+<<<<<<< HEAD
+		removeDojo(i);
+	} else {
+            	setTimeout(removeDojo, users[i].expire - t, i);
+	}
+=======
 				removeDojo(i);
             } else {
             	setTimeout(removeDojo, dojos[i].expire - t, i);
             }
+>>>>>>> master
 		}
 	}
 };
@@ -548,5 +575,10 @@ console.log("Server Started");
 
 //exports for testing
 exports.testing = {app: app};
+<<<<<<< HEAD
+exports.testing.functions = {tempUser: tempUser, ipverification: ipverification};
+exports.testing.vars = {ipaddresses: ipaddresses};
+=======
 exports.testing.functions = {tempUser: tempUser};
 exports.testing.vars = {users: users, dojos: dojos};
+>>>>>>> master

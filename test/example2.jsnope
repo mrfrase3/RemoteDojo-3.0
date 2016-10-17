@@ -1,3 +1,5 @@
+/*global describe, it*/
+
 var assert = require("assert");
 describe("Array", function() {
 	describe("#indexOf()", function() {
@@ -14,10 +16,10 @@ describe("Array", function() {
 		it("Should return 3 when popping	[1,2,3]", function(done) {
 			assert.equal(3, [1,2,3].pop());
 			done();
-	});
-	it("Should return 2 when popping	[1,2]", function(done) {
-		assert.equal(2, [1,2].pop());
-		done();
+		});
+		it("Should return 2 when popping	[1,2]", function(done) {
+			assert.equal(2, [1,2].pop());
+			done();
 		});
 	});
 });
