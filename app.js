@@ -246,7 +246,6 @@ app.use("/", function(req, res){
 		return renderfile("login");
 	} else if(config.runInDemoMode){
 		if(req.query.u){
-<<<<<<< HEAD
 			uid = demoUserAuth(req.query.u);
 		} else if(req.method == "POST"){
 			var ip = req.ip;
