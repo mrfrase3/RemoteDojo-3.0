@@ -52,4 +52,5 @@ certs/*.csr
 sessions/*.json
 
 # User Database
-users.json
+./users.json
+./dojos.json

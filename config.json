@@ -1,7 +1,7 @@
 {
 	"runInDemoMode" : true,
-	"demoDuration": 20000,
+	"demoDuration"  : 200000,
 	"sessionSecret" : "61_R*9P9RR;FM9_p!*18S!P0g2!SG93E26!%mjtw;S-052-8O2^77;I:17MK-_;PM6-ZN9=jeaP5~4ae765:256_676Z=3_r",
-	"tempUserExpiryInterval" : 30000,
-	"mainServerPort" : 4000
+	"serverPort"    : 4000,
+	"feedbackLink"  : "https://goo.gl/forms/RhfTEOxzpGa5IUru2"
 }

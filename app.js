@@ -168,7 +168,7 @@ app.get("/logout", function(req, res){
 
 // Main express processing
 app.use("/", function(req, res){
-	var fill = {js: " ", css: " "}; //fill, the object passed to the renderer, custom js and css files can be added based on circumstance
+	var fill = {js: " ", css: " ", feedback: config.feedbackLink}; //fill, the object passed to the renderer, custom js and css files can be added based on circumstance
 	var uid;
 	if(req.path.indexOf("common/") !== -1){
 		return; //fixes an error
@@ -190,7 +190,7 @@ app.use("/", function(req, res){
         	for(var i = 0; i < dojos._indexes.length; i++){
             	var d = dojos._indexes[i];
             	fill.dojos.push({dojoname: d, name: dojos[d].name});
-	}
+			}
 			res.send(templates[f](fill, {noEscape: true}));
 		}
 	};
@@ -376,7 +376,6 @@ var updateStatus = function(stat, socket){
 	mentorstats[socket.user] = stat;
 };
 
-var chatrooms = []; // an array of chatroom tokens currently being used
 var mainio = io.of("/main"); //use the '/main' socket.io namespace
 mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ //on connection, authorise the socket, then do the following once authorised
 	var user = users[socket.user];
@@ -404,12 +403,7 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 				nmsessions[stok].mentor = socket; //join the chatroom
 				socket.join(stok);
 				mainio.to(nmsessions[stok].dojo+"-1").emit("mentor.cancelRequest", stok);
-				chats = {ninja: token(), mentor: token()}; // generate chatroom tokens for RTC, this should be changed to generate a single token
-				while(chatrooms.indexOf(chats.ninja) !== -1 || chatrooms.indexOf(chats.mentor) !== -1) chats = {ninja: token(), mentor: token()};
-				chatrooms.push(chats.ninja);
-				chatrooms.push(chats.mentor);
-				nmsessions[stok].chatrooms = chats;
-				mainio.to(stok).emit("general.startChat", chats); //tell the ninja and mentor to start the RTC connection
+				mainio.to(stok).emit("general.startChat"); //tell the ninja and mentor to start the RTC connection
 				updateStatus("busy", socket); //update the mentor's status
 			} else { // otherwise update the mentor that the request is closed
 				socket.emit("mentor.cancelRequest", stok);
@@ -451,8 +445,6 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 		stok = nmsessions_getuser(socket.user);
 		if(stok && nmsessions[stok].mentor){ //check that the user is actually in a chat
 			mainio.to(stok).emit("general.stopChat"); // tell them to stop
-			chatrooms.splice(nmsessions[stok].chatrooms.ninja, 1); //remove the chatroom tokens
-			chatrooms.splice(nmsessions[stok].chatrooms.mentor, 1);
 			nmsessions[stok].ninja.leave(stok);//make them leave the socket.io room
 			nmsessions[stok].mentor.leave(stok);
 			updateStatus("available",nmsessions[stok].mentor); //update the mentor's status
@@ -533,17 +525,17 @@ var checkExpired = function(){
 	for(var j=0; j < dojos._indexes.length; j++){
 		i = dojos._indexes[j];
 		if(dojos[i].expire > 0){
-        		if(dojos[i].expire <= t){
+			if(dojos[i].expire <= t){
 				removeDojo(i);
-            		} else {
-            			setTimeout(removeDojo, dojos[i].expire - t, i);
-            		}
+			} else {
+				setTimeout(removeDojo, dojos[i].expire - t, i);
+			}
 		}
 	}
 };
 checkExpired();
 
-server.listen(config.mainServerPort); // start main server
+server.listen(config.serverPort); // start main server
 console.log("Server Started");
 
 //exports for testing

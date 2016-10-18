@@ -175,7 +175,7 @@ $(function(){
 		}).then(onLocalStream).catch(console.error);
 	});
 
-	$.get("https://raw.githubusercontent.com/DamonOehlman/freeice/master/stun.json", function(data){
+	$.get("./common/stun.json", function(data){
 		var servers = [];
 		try{
 			if(data instanceof Array) servers = data;

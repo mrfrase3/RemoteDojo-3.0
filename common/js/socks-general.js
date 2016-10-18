@@ -1,5 +1,4 @@
 var socket = io.connect('/main');
-var chats = null;
 var live = false;
 
 $('.hidden').hide(); //I'm lazy
@@ -42,7 +41,6 @@ var stopChat = function(){
 	if (!live) return;
 	stopRTC();
 	live = false;
-	chats = null;
 	$('.screen-remote-box').hide();
 	$(".button-menu .chat-list-wrap").hide();
 	$(".button-menu-buttons .chat-open").hide();
@@ -71,7 +69,7 @@ socket.on('disconnect', function(){
 });
 
 socket.on('general.disconnect', function(m){
-	$(".alert-wrapper").prepend(genalert("danger", false, "You were disconected from the server!<br>Because " + m));
+	$(".alert-wrapper").prepend(genalert("danger", false, "You were disconnected from the server!<br>Because " + m));
 });
 
 socket.on('general.mentorStatus',function(data){ // change a mentors status if theres a list
@@ -82,11 +80,9 @@ socket.on('general.mentorStatus',function(data){ // change a mentors status if t
 	$('#mentor-'+data.username + ' .label').html(data.status);
 });
 
-socket.on('general.startChat',function(data){ //start a chat session when the server's made one
+socket.on('general.startChat',function(){ //start a chat session when the server's made one
 	console.log("starting call");
-	if (chats) return;
-	chats = data;
-	console.log(data.ninja +" ");
+	if (live) return;
 	startRTC($(".user-info-panel").data("type") == "ninja");
 	//setTimeout(Mediaconn.openOrJoin,joinDelay,data.ninja, onJoin); // the ninja and mentor cannot connect at the same time, so one is delayed (look in their socks files)
 	$('.chat-body-start').data("calling", false);

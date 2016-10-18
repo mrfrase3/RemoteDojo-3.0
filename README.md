@@ -22,6 +22,6 @@ Settings can be found in `config.json`.
 | Setting               | Information                                                                      |
 |-----------------------|----------------------------------------------------------------------------------|
 | runInDemoMode         | Set to `true` if you want to run the server in demo mode                         |
-| sessionSecret         | The session's secret                                                             |
-| tempUserExpiryInterval| The amount of time (in milliseconds) a temporary user exists before it is deleted|
-| mainServerPort        | The port that the main server runs on                                            |
+| demoDuration          | The duration (in ms) that a demo session will last                               |
+| sessionSecret         | The session's secret for express sessions                                        |
+| serverPort            | The port that the server runs on                                                 |
