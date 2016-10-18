@@ -136,7 +136,7 @@ body {
 /* Homepage style */
 
 .center {
-	text-align: center;
+	text-align: center !important;
 }
 
 img.main-img {
@@ -147,8 +147,12 @@ img.main-img {
 	width: 100%;
 }
 
+img#mentor-img-home {
+	margin-top: -15px;
+}
+
 .carousel-caption {
-	margin-bottom: 60px;
+	margin-bottom: 3%;
 	font-size: 200%;
 }
 
@@ -193,7 +197,6 @@ p.title {
 	padding-top: 30px;
 	padding-bottom: 30px;
 	font-size: 110%;
-	width: 90%;
 }
 
 .bg-grey {
@@ -207,7 +210,6 @@ p.title {
 	color: #fff;
 	font-size: 90%;
 	font-weight: 700;
-	width: 30%;
 	padding: 15px;
 	padding-left: 25px;
 	padding-right: 25px;
@@ -229,6 +231,10 @@ p.title {
 
 .navbar-brand {
 	padding-left: 35px;
+}
+
+#ninja-img-home {
+	float: right;
 }
 
 /* Demo page style */
@@ -286,6 +292,11 @@ p.title {
 
 .table-main {
 	display: table;
+	width: 42%;
+}
+
+.table-main div {
+	float: none !important;
 }
 
 .table-row {
@@ -324,7 +335,7 @@ p.title {
 
 .starttutorial {
 	margin-left: 10px;
-
+}
 /* Ninja and Mentor Page Colors adjusting */
 
 .alert-danger, .btn-danger {
@@ -359,3 +370,224 @@ p.title {
 .panel-primary {
 	border-color: #2EA9DF !important;
 }
+
+/* responsive layout */
+
+@media screen and (max-width: 1200px) {
+	.top-margin {
+		font-size: 80%;
+	}
+	
+}
+
+
+@media screen and (max-width: 1190px) {
+   	.carousel-caption {
+   		font-size: 180% !important;
+		margin-bottom: 2%;
+   	}
+	
+	.block {
+		padding-left: 80px;
+		padding-right: 80px;
+	}
+	
+	img#mentor-img-home {
+		margin-top: 0px;
+	}
+	
+	.btn-start {
+		margin-top: 25px;
+	}
+	
+}
+
+@media screen and (max-width: 1070px) {
+   	.carousel-caption {
+   		font-size: 160% !important;
+   	}
+
+	.btn-start {
+		margin-top: 20px;
+	}
+	
+	.block {
+		padding-left: 60px;
+		padding-right: 60px;
+	}
+	
+	img#mentor-img-home {
+		margin-top: 10px;
+	}
+	
+	
+}
+
+
+ @media screen and (max-width: 990px) {
+    	.carousel-caption {
+    		font-size: 140% !important;
+			margin-bottom: 1%;
+    	}
+		
+		.block {
+			padding-left: 100px;
+			padding-right: 100px;
+		}
+		
+		img#mentor-img-home {
+			margin-top: 40px;
+			margin-bottom: 60px;
+			text-align: center;
+		}
+		
+		.img-center, #ninja-img-home {
+		    float: none !important;
+		    text-align: center;
+		}
+		
+		.block-title {
+			text-align: center;
+		}
+		
+		.block-text-lg {
+			margin: 0px;
+		}
+		
+		.btn-start {
+			margin-top: 15px;
+		}
+		
+		.top-margin {
+			font-size: 150%;
+			float: none;
+			text-align: center;
+		}
+		
+		.table-main {
+			margin-bottom: 40px;
+			width: 100%;
+			float: none;
+			text-align: center;
+		}
+		
+ }
+ 
+ @media screen and (max-width: 930px) {
+   	.carousel-caption {
+   		font-size: 120% !important;
+   	}
+	
+	.btn-start {
+		margin-top: 10px;
+	}
+	
+ }
+ 
+ 
+ @media screen and (max-width: 850px) { 
+
+   	.carousel-caption {
+   		font-size: 100% !important;
+		margin-bottom: 0%;
+   	}
+
+	.btn-start {
+		margin-top: 5px;
+	}
+	
+	.block {
+		font-size: 90%;
+	}
+	
+  }
+  
+  @media screen and (max-width: 768px) { 
+	  
+
+  	.btn-start {
+  		margin-top: 0px;
+  	}
+	
+	#logo {
+		width: 80%;
+	}
+	
+	.top-margin {
+		font-size: 120%;
+	}
+
+   }
+   
+   
+   
+   @media screen and (max-width: 620px) { 
+      	.carousel-caption {
+      		font-size: 80% !important;
+   		margin-bottom: 0%;
+      	}
+		
+		.top-margin {
+			font-size: 100%;
+		}
+		
+    }
+   
+    @media screen and (max-width: 580px) { 
+       	.carousel-caption {
+       		font-size: 60% !important;
+    		margin-bottom: 0%;
+       	}
+		
+		.block {
+			padding: 30px 20px 30px 20px;
+			font-size: 70%;
+		}
+		
+		#logo {
+			width: 70%;
+		}
+		
+		.top-margin {
+			font-size: 80%;
+		}
+     }
+	 
+     @media screen and (max-width: 500px) { 
+        	.carousel-caption {
+        		font-size: 50% !important;
+     			margin-bottom: 0%;
+        	}
+		
+ 		#logo {
+ 			width: 0%;
+ 		}
+		
+		.top-margin {
+			font-size: 60%;
+		}
+      }
+	  
+	  
+      @media screen and (max-width: 430px) { 
+         	.carousel-caption {
+         		font-size: 50% !important;
+      			margin-bottom: -5%;
+         	}
+		
+  		
+			img.display {
+				width: 80%;
+				height: auto;
+			}
+			
+			.top-margin {
+				font-size: 50%;
+			}
+       }
+	  
+   
+   
+   
+   
+
