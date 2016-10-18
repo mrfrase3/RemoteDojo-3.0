@@ -63,6 +63,7 @@ var addCallTutorialPopups = function() {
 
 var offerTutorial = function() {
 	$(".starttutorial").popover({"title" : "Start Tutorial",
+																						"placement" : "top",
 																						"content" : "Click here to start the tutorial!",
 																						"trigger" : "hover",
 																						"container" : "body"});
@@ -103,6 +104,8 @@ $(function() {
     	$('.chat-body-start').data("calling", false);
 	});
 
-	offerTutorial();
+});
 
+$( document ).ready(function() {
+	offerTutorial();
 });
