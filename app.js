@@ -19,7 +19,6 @@ var config = require("./config.json");
 var storage = require("./lib/Storage.js");
 var users = new storage(__dirname+"/users.json");
 var dojos = new storage(__dirname+"/dojos.json");
-var ipaddresses = [];
 
 
 //load in the renderer, handlebars, and then load in the html templates
@@ -45,32 +44,6 @@ if(config.runInDemoMode){
 // user permission structure:
 // 0: ninja, 1: mentor, 2: champion, 3: admin
 //
-
-//This will check the ip address of the clients. If they are not able to connect
-//it will return false and if they are able to connect it will return true
-//Verify the return value and then establish the connection
-var ipverification = function(ipaddress, maxtoday) {
-	var today = new Date();
-	var dd = today.getDate();
-	var testip = {
-		address: ipaddress,
-		count: 0,
-		date: dd
-	};
-	if(ipaddresses.indexOf(testip.address) == -1){
-		ipaddresses.push(testip);
-		return true;
-	}else if(ipaddresses.indexOf(testip.address) != -1){
-		var index = ipaddresses.indexOf(testip.address);
-		if(ipaddresses[index].count >= maxtoday) return false;
-		if(ipaddresses[index].date != dd){
-			ipaddresses[index].count = 0;
-			ipaddresses[index].date = dd;
-		}
-		ipaddresses[index].count = ipaddresses[index].count + 1;
-		return true;
-	}
-}
 
 // token generator, pretty random, but can be replaced if someone has something stronger
 var token = function() {
@@ -168,7 +141,7 @@ app.get("/logout", function(req, res){
 
 // Main express processing
 app.use("/", function(req, res){
-	var fill = {js: " ", css: " "}; //fill, the object passed to the renderer, custom js and css files can be added based on circumstance
+	var fill = {js: " ", css: " ", feedback: config.feedbackLink}; //fill, the object passed to the renderer, custom js and css files can be added based on circumstance
 	var uid;
 	if(req.path.indexOf("common/") !== -1){
 		return; //fixes an error
@@ -248,9 +221,7 @@ app.use("/", function(req, res){
 		if(req.query.u){
         	uid = demoUserAuth(req.query.u);
         } else if(req.method == "POST"){
-		var ip = req.ip;
-		if(req.ips.length) ip = req.ips[0]; //detects through proxies
-        	if(ipverification(ip,5)){ //check ip here to see if max CHECK123
+        	if(true){ //check ip here to see if max
             	dojo = tempDojo(config.demoDuration);
             	fill.mentor = "/?u=" + users[tempUser(dojo, 1, config.demoDuration)].authtok;
             	fill.ninja = "/?u=" + users[tempUser(dojo, 0, config.demoDuration)].authtok;
@@ -263,7 +234,9 @@ app.use("/", function(req, res){
 	// From here it is assumed the user is authenticated and logged in (either as a user or temp user)
 	if(!uid) uid = req.session.user;
     var user = users[uid];
-	fill.user = {username: user.username, fullname: user.fullname}; //give some user info to the renderer, as well as common js files
+	fill.user = {username: user.username, fullname: user.fullname, expire: " ", demomode: " "}; //give some user info to the renderer, as well as common js files
+	if(user.expire > -1) fill.user.expire = " data-expire=\"" + user.expire + "\" ";
+	if(config.runInDemoMode) fill.user.demomode = " data-demo-mode=\"true\" ";
 	fill.js += "<script src=\"https://webrtc.github.io/adapter/adapter-latest.js\"></script>"+
 		"<script src=\"https://cdn.webrtc-experiment.com/getScreenId.js\"></script>"+
 		"<script src=\"./common/js/socks-general.js\"></script>"+
@@ -271,7 +244,6 @@ app.use("/", function(req, res){
 	if(user.perm == 0){ //if the user is a ninja
 		dojo = user.dojos[0];
 		fill.mentors = [];
-		console.log(dojo);
 		for(var i=0; i < users._indexes.length; i++){ //find all
 			u = users[users._indexes[i]];
 			if(u.perm == 1 && u.dojos.indexOf(dojo) !== -1){ //the mentors that belong to the ninja's dojo
@@ -305,25 +277,54 @@ app.use("/", function(req, res){
 // takes the unauthorised socket and a callback
 // if the socket becomes authorised, the callback with the authorised socket is called
 // More info on socket auth: https://auth0.com/blog/auth-with-socket-io/
-var socketValidate = function(socket, cb){
+var socketValidate = function(socket, cb, nodupe, ns){
+	if(!ns) ns = "/"
 	socket.authorised = false;
 
 	socket.emit("sockauth.request");//initiate the authentication process
 
-	socket.on("sockauth.validate", function(data){ //when the client responds with a auth token, validate it with the user session
-		console.log("validating socket connection for: " + data.usr);
+	socket.once("sockauth.validate", function(data){ //when the client responds with a auth token, validate it with the user session
 		if(users[data.usr] && users[data.usr].token && users[data.usr].token.indexOf(data.token) !== -1){ //token's valid
 			users[data.usr].token.splice(users[data.usr].token.indexOf(data.token), 1); //remove the token now that it's used
-			socket.user = data.usr;
-			socket.authorised = true;
-			cb(socket); // call the callback, passing the now authorised socket
-			socket.emit("sockauth.valid");
+        	if(nodupe){
+        		for(var s in io.of(ns).connected){
+					if(io.of(ns).connected[s].user && io.of(ns).connected[s].user == data.usr){
+                		if(!socket.other) socket.other = [];
+        				socket.other.push( io.of(ns).connected[s]);
+					}
+				}
+            }
+        	socket.user = data.usr;
+        	if(socket.other){
+               	socket.once("sockauth.dupeResolution", function(r){
+                   	if(r && socket.other){
+                       	for(var i = 0; i < socket.other.length; i++){
+            	           	socket.other[i].emit("general.disconnect", "A newer duplicate session has kicked this session.");
+                            socket.other[i].disconnect();
+                        }
+                    	socket.other = null;
+                    	socket.authorised = true;
+						cb(socket); // call the callback, passing the now authorised socket
+						socket.emit("sockauth.valid");
+                    } else {
+            	       	socket.emit("general.disconnect", "An older duplicate session has kicked this session.");
+                        socket.disconnect();
+                    }
+                });
+            	socket.emit("sockauth.dupeConflict");
+            } else {
+				socket.authorised = true;
+				cb(socket); // call the callback, passing the now authorised socket
+				socket.emit("sockauth.valid");
+            }
 			users.save();
 		} else { // token's not valid
 			socket.emit("sockauth.invalid");
+        	socket.emit("general.disconnect", "Invalid authorisation details.");
 			socket.disconnect(true);
 		}
 	});
+
 };
 
 // basic object to hold info about ninja to mentor sessions (calls)
@@ -395,14 +396,15 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 				mainio.to(user.dojos[0]+"-1").emit("mentor.requestMentor", {sessiontoken: stok, dojo: dojos[user.dojos[0]].name, fullname: user.fullname}); //emit the request to all relevant mentors
 			}
 		});
-		socket.on("ninja.cancelRequest", function(stok){ //when a ninja decides to cancel a request
-			if(stok in nmsessions && !nmsessions[stok].mentor){ //check that the ninja is actually requesting
+		socket.on("ninja.cancelRequest", function(){ //when a ninja decides to cancel a request
+        	var stok = nmsessions_getuser(socket.user);
+			if(stok && !nmsessions[stok].mentor){ //check that the ninja is actually requesting
 				mainio.to(nmsessions[stok].dojo+"-1").emit("mentor.cancelRequest", stok); //tell the mentors
 				delete nmsessions[stok]; // delete the request
 			}
 		});
 		socket.on("disconnect", function(){ //if the ninja disconnects
-			stok = nmsessions_getuser(socket.user);
+			var stok = nmsessions_getuser(socket.user);
 			if( stok && !nmsessions[stok].mentor){ //check that the ninja is requesting, if so, cancel it
 				mainio.to(nmsessions[stok].dojo+"-1").emit("mentor.cancelRequest", stok);
 				delete nmsessions[stok];
@@ -468,12 +470,13 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 		data.fill = data.fill || {};
 		socket.emit("general.template-" + data.token, {html: getTemp("template/"+data.template)(data.fill)});
 	});
-});});
+}, true, "/main");});
 
 var removeUser = function(uid){
 	if(!users[uid]) return;
 	for(var s in io.of("/main").connected){
 		if(io.of("/main").connected[s].user && io.of("/main").connected[s].user == uid){
+        	io.of("/main").connected[s].emit("general.disconnect", "your user session has expired. <a class='btn btn-success' href='/' style='position:absolute;top:10px;right:25px;'><i class='fa fa-refresh'></i></a>");
 			io.of("/main").connected[s].disconnect();
 		}
 	}
@@ -504,7 +507,7 @@ var checkExpired = function(){
         	if(dojos[i].expire <= t){
 				removeDojo(i);
             } else {
-            	setTimeout(removeDojo, users[i].expire - t, i);
+            	setTimeout(removeDojo, dojos[i].expire - t, i);
             }
 		}
 	}
@@ -515,6 +518,6 @@ server.listen(config.mainServerPort); // start main server
 console.log("Server Started");
 
 //exports for testing
-exports.testing = {};
+exports.testing = {app: app};
 exports.testing.functions = {tempUser: tempUser};
-exports.testing.vars = {};
+exports.testing.vars = {users: users, dojos: dojos};
