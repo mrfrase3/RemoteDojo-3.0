@@ -10,3 +10,29 @@ Notes:
 
  - If you are using the sscerts.sh, make sure you are running it as either root or a user that has sudo privileges. Also make sure openssl is installed on your system.
  - Default logins for everything is 'tomato' with the mentor username being 'mentor', champion username being 'champion' and admin username being 'admin'
+
+## Configuration ##
+Settings can be found in `config.json`.
+
+| Setting               | Information                                                                      |
+|-----------------------|----------------------------------------------------------------------------------|
+| runInDemoMode         | Set to `true` if you want to run the server in demo mode                         |
+| demoDuration          | The duration (in ms) that a demo session will last                               |
+| sessionSecret         | The session's secret for express sessions                                        |
+| serverPort            | The port that the server runs on                                                 |
+| feedbackLink          | A link to the Google Forms feedback form                                         |
+
+## Extensions ##
+
+In order to screen share, the client currently requires an extension.
+
+**For Chrome:**
+The extension can be installed [from the webstore.](https://chrome.google.com/webstore/detail/screen-capturing/ajhifddimkapgcifgcodmmfdlknahffk)
+[Click Here](https://github.com/muaz-khan/Chrome-Extensions/tree/master/desktopCapture) for the source code.
+
+**For Firefox:**
+If you are using localhost/127.0.0.1 adresses, you can just install the [addon here.](https://addons.mozilla.org/en-US/firefox/addon/enable-screen-capturing/)
+Otherwise, if you are using a remote server, you must compile your own addon with a list of accepted ip/domains that you own. You can find the [source and further instructions here.](https://github.com/muaz-khan/Firefox-Extensions/tree/master/enable-screen-capturing)
+
+**Other Browsers:**
+Other Browsers do not currently support screen sharing, please download and install chrome/firefox.
