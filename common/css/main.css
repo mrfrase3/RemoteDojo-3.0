@@ -373,6 +373,317 @@ p.title {
 
 /* responsive layout */
 
+
+
+@media screen and (max-width: 2570px) {
+   	.carousel-caption {
+   		font-size: 400% !important;
+		margin-bottom: 5%;
+   	}
+	
+	.block {
+		padding-left: 480px;
+		padding-right: 480px;
+		font-size: 120%;
+		line-height: 30px;
+	}
+	
+	img#mentor-img-home {
+		margin-top: 30px;
+	}
+	
+	.btn-start {
+		margin-top: 25px;
+		border-radius: 80px;
+		padding: 25px;
+		padding-left: 35px;
+		padding-right: 35px;
+		
+	}
+	
+	#logo {
+		width: 200%;
+	}
+	
+}
+
+	
+
+
+@media screen and (max-width: 2468px) {
+   	.carousel-caption {
+   		font-size: 370% !important;
+		margin-bottom: 5%;
+   	}
+	
+	.block {
+		padding-left: 460px;
+		padding-right: 460px;
+		font-size: 120%;
+		line-height: 30px;
+	}
+	
+	img#mentor-img-home {
+		margin-top: 30px;
+	}
+	
+	.btn-start {
+		margin-top: 25px;
+	}
+	
+	#logo {
+		width: 190%;
+	}
+
+	
+}
+
+@media screen and (max-width: 2348px) {
+   	.carousel-caption {
+   		font-size: 350% !important;
+		margin-bottom: 5%;
+   	}
+	
+	.block {
+		padding-left: 440px;
+		padding-right: 440px;
+		font-size: 120%;
+		line-height: 30px;
+	}
+	
+	img#mentor-img-home {
+		margin-top: 30px;
+	}
+	
+	.btn-start {
+		margin-top: 25px;
+	}
+	
+	#logo {
+		width: 180%;
+	}
+	
+}
+
+
+@media screen and (max-width: 2230px) {
+   	.carousel-caption {
+   		font-size: 330% !important;
+		margin-bottom: 3%;
+   	}
+	
+	.block {
+		padding-left: 420px;
+		padding-right: 420px;
+		font-size: 100%;
+		line-height: 30px;
+	}
+	
+	img#mentor-img-home {
+		margin-top: 25px;
+	}
+	
+	.btn-start {
+		margin-top: 25px;
+	}
+	
+
+	#logo {
+		width: 170%;
+	}
+}
+
+@media screen and (max-width: 2120px) {
+   	.carousel-caption {
+   		font-size: 310% !important;
+		margin-bottom: 3%;
+   	}
+	
+	.block {
+		padding-left: 400px;
+		padding-right: 400px;
+		font-size: 100%;
+		line-height: 30px;
+	}
+	
+	img#mentor-img-home {
+		margin-top: 25px;
+	}
+	
+	.btn-start {
+		margin-top: 25px;
+	}
+	
+
+	#logo {
+		width: 160%;
+	}
+}
+
+
+@media screen and (max-width: 2048px) {
+   	.carousel-caption {
+   		font-size: 290% !important;
+		margin-bottom: 3%;
+   	}
+	
+	.block {
+		padding-left: 380px;
+		padding-right: 380px;
+		font-size: 100%;
+		line-height: 30px;
+	}
+	
+	img#mentor-img-home {
+		margin-top: 25px;
+	}
+	
+	.btn-start {
+		margin-top: 25px;
+	}
+	
+
+	#logo {
+		width: 150%;
+	}
+	
+}
+
+
+@media screen and (max-width: 1920px) {
+   	.carousel-caption {
+   		font-size: 270% !important;
+		margin-bottom: 3%;
+   	}
+	
+	.block {
+		padding-left: 350px;
+		padding-right: 350px;
+		font-size: 100%;
+		line-height: 30px;
+	}
+	
+	img#mentor-img-home {
+		margin-top: 25px;
+	}
+	
+	.btn-start {
+		margin-top: 25px;
+	}
+	
+
+	#logo {
+		width: 140%;
+	}
+}
+
+@media screen and (max-width: 1800px) {
+   	.carousel-caption {
+   		font-size: 230% !important;
+		margin-bottom: 3%;
+   	}
+	
+	.block {
+		padding-left: 320px;
+		padding-right: 320px;
+		font-size: 100%;
+		line-height: 30px;
+	}
+	
+	img#mentor-img-home {
+		margin-top: 25px;
+	}
+	
+	.btn-start {
+		margin-top: 25px;
+	}
+	
+	#logo {
+		width: 130%;
+	}
+	
+}
+
+@media screen and (max-width: 1680px) {
+   	.carousel-caption {
+   		font-size: 220% !important;
+		margin-bottom: 3%;
+   	}
+	
+	.block {
+		padding-left: 270px;
+		padding-right: 270px;
+		font-size: 100%;
+		line-height: 30px;
+	}
+	
+	img#mentor-img-home {
+		margin-top: 25px;
+	}
+	
+	.btn-start {
+		margin-top: 25px;
+		border-radius: 40px;
+		padding: 15px;
+		padding-left: 25px;
+		padding-right: 25px;
+	}
+	
+	#logo {
+		width: 120%;
+	}
+	
+}
+
+@media screen and (max-width: 1560px) {
+   	.carousel-caption {
+   		font-size: 200% !important;
+		margin-bottom: 3%;
+   	}
+	
+	.block {
+		padding-left: 180px;
+		padding-right: 180px;
+		font-size: 100%;
+		line-height: 25px;
+	}
+	
+	img#mentor-img-home {
+		margin-top: 5px;
+	}
+	
+	.btn-start {
+		margin-top: 25px;
+	}
+	
+	#logo {
+		width: 110%;
+	}
+}
+
+@media screen and (max-width: 1440px) {
+   	.carousel-caption {
+   		font-size: 190% !important;
+		margin-bottom: 3%;
+   	}
+	
+	.block {
+		padding-left: 120px;
+		padding-right: 120px;
+		font-size: 100%;
+		line-height: 25px;
+	}
+	
+	img#mentor-img-home {
+		margin-top: 5px;
+	}
+	
+	.btn-start {
+		margin-top: 25px;
+	}
+}
+
+
 @media screen and (max-width: 1200px) {
 	.top-margin {
 		font-size: 80%;
