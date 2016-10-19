@@ -623,6 +623,10 @@ p.title {
 	
 	.btn-start {
 		margin-top: 25px;
+		border-radius: 40px;
+		padding: 15px;
+		padding-left: 25px;
+		padding-right: 25px;
 	}
 	
 	#logo {
