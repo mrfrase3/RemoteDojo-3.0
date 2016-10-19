@@ -91,8 +91,15 @@ socket.on('general.startChat',function(){ //start a chat session when the server
 	$('.presentations-panel').hide();
 	$('.chat-body-stop').show();
 
-
 	$('.chat-body-start').hide();
+
+	// For the tutorial. The popover won't exist if not in tutorial mode, so in that case will do nothing
+	$(".screen-local-start").popover("show");
+	$(".webcam-controls").popover("show");
+	setTimeout(function() {
+			$(".screen-local-start").popover("hide");
+			$(".webcam-controls").popover("hide");
+}, 4000);
 });
 
 socket.on('general.stopChat',stopChat); //stop a current chat if the server says to
