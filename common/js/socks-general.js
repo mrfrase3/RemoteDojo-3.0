@@ -1,6 +1,6 @@
 var socket = io.connect('/main');
-var chats = null;
 var live = false;
+var answeredRequest = false; // answeredRequest is distinct from 'live' in that it occurs before rtc connection.
 
 $('.hidden').hide(); //I'm lazy
 $('.hidden').removeClass('hidden');
@@ -42,7 +42,6 @@ var stopChat = function(){
 	if (!live) return;
 	stopRTC();
 	live = false;
-	chats = null;
 	$('.screen-remote-box').hide();
 	$(".button-menu .chat-list-wrap").hide();
 	$(".button-menu-buttons .chat-open").hide();
@@ -79,7 +78,7 @@ socket.on('disconnect', function(){
 });
 
 socket.on('general.disconnect', function(m){
-	$(".alert-wrapper").prepend(genalert("danger", false, "You were disconected from the server!<br>Because " + m));
+	$(".alert-wrapper").prepend(genalert("danger", false, "You were disconnected from the server!<br>Because " + m));
 });
 
 socket.on('general.mentorStatus',function(data){ // change a mentors status if theres a list
@@ -90,11 +89,12 @@ socket.on('general.mentorStatus',function(data){ // change a mentors status if t
 	$('#mentor-'+data.username + ' .label').html(data.status);
 });
 
-socket.on('general.startChat',function(data){ //start a chat session when the server's made one
+socket.on('general.startChat',function(){ //start a chat session when the server's made one
 	console.log("starting call");
-	if (chats) return;
+	answeredRequest = true;
+	if (live) return;
 	chats = data;
-	console.log(data.ninja +" ");
+	console.log(data.ninja + " ");
 	var isNinja = $(".user-info-panel").data("type") == "ninja";
 	startRTC(isNinja);
 	//setTimeout(Mediaconn.openOrJoin,joinDelay,data.ninja, onJoin); // the ninja and mentor cannot connect at the same time, so one is delayed (look in their socks files)
@@ -103,7 +103,6 @@ socket.on('general.startChat',function(data){ //start a chat session when the se
 	$('.screen-remote-box').show();
 	$('.presentations-panel').hide();
 	$('.chat-body-stop').show();
-	// TODO Hide for ninja
 	if (isNinja) $('.chat-body-start').hide();
 	else $(".chat-btn-start").addClass("disabled");
 });
@@ -113,6 +112,7 @@ socket.on('general.stopChat',stopChat); //stop a current chat if the server says
 $(function(){
 	$('.chat-btn-stop').click(function(){ //allow the leave chat button to request the server to stop the chat
 		socket.emit('general.stopChat');
+		$(".chat-btn-stop").popover("hide"); //for tutorial, hide leave chat popup if it's still showing
 	});
 
 });
