@@ -3,7 +3,6 @@ var request_source   = $(".req-list-item-template").html();
 var request_template = Handlebars.compile(request_source);
 
 var doTutorial = false;
-var inCall = false;
 
 joinDelay = 1000; //delay for joining the RTC room
 
@@ -35,7 +34,7 @@ var addPreCallTutorialPopups = function() {
 																							"container" : "body"});
 
 	// What if we start the tutorial while in a call? We'll need to add popups to the newly visible elements
-	if(inCall == true) {
+	if(answeredRequest) {
 		addCallTutorialPopups();
 	}
 };
@@ -87,33 +86,32 @@ var offerTutorial = function() {
 
 socket.on('mentor.requestMentor', function(data){ // when a ninja has requested for a mentor
 	console.log('recieved mentor request. ' + JSON.stringify(data));
-	if (!live){ // dont show or hide anything if in the middle of a chat session already
-		$('.chat-body-request').hide();
-		$('.chat-body-start').show();
-    }
-	data.cleanstok = JSON.stringify(data.sessiontoken).replace(/\W/g, ''); //make sure the username is classname friendly
+	$('.chat-body-request').hide();
+	$('.chat-body-start').show();
+	data.cleanstok = JSON.stringify(data.sessiontoken).replace(/\W/g, ''); // ensure the username is classname friendly
 	$('.req-list').append(request_template(data));
-	$('#req-btn-'+data.cleanstok).click(function(){ //add click event to the 'Answer' button
-    	socket.emit('mentor.acceptRequest', data.sessiontoken);
-			inCall = true;
-			if(doTutorial == true) {
-				$('#req-btn-'+data.cleanstok).popover("hide");
-				addCallTutorialPopups();
-			}
+	
+	var answerbtn = $('#req-btn-'+data.cleanstok);
+	if (answeredRequest) answerbtn.addClass("disabled");
+	answerbtn.click(function(){ //add click event to the 'Answer' button
+		socket.emit('mentor.acceptRequest', data.sessiontoken);
+		answeredRequest = true;
+		if(doTutorial) {
+			$('#req-btn-'+data.cleanstok).popover("hide");
+			addCallTutorialPopups();
+		}
     });
-	$('#req-ignore-btn-'+data.cleanstok).click(function(){ //add click event to the 'Answer' button
-    	$('#req-'+data.cleanstok).remove();
-    	request_checkEmpty();
-    });
+	$('#req-ignore-btn-'+data.cleanstok).click(function(){ // add click event to the 'Ignore' button
+		$('#req-'+data.cleanstok).remove();
+		request_checkEmpty();
+	});
 });
 
 // Helper function, that really shouldn't exist
-var request_checkEmpty = function(){
-	if($('.req-list-item').length < 1){ //make sure there are no other requests active
-    	if (!live){
-    		$('.chat-body-request').show();
-			$('.chat-body-start').hide();
-        }
+var request_checkEmpty = function(){ // Hide the queue if empty
+	if($('.req-list-item').length < 1){
+    	$('.chat-body-request').show();
+		$('.chat-body-start').hide();
     }
 }
 

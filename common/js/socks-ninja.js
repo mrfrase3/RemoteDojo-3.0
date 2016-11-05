@@ -1,4 +1,3 @@
-var inCall = false;
 var doTutorial = false;
 
 var addPreCallTutorialPopups = function() {
@@ -29,7 +28,7 @@ var addPreCallTutorialPopups = function() {
 																							"container" : "body"});
 
 	// What if we start the tutorial while in a call? We'll need to add popups to the newly visible elements
-	if(inCall == true) {
+	if(answeredRequest) {
 		addCallTutorialPopups();
 	}
 };

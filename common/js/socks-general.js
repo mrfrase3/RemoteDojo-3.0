@@ -1,5 +1,6 @@
 var socket = io.connect('/main');
 var live = false;
+var answeredRequest = false; // answeredRequest is distinct from 'live' in that it occurs before rtc connection.
 
 $('.hidden').hide(); //I'm lazy
 $('.hidden').removeClass('hidden');
@@ -46,7 +47,15 @@ var stopChat = function(){
 	$(".button-menu-buttons .chat-open").hide();
 	$('.presentations-panel').show();
 	$('.chat-body-stop').hide();
-	$('.chat-body-request').show();
+	// TODO Show for ninja
+	var isNinja = $(".user-info-panel").data("type") == "ninja";
+	if (isNinja) {
+		$('.chat-body-request').show();
+	} else {
+		$(".chat-btn-start").removeClass("disabled");
+	}
+	$(".chat-list-wrap .chat-list").empty(); // TODO Only the mentor forgets the chat, ninja sends on connection to a mentor.
+	if(videosOutOfPosition) switchVideoPositions();
 }
 
 // Socket Processing
@@ -82,24 +91,27 @@ socket.on('general.mentorStatus',function(data){ // change a mentors status if t
 
 socket.on('general.startChat',function(){ //start a chat session when the server's made one
 	console.log("starting call");
+	answeredRequest = true;
 	if (live) return;
-	startRTC($(".user-info-panel").data("type") == "ninja");
+	chats = data;
+	console.log(data.ninja + " ");
+	var isNinja = $(".user-info-panel").data("type") == "ninja";
+	startRTC(isNinja);
 	//setTimeout(Mediaconn.openOrJoin,joinDelay,data.ninja, onJoin); // the ninja and mentor cannot connect at the same time, so one is delayed (look in their socks files)
 	$('.chat-body-start').data("calling", false);
 	$(".button-menu-buttons .chat-open").show();
 	$('.screen-remote-box').show();
 	$('.presentations-panel').hide();
 	$('.chat-body-stop').show();
-
-	$('.chat-body-start').hide();
-
+	if (isNinja) $('.chat-body-start').hide();
+	else $(".chat-btn-start").addClass("disabled");
 	// For the tutorial. The popover won't exist if not in tutorial mode, so in that case will do nothing
 	$(".screen-local-start").popover("show");
 	$(".webcam-controls").popover("show");
 	setTimeout(function() {
-			$(".screen-local-start").popover("hide");
-			$(".webcam-controls").popover("hide");
-}, 4000);
+		$(".screen-local-start").popover("hide");
+		$(".webcam-controls").popover("hide");
+	}, 4000);
 });
 
 socket.on('general.stopChat',stopChat); //stop a current chat if the server says to
