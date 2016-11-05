@@ -42,6 +42,7 @@ var stopChat = function(){
 	if (!live) return;
 	stopRTC();
 	live = false;
+	answeredRequest = false;
 	$('.screen-remote-box').hide();
 	$(".button-menu .chat-list-wrap").hide();
 	$(".button-menu-buttons .chat-open").hide();
@@ -49,11 +50,8 @@ var stopChat = function(){
 	$('.chat-body-stop').hide();
 	// TODO Show for ninja
 	var isNinja = $(".user-info-panel").data("type") == "ninja";
-	if (isNinja) {
-		$('.chat-body-request').show();
-	} else {
-		$(".chat-btn-start").removeClass("disabled");
-	}
+	if (isNinja) $('.chat-body-request').show();
+	else $(".chat-btn-start").removeClass("disabled");
 	$(".chat-list-wrap .chat-list").empty(); // TODO Only the mentor forgets the chat, ninja sends on connection to a mentor.
 	if(videosOutOfPosition) switchVideoPositions();
 }
@@ -93,8 +91,6 @@ socket.on('general.startChat',function(){ //start a chat session when the server
 	console.log("starting call");
 	answeredRequest = true;
 	if (live) return;
-	chats = data;
-	console.log(data.ninja + " ");
 	var isNinja = $(".user-info-panel").data("type") == "ninja";
 	startRTC(isNinja);
 	//setTimeout(Mediaconn.openOrJoin,joinDelay,data.ninja, onJoin); // the ninja and mentor cannot connect at the same time, so one is delayed (look in their socks files)
@@ -121,5 +117,4 @@ $(function(){
 		socket.emit('general.stopChat');
 		$(".chat-btn-stop").popover("hide"); //for tutorial, hide leave chat popup if it's still showing
 	});
-
 });

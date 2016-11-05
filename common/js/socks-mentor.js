@@ -94,6 +94,7 @@ socket.on('mentor.requestMentor', function(data){ // when a ninja has requested 
 	var answerbtn = $('#req-btn-'+data.cleanstok);
 	if (answeredRequest) answerbtn.addClass("disabled");
 	answerbtn.click(function(){ //add click event to the 'Answer' button
+		if (answeredRequest) return;
 		socket.emit('mentor.acceptRequest', data.sessiontoken);
 		answeredRequest = true;
 		if(doTutorial) {

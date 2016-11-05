@@ -1,1 +1,3 @@
-{"_indexes":["temp-dojo-t2at08tI4B7RyoB6FCRkgdUw71lVupN7zFFybRXTCCn2tJl9oNint7OfzX7W"],"_file":"/home/tahmer/github/RemoteDojo-3.0/dojos.json","temp-dojo-t2at08tI4B7RyoB6FCRkgdUw71lVupN7zFFybRXTCCn2tJl9oNint7OfzX7W":{"dojoname":"temp-dojo-t2at08tI4B7RyoB6FCRkgdUw71lVupN7zFFybRXTCCn2tJl9oNint7OfzX7W","name":"A Demo Dojo","password":"temp","location":"temp","email":"temp","expire":1476434099048}}
+{
+"UWA": {"dojoname": "UWA", "name":"UWA", "password": "$2a$10$27wfagtc8wUeF6kNVazKtOqfDShHfg6XJ7.y.AObJMjxHKx4iRA82", "location": "UWA", "email": "UWA-dojo@coderdojo.com", "expire": -1}
+}
