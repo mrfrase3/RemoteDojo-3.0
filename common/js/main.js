@@ -243,7 +243,7 @@ $(".chat-body-stop .switch-canvas").click(switchVideoPositions);
 $(document).keydown(function(e) {
   var chatInput = $(".input-group .chat-input");
   if (e.which == 13) {  // if enter
-    if (e.shiftKey || e.ctrlKey || !chats) return true; // continue if not in chat or additional keys held.
+    if (e.shiftKey || e.ctrlKey || !live) return true; // continue if not in chat or additional keys held.
     if (chatInput.is(':focus')) {
       if (chatInput.val().length != 0) {
         // if the chat has focus and isn't empty, send the message
