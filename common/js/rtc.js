@@ -3,9 +3,9 @@ var dataChannel;
 var rtcStreams = {local: {a:null,v:null}, remote:{a:null,v:null}};
 var isofferer = false;
 var iceservers = [{
-    url: 'turn:turn.anyfirewall.com:443?transport=tcp',
-    credential: 'webrtc',
-    username: 'webrtc'
+	url: 'turn:turn.anyfirewall.com:443?transport=tcp',
+	credential: 'webrtc',
+	username: 'webrtc'
 }];
 var negotiating; // Chrome workaround
 
@@ -120,7 +120,7 @@ var addMessage = function(msg, l) {
 			"background-color": "lightcyan",
 			"margin": "1px"
 		});	
-    	$(".button-menu .chat-list-wrap").toggle(true);
+		$(".button-menu .chat-list-wrap").toggle(true);
 	} 
 	var chatList = $(".chat-list-wrap .chat-list");
 	chatList.append(item);
@@ -174,17 +174,17 @@ socket.on("rtc.offer", function(desc){
 				//desc2.sdp = forceChosenAudioCodec(desc2.sdp);
 				socket.emit("rtc.answer", desc2);
 			}, function(e){
-                console.error(e);
+				console.error(e);
 				alert("Could not set local desc, contact an admin.o");
 				socket.emit("general.stopChat");
 			});
 		}, function(e){
-            console.error(e);
+			console.error(e);
 			alert("Could not create an answer, contact an admin");
 			socket.emit("general.stopChat");
 		});
 	}, function(e){
-        console.error(e);
+		console.error(e);
 		alert("Could not set the remote description, contact an admin.o");
 		socket.emit("general.stopChat");
 	});
@@ -194,7 +194,7 @@ socket.on("rtc.answer", function(desc2){
 	peerconn.setRemoteDescription(desc2).then(function() {
 		socket.emit("rtc.connected");
 	}, function(e){
-        console.error(e);
+		console.error(e);
 		alert("Could not set the remote description, contact an admin.");
 		socket.emit("general.stopChat");
 	});
@@ -203,29 +203,29 @@ socket.on("rtc.answer", function(desc2){
 socket.on("rtc.connected", function(){
 	if(negotiating) negotiating = false;
 	console.log("RTC Signaling Completed!");
-    if(!live){
-        navigator.mediaDevices.getUserMedia({
-            audio: true,
-    		video: false
-    	}).then(onLocalStream).catch(console.error);
-    	$(".loading-overlay").hide(200);
+	if(!live){
+		navigator.mediaDevices.getUserMedia({
+			audio: true,
+			video: false
+		}).then(onLocalStream).catch(console.error);
+		$(".loading-overlay").hide(200);
 		$(".loading-overlay h3").text("Loading...");
-    }
-    live = true;
+	}
+	live = true;
 });
 
 socket.on("rtc.negotiate", function(){
 	if (!live || negotiating) return;
 	console.log("negotiating");
 	negotiating = true;
-    if(isofferer) negotiateRTC();
-    else socket.emit("rtc.negotiate");
+	if(isofferer) negotiateRTC();
+	else socket.emit("rtc.negotiate");
 });
 
 $(function(){
 	$(".screen-local-start").click(function(){
 		getScreenId(function (error, sourceId, screen_constraints) {
-			// error    == null || 'permission-denied' || 'not-installed' || 'installed-disabled' || 'not-chrome'
+			// error	== null || 'permission-denied' || 'not-installed' || 'installed-disabled' || 'not-chrome'
 			// sourceId == null || 'string' || 'firefox'
 
 			//if(!navigator.getUserMedia) navigator.getUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
@@ -265,7 +265,7 @@ var stopStream = function(stream, element){
 		stream.getTracks().forEach(function(track) {
 			track.stop();
 		});
-        if(element && element.srcObject) element.srcObject = null;
+		if(element && element.srcObject) element.srcObject = null;
 	}
 };
 
@@ -290,7 +290,7 @@ var stopRTC = function(){
 var startRTC = function(offer){
 	$(".loading-overlay h3").text("Connecting Call...");
 	$(".loading-overlay").show(200);
-    var pcConfig = null;
+	var pcConfig = null;
 	if(iceservers.length > 0) pcConfig = {iceServers: iceservers};
 	var pcConstraints = {
 		optional: []
@@ -305,21 +305,21 @@ var startRTC = function(offer){
 		if (!live || negotiating) return;
 		console.log("negotiating");
 		negotiating = true;
-        if(isofferer) negotiateRTC();
-        else socket.emit("rtc.negotiate");
+		if(isofferer) negotiateRTC();
+		else socket.emit("rtc.negotiate");
 	};
-    isofferer = offer;
-    if(isofferer) {
-    	negotiateRTC();
+	isofferer = offer;
+	if(isofferer) {
+		negotiateRTC();
 		var dataConstraints = {
 			ordered: false, // TODO consider two channels for TCP/UDP
 			maxRetransmitTime: 1000 // milliseconds TODO find a suitable limit, if any at all is required.
 		};
 		dataChannel = peerconn.createDataChannel('dataChannel', dataConstraints);
 		setDataChannelListeners();
-    } else {
+	} else {
 		peerconn.ondatachannel = onRemoteDataChannel;
-    }
+	}
 }
 
 var rtcSendMessage = function(){

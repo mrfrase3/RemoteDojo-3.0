@@ -2,91 +2,91 @@
 <body style="height: 100%;">
 
 	<div class="heading-spacer" style="height:42px;width:100%"></div>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-3 controls">
-                <div class="user-info-panel panel panel-primary" data-name="{{user.fullname}}" data-type="mentor" {{user.expire}} {{user.demomode}}>
-                    <div class="panel-heading">
-                        <h3 class="panel-title">CoderDojo</h3>
-                    </div>
-                    <div class="panel-body">
-                    	user info: {{user.fullname}}<br>
-                    	<a href="./logout" class="btn btn-default">Logout</a>
-                    </div>
-                </div>
-                <div class="chat-panel panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Chat</h3>
-                    </div>
-                	<div class="panel-body chat-body-stop hidden">
-                    	<div class="col-xs-12">
-                        	Your Microphone:<br>
-                    		<div class="progress levels-local">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-3 controls">
+				<div class="user-info-panel panel panel-primary" data-name="{{user.fullname}}" data-type="mentor" {{user.expire}} {{user.demomode}}>
+					<div class="panel-heading">
+						<h3 class="panel-title">CoderDojo</h3>
+					</div>
+					<div class="panel-body">
+						user info: {{user.fullname}}<br>
+						<a href="./logout" class="btn btn-default">Logout</a>
+					</div>
+				</div>
+				<div class="chat-panel panel panel-primary">
+					<div class="panel-heading">
+						<h3 class="panel-title">Chat</h3>
+					</div>
+					<div class="panel-body chat-body-stop hidden">
+						<div class="col-xs-12">
+							Your Microphone:<br>
+							<div class="progress levels-local">
 								<div class="progress-bar progress-bar-success" style="width: 0%"></div>
 							</div>
-                    	</div>
-                    	<div class="col-xs-12">
-                        	Ninja's Microphone:<br>
-                    		<div class="progress levels-remote">
+						</div>
+						<div class="col-xs-12">
+							Ninja's Microphone:<br>
+							<div class="progress levels-remote">
 								<div class="progress-bar progress-bar-success" style="width: 0%"></div>
 							</div>
-                    	</div>
-                    	<div class="col-xs-12 screen-local-box hidden">
-                        	Your Screen/Webcam:<br>
-                    		<div class="screen-local">
+						</div>
+						<div class="col-xs-12 screen-local-box hidden">
+							Your Screen/Webcam:<br>
+							<div class="screen-local">
 								<canvas class="screen-local-canvas" style="width:100%;"></canvas>
 							</div>
-                        	<br>
-                        	<div class="btn btn-warning screen-local-stop hidden">Stop Screen Sharing</div>
-                    	</div>
-                    	<br>
-                        <div class="webcam-controls panel-body">
-                            <div class="col-xs-6 btn btn-default screen-local-start">Screen</div>
-                            <div class="col-xs-6 btn btn-default webcam-local-start">Webcam</div>
-                            <div class="col-xs-12 btn btn-default switch-canvas">Expand video</div>
-                        </div>
-                    	<br>
-                    	<div class="col-xs-12 btn btn-default chat-btn-stop">Leave Chat</div>
+							<br>
+							<div class="btn btn-warning screen-local-stop hidden">Stop Screen Sharing</div>
+						</div>
+						<br>
+						<div class="webcam-controls panel-body">
+							<div class="col-xs-6 btn btn-default screen-local-start">Screen</div>
+							<div class="col-xs-6 btn btn-default webcam-local-start">Webcam</div>
+							<div class="col-xs-12 btn btn-default switch-canvas">Expand video</div>
+						</div>
+						<br>
+						<div class="col-xs-12 btn btn-default chat-btn-stop">Leave Chat</div>
 
-                    </div>
-                </div>
-                <div class="queue-panel panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Queue</h3>
-                    </div>
-                    <div class="panel-body chat-body-request">
-                        <div class="col-xs-4" style="font-size: 3em;"><i class="fa fa-comments fa-3"></i></div>
-                        <div class="col-xs-8">There are no current Ninjas that need help.<br><br></div>
-                    </div>
-                    <ul class="panel-body req-list hidden list-group chat-body-start" style="padding:0px;text-align:center;">
-                    </ul>
-                    <script class="req-list-item-template" type="text/x-handlebars-template">
-                        <li class="list-group-item req-list-item" id="req-\{{cleanstok}}">
-                            \{{fullname}} from dojo \{{dojo}} wants help!<br>
-                            <div class="btn btn-success chat-btn-start" data-sessiontoken="\{{sessiontoken}}" id="req-btn-\{{cleanstok}}">Answer <i class="fa fa-phone"></i></div>
-                            <div class="btn btn-danger chat-btn-ignore" data-sessiontoken="\{{sessiontoken}}" id="req-ignore-btn-\{{cleanstok}}">Ignore <i class="fa fa-close"></i></div>
-                        </li>
-                    </script>
-                </div>
-            </div>
-        	<div class="col-md-9 workarea">
-            	<div class="screen-remote-box panel panel-primary hidden">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Ninja's Screen</h3>
-                    </div>
-                    <div class="panel-body screen-remote">
-                    	<canvas class="screen-remote-canvas" style="width:100%"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="dump hidden">
-        		<video class="dump-local" controls autoplay muted></video>
-            	<video class="dump-remote" controls autoplay></video>
-                <audio class="dump-local" controls autoplay muted></audio>
-            	<audio class="dump-remote" controls autoplay></audio>
-        	</div>
-        </div>
-    </div>
+					</div>
+				</div>
+				<div class="queue-panel panel panel-primary">
+					<div class="panel-heading">
+						<h3 class="panel-title">Queue</h3>
+					</div>
+					<div class="panel-body chat-body-request">
+						<div class="col-xs-4" style="font-size: 3em;"><i class="fa fa-comments fa-3"></i></div>
+						<div class="col-xs-8">There are no current Ninjas that need help.<br><br></div>
+					</div>
+					<ul class="panel-body req-list hidden list-group chat-body-start" style="padding:0px;text-align:center;">
+					</ul>
+					<script class="req-list-item-template" type="text/x-handlebars-template">
+						<li class="list-group-item req-list-item" id="req-\{{cleanstok}}">
+							\{{fullname}} from dojo \{{dojo}} wants help!<br>
+							<div class="btn btn-success chat-btn-start" data-sessiontoken="\{{sessiontoken}}" id="req-btn-\{{cleanstok}}">Answer <i class="fa fa-phone"></i></div>
+							<div class="btn btn-danger chat-btn-ignore" data-sessiontoken="\{{sessiontoken}}" id="req-ignore-btn-\{{cleanstok}}">Ignore <i class="fa fa-close"></i></div>
+						</li>
+					</script>
+				</div>
+			</div>
+			<div class="col-md-9 workarea">
+				<div class="screen-remote-box panel panel-primary hidden">
+					<div class="panel-heading">
+						<h3 class="panel-title">Ninja's Screen</h3>
+					</div>
+					<div class="panel-body screen-remote">
+						<canvas class="screen-remote-canvas" style="width:100%"></canvas>
+					</div>
+				</div>
+			</div>
+			<div class="dump hidden">
+				<video class="dump-local" controls autoplay muted></video>
+				<video class="dump-remote" controls autoplay></video>
+				<audio class="dump-local" controls autoplay muted></audio>
+				<audio class="dump-remote" controls autoplay></audio>
+			</div>
+		</div>
+	</div>
 
 </body>
 {{foot}}

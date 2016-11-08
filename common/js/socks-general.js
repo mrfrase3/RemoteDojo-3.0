@@ -24,13 +24,13 @@ var authSock = function(sock, cb){
 
 	sock.on('sockauth.valid', function(){ //server says the token is valid
 		console.log('socket connection authorised');
-    	if(cb) cb();
+		if(cb) cb();
 	});
 
 	sock.on('sockauth.invalid', function(){ //server says the token is not valid
 		sock.close();
 		//alert('Authentication with server failed, please log back in.');
-    	$(".alert-wrapper").prepend(genalert("danger", false, "Authentication with server failed, please log back in."));
+		$(".alert-wrapper").prepend(genalert("danger", false, "Authentication with server failed, please log back in."));
 		console.log('Failed to authorise socket connection: Token was not valid.');
 	});
 }
@@ -61,9 +61,9 @@ var stopChat = function(){
 socket.on('connect', function(){
 	console.log('socket connection made.');
 	authSock(socket, function(){
-    	socket.auth = true;
-    	$(".loading-overlay").hide(200);
-    });
+		socket.auth = true;
+		$(".loading-overlay").hide(200);
+	});
 });
 
 socket.on('reconnect', function(){

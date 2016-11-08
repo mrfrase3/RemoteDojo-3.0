@@ -101,7 +101,7 @@ socket.on('mentor.requestMentor', function(data){ // when a ninja has requested 
 			$('#req-btn-'+data.cleanstok).popover("hide");
 			addCallTutorialPopups();
 		}
-    });
+	});
 	$('#req-ignore-btn-'+data.cleanstok).click(function(){ // add click event to the 'Ignore' button
 		$('#req-'+data.cleanstok).remove();
 		request_checkEmpty();
@@ -111,9 +111,9 @@ socket.on('mentor.requestMentor', function(data){ // when a ninja has requested 
 // Helper function, that really shouldn't exist
 var request_checkEmpty = function(){ // Hide the queue if empty
 	if($('.req-list-item').length < 1){
-    	$('.chat-body-request').show();
+		$('.chat-body-request').show();
 		$('.chat-body-start').hide();
-    }
+	}
 }
 
 socket.on('mentor.cancelRequest', function(stok){ // when a ninja cancels a request
