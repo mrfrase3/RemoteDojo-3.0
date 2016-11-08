@@ -73,6 +73,13 @@ var offerTutorial = function() {
 	}, 3000);
 }
 
+var submitProfile = function(){
+	var name = $("#user-input-username").val();
+	$(".user-info-username").html(name);
+	$(".user-info-panel").data("name",name);
+	socket.emit('ninja.profileEdit', name);
+}
+
 $(function() {
 
 	var callingTimeout = function(totaltime, lapse, waited){
@@ -103,8 +110,17 @@ $(function() {
 		$('.chat-body-start').data("calling", false);
 	});
 
+	$(".user-input-submit").click(submitProfile);
 });
 
 $( document ).ready(function() {
 	offerTutorial();
+
+	$('#profileOverlay').on('shown.bs.modal', function() {
+		$("#user-input-username").focus();
+	});
+
+	$('#profileOverlay').on('hidden.bs.modal', function() {
+		$("#user-input-username").val("");
+	});
 });

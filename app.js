@@ -426,6 +426,10 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 				delete nmsessions[stok]; // delete the request
 			}
 		});
+		socket.on("ninja.profileEdit", function(data){
+			user.fullname = data;
+			// TODO users.save?
+		});
 		socket.on("disconnect", function(){ //if the ninja disconnects
 			var stok = nmsessions_getuser(socket.user);
 			if( stok && !nmsessions[stok].mentor){ //check that the ninja is requesting, if so, cancel it
@@ -433,10 +437,9 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 				delete nmsessions[stok];
 			}
 		});
-
 	}/* else if(user.perm == 2){ //if the user is a champion
 			// do chamion socket processing here
-		} else if(user.perm == 3){ //if the user is a admin
+		} else if(user.perm == 3){ //if the user is an admin
 			// do admin socket processing here
 		}*/
 
@@ -497,7 +500,7 @@ var removeUser = function(uid){
 	if(!users[uid]) return;
 	for(var s in io.of("/main").connected){
 		if(io.of("/main").connected[s].user && io.of("/main").connected[s].user == uid){
-        	io.of("/main").connected[s].emit("general.disconnect", "your user session has expired. <a class='btn btn-success' href='/' style='position:absolute;top:10px;right:25px;'><i class='fa fa-refresh'></i></a>");
+        	io.of("/main").connected[s].emit("general.disconnect", "Your user session has expired. <a class='btn btn-success' href='/' style='position:absolute;top:10px;right:25px;'><i class='fa fa-refresh'></i></a>");
 			io.of("/main").connected[s].disconnect();
 		}
 	}

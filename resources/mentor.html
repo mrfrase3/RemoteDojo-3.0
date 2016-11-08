@@ -10,7 +10,12 @@
 						<h3 class="panel-title">CoderDojo</h3>
 					</div>
 					<div class="panel-body">
-						user info: {{user.fullname}}<br>
+						user info: <input type="text" class="user-info-username form-control" value="{{user.fullname}}"><br>
+						<button type="button" class="user-info-btn btn btn-primary btn-sm">
+							<i class="fa fa-pencil-square-o"></i>
+							Edit profile
+						</button><br>
+						<br>
 						<a href="./logout" class="btn btn-default">Logout</a>
 					</div>
 				</div>

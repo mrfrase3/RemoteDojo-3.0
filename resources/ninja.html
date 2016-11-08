@@ -1,106 +1,120 @@
 {{head}}
 <body style="height: 100%;">
-
 	<div class="heading-spacer" style="height:42px;width:100%"></div>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-3 controls">
-                <div class="user-info-panel panel panel-primary" data-name="{{user.fullname}}" data-type="ninja" {{user.expire}} {{user.demomode}}>
-                    <div class="panel-heading">
-                        <h3 class="panel-title">CoderDojo</h3>
-                    </div>
-                    <div class="panel-body">
-                    	user info: {{user.fullname}}<br>
-                    	<a href="./logout" class="btn btn-default">Logout</a>
-                    </div>
-                </div>
-            	<div class="mentor-list-panel panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Mentors</h3>
-                    </div>
-                    <ul class="panel-body list-group mentor-list" style="padding: 0px;">
-                    	{{#each mentors}}
+	<!-- TODO Code adapted from http://v4-alpha.getbootstrap.com/components/modal/ -->
+	<div class="container">
+		<div class="modal fade profileModal" id="profileOverlay">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Change Username</h4>
+					</div>
+					<div class="modal-body">
+						<input type="text" id="user-input-username" class="user-input-field form-control" placeholder="Choose a username. Don't use your real name!" maxlength="10"><br>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="user-input-submit btn btn-default" data-dismiss="modal">Submit</button>
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-3 controls">
+				<div class="user-info-panel panel panel-primary" data-name="{{user.fullname}}" data-type="ninja" {{user.expire}} {{user.demomode}}>
+					<div class="panel-heading">
+						<h3 class="panel-title">CoderDojo</h3>
+					</div>
+					<div class="panel-body">
+						user info: <span class="user-info-username">{{user.fullname}}</span><br>
+						<button type="button" class="user-info-btn btn btn-primary btn-sm" data-toggle="modal" data-target="#profileOverlay">
+							<i class="fa fa-pencil-square-o"></i>
+							Change Username
+						</button><br>
+						<br>
+						<a href="./logout" class="btn btn-default">Logout</a>
+					</div>
+				</div>
+				<div class="mentor-list-panel panel panel-primary">
+					<div class="panel-heading">
+						<h3 class="panel-title">Mentors</h3>
+					</div>
+					<ul class="panel-body list-group mentor-list" style="padding: 0px;">
+						{{#each mentors}}
 							<li class="list-group-item mentor-list-item" data-username="{{this.username}}" id="mentor-{{this.username}}">
-                    			<span class="label label-{{this.label}}" style="float: right">{{this.status}}</span>
-                                {{this.fullname}}
-                    		</li>
+								<span class="label label-{{this.label}}" style="float: right">{{this.status}}</span>
+								{{this.fullname}}
+							</li>
 						{{/each}}
-                    </ul>
-                </div>
-                <div class="chat-panel panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Chat</h3>
-                    </div>
-                    <div class="panel-body chat-body-request">
-                    	<div class="col-xs-4" style="font-size: 3em;"><i class="fa fa-comments fa-3"></i></div>
-                    	<div class="col-xs-8">To chat with the mentor, click on 'Start Chat' button.<br><br></div>
-                    	<div class="col-xs-12 btn btn-default chat-btn-start">Start Chat</div>
-                    </div>
-                	<div class="panel-body chat-body-start hidden">
-                    	<div class="col-xs-4" style="font-size: 3em;"><i class="fa fa-comments fa-3"></i></div>
-                    	<div class="col-xs-8">Finding a mentor, hold on a moment!<br><br></div>
-                    	<div class="col-xs-12 progress" style="margin: 0; height: 3px; padding: 0;">
+					</ul>
+				</div>
+				<div class="chat-panel panel panel-primary">
+					<div class="panel-heading">
+						<h3 class="panel-title">Chat</h3>
+					</div>
+					<div class="panel-body chat-body-request">
+						<div class="col-xs-4" style="font-size: 3em;"><i class="fa fa-comments fa-3"></i></div>
+						<div class="col-xs-8">To chat with the mentor, click on 'Start Chat' button.<br><br></div>
+						<div class="col-xs-12 btn btn-default chat-btn-start">Start Chat</div>
+					</div>
+					<div class="panel-body chat-body-start hidden">
+						<div class="col-xs-4" style="font-size: 3em;"><i class="fa fa-comments fa-3"></i></div>
+						<div class="col-xs-8">Finding a mentor, hold on a moment!<br><br></div>
+						<div class="col-xs-12 progress" style="margin: 0; height: 3px; padding: 0;">
 							<div class="progress-bar progress-bar-warning" style="width:0%"></div>
 						</div>
-                    	<div class="col-xs-12 btn btn-default chat-btn-cancel">Leave Chat</div>
-                    </div>
-                	<div class="panel-body chat-body-stop hidden">
-                    	<div class="col-xs-12">
-                        	Your Microphone:<br>
-                    		<div class="progress levels-local">
+						<div class="col-xs-12 btn btn-default chat-btn-cancel">Leave Chat</div>
+					</div>
+					<div class="panel-body chat-body-stop hidden">
+						<div class="col-xs-12">
+							Your Microphone:<br>
+							<div class="progress levels-local">
 								<div class="progress-bar progress-bar-success" style="width: 0%"></div>
 							</div>
-                    	</div>
-                    	<div class="col-xs-12">
-                        	Mentor's Microphone:<br>
-                    		<div class="progress levels-remote">
+						</div>
+						<div class="col-xs-12">
+							Mentor's Microphone:<br>
+							<div class="progress levels-remote">
 								<div class="progress-bar progress-bar-success" style="width: 0%"></div>
 							</div>
-                    	</div>
-                    	<div class="col-xs-12 screen-local-box hidden">
-                        	Your Screen:<br>
-                    		<div class="screen-local">
+						</div>
+						<div class="col-xs-12 screen-local-box hidden">
+							Your Screen:<br>
+							<div class="screen-local">
 								<canvas class="screen-local-canvas"></canvas>
 							</div>
-                        	<br>
-                        	<div class="btn btn-warning screen-local-stop hidden">Stop Screen Sharing</div>
-                    	</div>
-                    	<br>
-                    	<div class="col-xs-12 btn btn-default screen-local-start">Share Your Screen</div>
-                        <div class="col-xs-12 btn btn-default switch-canvas">Expand video</div>
-                    	<br>
-                    	<div class="col-xs-12 btn btn-default chat-btn-stop">Leave Chat</div>
-                    </div>
-                </div>
-            </div>
-        	<div class="col-md-9 workarea">
-            	<!--
-                <div class="presentations-panel panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Presentations</h3>
-                    </div>
-                    <div class="panel-body">
-                    	~~ To Do ~~
-                    </div>
-                </div>
-                -->
-            	<div class="screen-remote-box panel panel-primary hidden">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Mentor's Screen</h3>
-                    </div>
-                    <div class="panel-body screen-remote">
-                    	<canvas class="screen-remote-canvas" style="width:100%;"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="dump hidden">
-        		<video class="dump-local" controls autoplay muted></video>
-            	<video class="dump-remote" controls autoplay></video>
-                <audio class="dump-local" controls autoplay muted></audio>
-            	<audio class="dump-remote" controls autoplay></audio>
-        	</div>
-        </div>
-    </div>
+							<br>
+							<div class="btn btn-warning screen-local-stop hidden">Stop Screen Sharing</div>
+						</div>
+						<br>
+						<div class="col-xs-12 btn btn-default screen-local-start">Share Your Screen</div>
+						<div class="col-xs-12 btn btn-default switch-canvas">Expand video</div>
+						<br>
+						<div class="col-xs-12 btn btn-default chat-btn-stop">Leave Chat</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-9 workarea">
+				<div class="screen-remote-box panel panel-primary hidden">
+					<div class="panel-heading">
+						<h3 class="panel-title">Mentor's Screen</h3>
+					</div>
+					<div class="panel-body screen-remote">
+						<canvas class="screen-remote-canvas" style="width:100%;"></canvas>
+					</div>
+				</div>
+			</div>
+			<div class="dump hidden">
+				<video class="dump-local" controls autoplay muted></video>
+				<video class="dump-remote" controls autoplay></video>
+				<audio class="dump-local" controls autoplay muted></audio>
+				<audio class="dump-remote" controls autoplay></audio>
+			</div>
+		</div>
+	</div>
 
 </body>
 {{foot}}
