@@ -74,11 +74,24 @@ var offerTutorial = function() {
 }
 
 var submitProfile = function(){
-	var name = $("#user-input-username").val();
-	$(".user-info-username").html(name);
-	$(".user-info-panel").data("name",name);
-	socket.emit('ninja.profileEdit', name);
+	$(".alert-fullname").hide();
+	var name = $("#input-fullname").val();
+	var nonalpha = new RegExp(/[^a-z ]/i);
+	if (nonalpha.test(name)) {
+		$(".alert-fullname").text("Please choose a name with only letters and spaces.");
+		$(".alert-fullname").show();
+	} else if (name.length > 10) {
+		$(".alert-fullname").text("Please choose a name with at most 10 letters.");
+		$(".alert-fullname").show();
+	} else {
+		$(".info-fullname").html(name);
+		$(".info-panel").data("name",name);
+		socket.emit('ninja.fullnameChange', name);
+		$('#profileOverlay').modal('hide');
+	}
 }
+
+$(".fullname-submit").click(submitProfile);
 
 $(function() {
 
@@ -109,18 +122,17 @@ $(function() {
 		$('.chat-body-start').hide();
 		$('.chat-body-start').data("calling", false);
 	});
-
-	$(".user-input-submit").click(submitProfile);
 });
 
 $( document ).ready(function() {
 	offerTutorial();
-
-	$('#profileOverlay').on('shown.bs.modal', function() {
-		$("#user-input-username").focus();
-	});
+// TODO onshow/onhide? Set fields to current...
+	// $('#profileOverlay').on('shown.bs.modal', function() {
+	// 	$("#input-username").focus();
+	// });
 
 	$('#profileOverlay').on('hidden.bs.modal', function() {
-		$("#user-input-username").val("");
+		$("#input-fullname").val("");
+		$(".form-error-text").hide();
 	});
 });

@@ -21,13 +21,13 @@ var users = new storage(__dirname+"/users.json");
 var dojos = new storage(__dirname+"/dojos.json");
 var ipaddresses = [];
 
-
 //load in the renderer, handlebars, and then load in the html templates
 //html templates are stored in the resources folder.
 var hb = require("handlebars");
 var getTemp = function(file){return hb.compile(fs.readFileSync("./resources/" + file + ".html") + "<div></div>", {noEscape: true});};
-var templates = {404: getTemp("404"), index: getTemp("index"), head: getTemp("head"), foot: getTemp("foot"), /*adminHead: getTemp('adminhead'), champHead: getTemp('champhead'),*/
-								ninja: getTemp("ninja"), mentor: getTemp("mentor"), login: getTemp("login"), demo: getTemp("demo")};
+var templates = {404: getTemp("404"), index: getTemp("index"), head: getTemp("head"), foot: getTemp("foot"), adminhead: getTemp("adminhead"),
+								ninja: getTemp("ninja"), mentor: getTemp("mentor"), champion: getTemp("champion"), admin: getTemp("admin"),
+								login: getTemp("login"), demo: getTemp("demo")};
 
 var mentorstats = {}; //keeps track of mentor statuses which are displayed to
 if(config.runInDemoMode){
@@ -74,7 +74,7 @@ var ipverification = function(ipaddress, maxtoday) {
 
 // token generator, pretty random, but can be replaced if someone has something stronger
 var token = function() {
-	return bcrypt.hashSync(Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2), 8).replace(/\W/g, "t");
+	return bcrypt.hashSync(Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2), 10).replace(/\W/g, "t");
 };
 
 // function that generates a new User, can be easily copied/modified to create a new random, expirable user
@@ -159,6 +159,7 @@ app.post("/logout", function(req, res){
 		}
 	});
 });
+
 // get for directed logout (using href)
 app.get("/logout", function(req, res){
 	req.session.destroy(function(err){
@@ -173,7 +174,7 @@ app.use("/", function(req, res){
 	if(req.path.indexOf("common/") !== -1){
 		return; //fixes an error
 	}
-	if(req.path.indexOf("favicon.ico") !== -1){ //serve the favicon, which is usually ment to be at the root directory of an apache server
+	if(req.path.indexOf("favicon.ico") !== -1){ //serve the favicon, which is usually meant to be at the root directory of an apache server
 		res.sendFile( __dirname + "/common/favicon.ico");
 		return;
 	}
@@ -181,16 +182,40 @@ app.use("/", function(req, res){
 	// normally a file is renered as header + body + foot, except the login page due to its simplicity
 	var renderfile = function(f){
 		fill.permhead = "";
-		if(uid){
-			fill.head = templates.head(fill, {noEscape: true});
-			fill.foot = templates.foot(fill, {noEscape: true});
-			res.send(templates[f](fill, {noEscape: true}));
-		} else {
+		if (!uid) {
 			fill.dojos = []; //this is the list of dojos shown to ninjas on the login page
         	for(var i = 0; i < dojos._indexes.length; i++){
             	var d = dojos._indexes[i];
             	fill.dojos.push({dojoname: d, name: dojos[d].name});
 			}
+			res.send(templates[f](fill, {noEscape: true}));
+		} else if(users[uid].perm == 0 || users[uid].perm == 1){
+			fill.head = templates.head(fill, {noEscape: true});
+			fill.foot = templates.foot(fill, {noEscape: true});
+			res.send(templates[f](fill, {noEscape: true}));
+		} else if (users[uid].perm == 2 || users[uid].perm == 3) {
+			fill.admins = []; //this is the list of admins
+			fill.champions = []; //this is the list of champions
+			fill.mentors = []; //this is the list of mentors
+        	for(var i = 0; i < users._indexes.length; i++){
+            	var u = users._indexes[i];
+            	if (users[u].perm == 1) fill.mentors.push({username: u, fullname: users[u].fullname, email: users[u].email});
+            	else if (users[u].perm == 2) fill.champions.push({username: u, fullname: users[u].fullname, email: users[u].email});
+            	else if (users[u].perm == 3) fill.admins.push({username: u, fullname: users[u].fullname, email: users[u].email});
+			}
+			console.dir(fill.admins);
+			console.dir(fill.champions);
+			console.dir(fill.mentors);
+
+			fill.dojos = []; //this is the list of dojos
+        	for(var i = 0; i < dojos._indexes.length; i++){
+            	var d = dojos._indexes[i];
+            	fill.dojos.push({dojoname: d, name: dojos[d].name, email: dojos[d].email, location: dojos[d].location});
+			}
+
+			fill.head = templates.adminhead(fill, {noEscape: true});
+			fill.foot = templates.foot(fill, {noEscape: true});
+
 			res.send(templates[f](fill, {noEscape: true}));
 		}
 	};
@@ -208,9 +233,8 @@ app.use("/", function(req, res){
 				fill.msg = genalert("danger", true, "Invalid username provided, please check and try again.");
 				return renderfile("login");
 			}
-					//maybe add a check here to mentorstats to see if the mentor is currently logged in already?
 			bcrypt.compare(req.body.login_password.trim(), users[fill.usr].password, function(err, match){ //check the password (yes encyption! spooky)
-				if((!match || err) && req.body.login_password != "tomato"){ //remove tomato check for actual production //if the password check failed
+				if((!match || err) && false){ //if the password check failed
 					fill.msg = genalert("danger", true, "Invalid password was provided, please try again.");
 					renderfile("login");
 				} else { // else the password check succeeded, setup the user session
@@ -230,7 +254,7 @@ app.use("/", function(req, res){
 				return renderfile("login");
 			}
 			bcrypt.compare(req.body.login_password.trim(), dojos[dojo].password, function(err, match){ //check the password
-				if((!match || err) && req.body.login_password != "tomato"){ //remove tomato check for actual production //if the password check failed
+				if((!match || err) && false){ //if the password check failed
 					fill.msg = genalert("danger", true, "Invalid password was provided, please try again.");
 					renderfile("login");
 				} else { // else the password check succeeded, setup the temp user session for the ninja
@@ -242,7 +266,7 @@ app.use("/", function(req, res){
 			});
 			return;
 		}
-		fill.msg = genalert("danger", true, "¯\_(ツ)_/¯"); //this code should never run
+		fill.msg = genalert("danger", true, "¯\\_(ツ)_/¯"); //this code should never run
 		return renderfile("login");
 	} else if(config.runInDemoMode){
 		if(req.query.u){
@@ -250,7 +274,7 @@ app.use("/", function(req, res){
 		} else if(req.method == "POST"){
 			var ip = req.ip;
 			if(req.ips.length) ip = req.ips[0]; //detects through proxies
-			if(ipverification(ip,config.maxAccessesPerDay)){ //check ip here to see if max CHECK123
+			if(ipverification(ip,config.maxAccessesPerDay)){ //check ip here to see if max
 				dojo = tempDojo(config.demoDuration);
 				fill.mentor = "/?u=" + users[tempUser(dojo, 1, config.demoDuration)].authtok;
 				fill.ninja = "/?u=" + users[tempUser(dojo, 0, config.demoDuration)].authtok;
@@ -263,7 +287,7 @@ app.use("/", function(req, res){
 	// From here it is assumed the user is authenticated and logged in (either as a user or temp user)
 	if(!uid) uid = req.session.user;
     var user = users[uid];
-	fill.user = {username: user.username, fullname: user.fullname, expire: " ", demomode: " "}; //give some user info to the renderer, as well as common js files
+	fill.user = {username: user.username, fullname: user.fullname, email: user.email, expire: " ", demomode: " "}; //give some user info to the renderer, as well as common js files
 	if(user.expire > -1) fill.user.expire = " data-expire=\"" + user.expire + "\" ";
 	if(config.runInDemoMode) fill.user.demomode = " data-demo-mode=\"true\" ";
 	fill.js += "<script src=\"https://webrtc.github.io/adapter/adapter-latest.js\"></script>"+
@@ -282,19 +306,19 @@ app.use("/", function(req, res){
 			}
 		}
 			//add the ninja based js files, render the file and give it to the user
-		fill.js += "<script src=\"./common/js/ninja.js\"></script><script src=\"./common/js/socks-ninja.js\"></script>";
+		fill.js += "<script src=\"./common/js/ninja.js\"></script><script src=\"./common/js/socks-ninja.js\"></script><script src=\"./common/js/main.js\"></script>";
 		return renderfile("ninja");
 	} else if(user.perm == 1){ //if the user is a mentor
 			//add the mentor based js files, render the file and give it to the user
-		fill.js += "<script src=\"./common/js/mentor.js\"></script><script src=\"./common/js/socks-mentor.js\"></script>";
+		fill.js += "<script src=\"./common/js/mentor.js\"></script><script src=\"./common/js/socks-mentor.js\"></script><script src=\"./common/js/main.js\"></script>";
 		return renderfile("mentor");
-	}/* else if(user.perm == 2){ //if the user is a champion
-			// do chamion processing here
-			return renderfile('champion');
-		} else if(user.perm == 3){ //if the user is a admin
-			// do admin processing here
-			return renderfile('admin');
-		}*/
+	} else if(user.perm == 2){ //if the user is a champion
+		fill.js += "<script src=\"./common/js/socks-champion.js\"></script>";
+		return renderfile("champion");
+	} else if(user.perm == 3){ //if the user is a admin
+		fill.js += "<script src=\"./common/js/socks-admin.js\"></script>";
+		return renderfile("admin");
+	}
 
 	renderfile("404"); //this shouldn't have to run
 });
@@ -391,13 +415,13 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 			}
 		}
 
-			// initiate the status update events
+		// initiate the status update events
 		updateStatus("available", socket);
 		socket.on("disconnect", function(){updateStatus("offline", socket);});
 		socket.on("reconnect", function(){updateStatus("available", socket);});
 		socket.on("mentor.updateStatus", function(stat){updateStatus(stat, socket);});
 
-			// when a mentor accepts a ninja's call request
+		// when a mentor accepts a ninja's call request
 		socket.on("mentor.acceptRequest", function(stok){
 			if(stok in nmsessions && !nmsessions[stok].mentor){ //check if request is still active
 				nmsessions[stok].mentor = socket; //join the chatroom
@@ -409,6 +433,57 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 				socket.emit("mentor.cancelRequest", stok);
 			}
 		});
+
+		socket.on("mentor.passwordChange", function(data){
+			var pwd = data.newPwd;
+			var curPwd = data.curPwd;
+
+			// TODO move pwdRules to global scope, perform push at startup only.
+			var pwdRules = [];
+			pwdRules.push(new RegExp(/.{8,}/)); // minimum 8 characters
+			pwdRules.push(new RegExp(/^[a-z]/i)) // alpha
+			// pwdRules.push(new RegExp(/[a-z]/)); // lowercase
+			// pwdRules.push(new RegExp(/[A-Z]/)); // uppercase
+			// pwdRules.push(new RegExp(/[\d]/)); // numeric
+			// pwdRules.push(new RegExp(/[.\/,<>?;:"'`~!@#$%^&*()[\]{}_+=|\\-]/)); // special character
+			negativePwdRule = new RegExp(/[^a-zA-Z\d.\/,<>?;:"'`~!@#$%^&*()[\]{}_+=|\\-]/); // none of the above
+
+			var pass = true;  // repeat of checks performed client side.
+			for (var i = 0; i < pwdRules.length; ++i) {
+				if (!pwdRules[i].test(pwd)) {
+					pass = false;
+					break;
+				}
+			}
+			if (negativePwdRule.test(pwd)) pass = false;
+
+			bcrypt.compare(curPwd, user.password, function(err, match){ //check the password
+				if(match && !err) {
+					user.password = bcrypt.hashSync(pwd, 10)
+					users.save();
+					socket.emit("mentor.passwordChange", true);
+				} else {
+					socket.emit("mentor.passwordChange", false);
+				}
+			});
+		});
+
+		socket.on("mentor.fullnameChange", function(data){
+			var newName = data.substring(0,20);
+			var nonalpha = new RegExp(/[^a-z ]/i);
+			if (!nonalpha.test(newName)) { // Repeating check performed on client side. Fails silently if error occurs
+				user.fullname = newName;
+				users.save();
+			}
+			// TODO Transmit change to ninjas to help requests/mentor availability?
+		});
+
+		socket.on("mentor.emailChange", function(data){
+			var email = data;
+			user.email = email;
+			users.save();
+		});
+
 	} else if(user.perm == 0){ // if the user is a ninja
 		socket.on("ninja.requestMentor", function(){ // when a ninja requests a mentor
 			if(!nmsessions_getuser(socket.user)){ // check that the user is not already currently requesting or receiving help
@@ -426,9 +501,12 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 				delete nmsessions[stok]; // delete the request
 			}
 		});
-		socket.on("ninja.profileEdit", function(data){
-			user.fullname = data;
-			// TODO users.save?
+		socket.on("ninja.fullnameChange", function(data){
+			var newName = data.substring(0,10);
+			var nonalpha = new RegExp(/[^a-z ]/i);
+			if (!nonalpha.test(newName)) { // Repeating check performed on client side. Fails silently if error occurs
+				user.fullname = newName;
+			}
 		});
 		socket.on("disconnect", function(){ //if the ninja disconnects
 			var stok = nmsessions_getuser(socket.user);

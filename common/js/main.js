@@ -217,7 +217,7 @@ function resizeTextBox(o){
 	}
 }
 
-$(".resizeBox").keyup(function() {
+$(".resizeBox").on("change keyup keypress blur", function() {
 	resizeTextBox(this);
 });
 
@@ -242,7 +242,7 @@ $(".chat-body-stop .switch-canvas").click(switchVideoPositions);
 // Keybinings
 $(document).keydown(function(e) {
 	var chatInput = $(".input-group .chat-input");
-	var profileField = $(".user-input-field");
+	var profileField = $(".first-modal-field");
 	if (e.which == 13) {	// if enter
 		if (profileField.is(":focus") && profileField.val().length != 0) {
 			submitProfile();

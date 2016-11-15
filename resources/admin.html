@@ -1,0 +1,162 @@
+{{head}}
+<body style="height: 100%;">
+
+	<div class="heading-spacer" style="height:42px;width:100%"></div>
+	<div class="user-info-panel panel panel-primary" data-name="{{user.fullname}}" data-email="{{user.email}}" data-username="{{user.username}}" data-type="admin">
+		<div class="panel-heading">
+			<h3 class="panel-title">CoderDojo</h3>
+		</div>
+		<div class="panel-body">
+				User info: <span class="info-fullname">{{user.fullname}}</span>
+				<a href="./logout" class="col-xs-12 btn btn-default btn-sm">Logout</a>
+		</div>
+	</div>
+	<div class="container">
+		<div class="profilePanel panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Modify users</h3>
+			</div>
+			<div class="panel-body">
+				<ul class="nav nav-tabs">
+					<li class=""><a href="#admin" data-toggle="tab" aria-expanded="false">Admin</a></li>
+					<li class=""><a href="#champion" data-toggle="tab" aria-expanded="false">Champion</a></li>
+					<li class=""><a href="#mentor" data-toggle="tab" aria-expanded="false">Mentor</a></li>
+					<li class="active"><a href="#dojo" data-toggle="tab" aria-expanded="true">Dojo</a></li>
+				</ul>
+				<div class="tab-content">
+					<div class="tab-pane fade" id="admin">
+						<fieldset>
+           		 	        <div class="form-group">
+            		            <select class="form-control" name="admin_list" required>
+                                	{{#each admins}}
+										<option value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}">
+											{{this.fullname}}</option>
+									{{/each}}
+                                </select>
+            		        </div>
+            		    </fieldset>
+						<fieldset>
+							<div class="form-group">
+								<label for="username">Username:</label>
+								<input class="form-control" placeholder="Username" name="username" type="text" value="">
+							</div>
+							<div class="form-group">
+								<label for="password">Password:</label>
+								<input class="form-control" placeholder="Password" name="password" type="text" value="">
+							</div>
+							<div class="form-group">
+								<label for="email">Email:</label>
+								<input class="form-control" placeholder="Email" name="email" type="text" value="">
+							</div>
+							<div class="form-group">
+								<label for="fullname">Fullname:</label>
+								<input class="form-control" placeholder="Fullname" name="fullname" type="text" value="">
+							</div>
+							<button class="btn btn-lg btn-success btn-block">Submit</button>
+						</fieldset>
+					</div>
+					<div class="tab-pane fade" id="champion">
+						<fieldset>
+           		 	        <div class="form-group">
+            		            <select class="form-control" name="admin_list" required>
+                                	{{#each champions}}
+										<option value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}">
+											{{this.fullname}}</option>
+									{{/each}}
+                                </select>
+            		        </div>
+            		    </fieldset>
+						<fieldset>
+							<div class="form-group">
+								<label for="username">Username:</label>
+								<input class="form-control" placeholder="Username" name="username" type="text" value="">
+							</div>
+							<div class="form-group">
+								<label for="password">Password:</label>
+								<input class="form-control" placeholder="Password" name="password" type="text" value="">
+							</div>
+							<div class="form-group">
+								<label for="email">Email:</label>
+								<input class="form-control" placeholder="Email" name="email" type="text" value="">
+							</div>
+							<div class="form-group">
+								<label for="fullname">Fullname:</label>
+								<input class="form-control" placeholder="Fullname" name="fullname" type="text" value="">
+							</div>
+							<button class="btn btn-lg btn-success btn-block">Submit</button>
+						</fieldset>
+					</div>
+					<div class="tab-pane fade" id="mentor">
+						<fieldset>
+           		 	        <div class="form-group">
+            		            <select class="form-control" name="admin_list" required>
+                                	{{#each mentors}}
+										<option value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}">
+											{{this.fullname}}</option>
+									{{/each}}
+                                </select>
+            		        </div>
+            		    </fieldset>
+						<fieldset>
+							<div class="form-group">
+								<label for="username">Username:</label>
+								<input class="form-control" placeholder="Username" name="username" type="text" value="">
+							</div>
+							<div class="form-group">
+								<label for="password">Password:</label>
+								<input class="form-control" placeholder="Password" name="password" type="text" value="">
+							</div>
+							<div class="form-group">
+								<label for="email">Email:</label>
+								<input class="form-control" placeholder="Email" name="email" type="text" value="">
+							</div>
+							<div class="form-group">
+								<label for="fullname">Fullname:</label>
+								<input class="form-control" placeholder="Fullname" name="fullname" type="text" value="">
+							</div>
+							<button class="btn btn-lg btn-success btn-block">Submit</button>
+						</fieldset>
+					</div>
+					<div class="tab-pane fade" id="dojo">
+						<fieldset>
+           		 	        <div class="form-group">
+            		            <select class="form-control" name="admin_list" required>
+                                	{{#each dojos}}
+										<option value="{{this.dojoname}}" data-fullname="{{this.name}}" data-email="{{this.email}}" data-email="{{this.location}}">{{this.name}}</option>
+									{{/each}}
+                                </select>
+            		        </div>
+            		    </fieldset>
+						<fieldset>
+							<div class="form-group">
+								<label for="dojoname">Dojoname:</label>
+								<input class="form-control" placeholder="Dojoname" name="dojoname" type="text" value="">
+							</div>
+							<div class="form-group">
+								<label for="name">Name:</label>
+								<input class="form-control" placeholder="Name" name="name" type="text" value="">
+							</div>
+							<div class="form-group">
+								<label for="location">Location:</label>
+								<input class="form-control" placeholder="Location" name="location" type="text" value="">
+							</div>
+							<div class="form-group">
+								<label for="email">Email:</label>
+								<input class="form-control" placeholder="Email" name="email" type="text" value="">
+							</div>
+							<div class="form-group">
+								<label for="password">Password:</label>
+								<input class="form-control" placeholder="Password" name="password" type="text" value="">
+							</div>
+							<button class="btn btn-lg btn-success btn-block">Submit</button>
+						</fieldset>
+					</div>
+				</div>
+			</div>
+			<div class="panel-footer">
+			</div>
+		</div>
+	</div>
+	<div class="footer-spacer"></div>
+</body>
+{{foot}}

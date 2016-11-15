@@ -142,7 +142,6 @@ $("#input-password, #input-password2").on("change keyup keypress blur", function
 	$(".alert-password2").toggle(!(pwd === pwd2));
 });
 
-// TODO replace this with a form submission and a check / response on the server side.
 var submitFullname = function(){
 	$(".alert-fullname").hide();
 	var name = $("#input-fullname").val().trim();

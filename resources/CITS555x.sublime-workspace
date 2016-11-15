@@ -1,0 +1,1004 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"add",
+				"addClass"
+			],
+			[
+				"remo",
+				"removeChild"
+			],
+			[
+				"canvas",
+				"canvasBtnZone"
+			],
+			[
+				"logBtn",
+				"logBtn"
+			],
+			[
+				"back",
+				"background-color"
+			],
+			[
+				"j",
+				"j"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/socks-general.js",
+			"settings":
+			{
+				"buffer_size": 4645,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/css/main.css",
+			"settings":
+			{
+				"buffer_size": 12176,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/tim/.config/sublime-text-2/Packages/User/JavaScript.sublime-settings",
+			"settings":
+			{
+				"buffer_size": 118,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/tim/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
+			"settings":
+			{
+				"buffer_size": 13678,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/tim/.config/sublime-text-2/Packages/User/HTML.sublime-settings",
+			"settings":
+			{
+				"buffer_size": 118,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/app.js",
+			"settings":
+			{
+				"buffer_size": 23169,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/users.json",
+			"settings":
+			{
+				"buffer_size": 3195,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/socks-ninja.js",
+			"settings":
+			{
+				"buffer_size": 5455,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/socks-mentor.js",
+			"settings":
+			{
+				"buffer_size": 6639,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/lib/Storage.js",
+			"settings":
+			{
+				"buffer_size": 1241,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/config.json",
+			"settings":
+			{
+				"buffer_size": 261,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/dojos.json",
+			"settings":
+			{
+				"buffer_size": 188,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/rtc.js",
+			"settings":
+			{
+				"buffer_size": 10899,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ninja.html",
+			"settings":
+			{
+				"buffer_size": 5044,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "mentor.html",
+			"settings":
+			{
+				"buffer_size": 4892,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "head.html",
+			"settings":
+			{
+				"buffer_size": 3500,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/main.js",
+			"settings":
+			{
+				"buffer_size": 8511,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"selected_items":
+		[
+		],
+		"width": 392.0
+	},
+	"console":
+	{
+		"height": 0.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/home/tim/Documents/UWA/CITS5503/CITS5503-project/README.md",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/resources/404.html",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/resources/foot.html",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/resources/demo.html",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/resources/.directory",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/effects.js",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/main.js",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/mentor.js",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/ninja.js",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/resources/mentor.html",
+		"/home/tim/.config/sublime-text-2/Packages/User/css.sublime-settings",
+		"/home/tim/.config/sublime-text-2/Packages/User/Preferences.sublime-settings",
+		"/home/tim/.config/sublime-text-2/Packages/User/JavaScript.sublime-settings",
+		"/home/tim/.config/sublime-text-2/Packages/User/JSON.sublime-settings",
+		"/home/tim/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/app.js",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/socks-mentor.js",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/socks-general.js",
+		"/home/tim/Documents/UWA/CITS5552/main.js.bak",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/socks-ninja.js",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/rtc.js",
+		"/home/tim/Documents/D&D/TToM_OHMS/Spells",
+		"/home/tim/Documents/D&D/TToM_OHMS/Items",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/users.json",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/dojos_copy.json",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/dojos.json",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/config.json",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/css/main.css",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/views/ninja.jade",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/resources/ninja.html",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/resources/head.html",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/README.md",
+		"/media/tim/C484B13584B12B36/userpair.txt",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/users_copy.json",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/css/main.css",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/chat.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/notification.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/Drawing.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/feedback.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/latest.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/mentor.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/miscHelpers.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/trackMouse.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/script.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/Screenshot.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/ninja.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/app.js",
+		"/home/tim/.config/sublime-text-2/Packages/User/Distraction Free.sublime-settings",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/lib/Storage.js",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/signaling-server.js",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/resources/login.html",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/rtc.js.bak.txt",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/coderdojo-screen-share.xpi",
+		"/home/tim/Documents/UWA/ICPC/Prac_10_5/in",
+		"/home/tim/Documents/UWA/ICPC/Prac_10_5/B.cpp",
+		"/home/tim/Documents/UWA/ICPC/Prac_10_5/A.cpp",
+		"/home/tim/Documents/UWA/ICPC/Prac_10_5/D.cpp",
+		"/home/tim/Documents/UWA/ICPC/Prac_10_5/template.cpp",
+		"/home/tim/Documents/UWA/CITS5502/Assignment 3/V4/in",
+		"/home/tim/Documents/UWA/CITS5502/Assignment 3/V3/V3.cpp",
+		"/home/tim/Documents/UWA/CITS5502/Assignment 3/V2/AgeBase.cpp",
+		"/home/tim/Documents/UWA/CITS5502/Assignment 3/V4/A.cpp",
+		"/home/tim/Documents/UWA/CITS5502/Assignment 3/V3/in2",
+		"/home/tim/Documents/UWA/CITS5502/Assignment 3/V3/in",
+		"/home/tim/Documents/D&D/Bard/Spells",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/sscerts.sh",
+		"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/certs/sscerts.sh",
+		"/home/tim/Documents/UWA/CITS5502/Assignment 3/output",
+		"/home/tim/Documents/UWA/CITS5502/Assignment 3/input",
+		"/home/tim/Documents/UWA/CITS5502/Assignment 3/AgeBase.cpp",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/socketServer.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/dojo_rtc.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/views/mentor.jade",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/node_modules/dry-layers/lib/data_service.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/node_modules/dry-layers/lib/static/data_gateway.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/node_modules/dry-layers/lib/static/dialog.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/node_modules/dry-layers/lib/static/list.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/node_modules/dry-layers/lib/static/meeting_gateway.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/node_modules/dry-layers/lib/dry_layers.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/app.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/views/administrator.jade",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/views/champion.jade",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/views/parts/meeting_dialog.jade",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/views/parts/dojo_dialog.jade",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/views/parts/avatar_dialog.jade",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/views/ninja.jade",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/views/mentor.jade",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/views/layout.jade",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/views/index.jade",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/views/error.jade",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/bin/www.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/justfortest.js",
+		"/home/tim/Documents/UWA/CITS5552/OLD-CoderDojoV2-master/WebRTC/public/js/Drawing.js",
+		"/home/tim/Documents/UWA/CITS5552/OLD-CoderDojoV2-master/WebRTC/public/js/Screenshot.js",
+		"/home/tim/Documents/UWA/CITS5552/OLD-CoderDojoV2-master/WebRTC/public/js/chat.js",
+		"/home/tim/Documents/UWA/CITS5552/OLD-CoderDojoV2-master/WebRTC/public/js/sendScreenshot.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/broadcast.js",
+		"/home/tim/Documents/UWA/ICPC/A.cpp",
+		"/home/tim/Documents/UWA/CITS5502/Untitled Folder/Timings:",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/node_modules/dry-layers/lib/static/security_gateway.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/routes/index.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/initialize.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/views/parts/meeting_user_dialog.jade",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/node_modules/dry-layers/LICENSE",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/public/stylesheets/style.css",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/Administrator/public/stylesheets/style.styl",
+		"/home/tim/Documents/UWA/CITS5502/Untitled Folder/output.txt",
+		"/home/tim/Documents/UWA/CITS5502/Untitled Folder/input",
+		"/home/tim/Documents/UWA/CITS5502/Untitled Folder/Assignment_1.cpp",
+		"/home/tim/Documents/UWA/CITS5502/Untitled Folder/outupt.txt",
+		"/home/tim/Documents/UWA/CITS5502/Untitled Folder/output",
+		"/home/tim/Documents/UWA/CITS5502/Untitled Folder/A.cpp",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/sendScreenshot.js",
+		"/home/tim/Downloads/ninja.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/public/js/tmp/dojo_rtc.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/views/index.jade",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/routes/mentor.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/views/layout.jade",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2-master-bak/runServer.sh",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2-master-bak/runAdminServer.sh",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2-master-bak/WebRTC/app.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/WebRTC/npm-debug.log",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2/runServer.sh",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2-master/WebRTC/public/js/feedback.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2-master/WebRTC/public/js/Drawing.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2-master/WebRTC/public/js/sendScreenshot.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2-master/WebRTC/public/js/Screenshot.js",
+		"/home/tim/Documents/UWA/CITS5552/CoderDojoV2-master/WebRTC/public/js/mentor.js"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"adjust",
+			"button-menu",
+			"mentor.",
+			"text",
+			"test",
+			"name",
+			"$",
+			"z-index",
+			"overlay",
+			"user-input-username",
+			"'",
+			"  ",
+			"datachannel",
+			"focus",
+			"enter",
+			"focusin",
+			".user-info-panel",
+			"ninja.",
+			".save",
+			"users",
+			"socket.on",
+			"socket.emit",
+			"requestmentor",
+			"request",
+			"mentor.requestMentor",
+			"input",
+			".click(",
+			".click",
+			"TODO",
+			"area",
+			"input",
+			"type=\"text",
+			"user-info",
+			"  ",
+			"    ",
+			"  ",
+			"    ",
+			"  ",
+			"    ",
+			"  ",
+			"    ",
+			"  ",
+			"    ",
+			"  ",
+			"    ",
+			"  ",
+			"    ",
+			"  ",
+			"detect",
+			"auto",
+			"tab_size",
+			"  ",
+			"    ",
+			"  ",
+			"    ",
+			"joindelay",
+			"chat-btn-stop",
+			"chat-btn-start",
+			"click",
+			"disabled",
+			"prop",
+			"addClass(\"disabled\"",
+			"chat-btn-start",
+			"removeclass",
+			"disabled",
+			"chats",
+			"incall",
+			"master",
+			"live",
+			"chats",
+			"data",
+			"master",
+			">>>>>",
+			"<<<<",
+			">>>>>",
+			"master",
+			"answered",
+			"start",
+			"incall",
+			"live",
+			"addcalltutorial",
+			"incall",
+			"live",
+			"inCall",
+			"incall",
+			"live",
+			"chat-body-",
+			".chat-body-",
+			"live",
+			"master",
+			"dojo",
+			"addprecalltutorialpopups",
+			"canvas",
+			"rtc",
+			"stop",
+			"stopstream",
+			"screen-remote",
+			"ninja's",
+			"screen-remote-canvas",
+			"screen-local-canvas",
+			"canvas",
+			"chat",
+			"button-menu",
+			"detached-elements",
+			"before",
+			"chat-list-wrap",
+			"addmessage",
+			"chat-list",
+			"chatwindow",
+			"chat-tmp",
+			"message",
+			"change",
+			"textarea",
+			".click",
+			"chat",
+			"addmessage",
+			"message",
+			"chatform",
+			"button-menu",
+			"chat-open",
+			"warnin",
+			"stopchat",
+			"chats",
+			"chat-body-request",
+			"chat-panel",
+			"move",
+			"chat-body-start",
+			"chat-body-request"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"\"",
+			"	",
+			"",
+			"	"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 14,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/socks-general.js",
+					"settings":
+					{
+						"buffer_size": 4645,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2544,
+								2544
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 761.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/css/main.css",
+					"settings":
+					{
+						"buffer_size": 12176,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1023,
+								1023
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CSS/CSS.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 525.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/home/tim/.config/sublime-text-2/Packages/User/JavaScript.sublime-settings",
+					"settings":
+					{
+						"buffer_size": 118,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "/home/tim/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
+					"settings":
+					{
+						"buffer_size": 13678,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								11435,
+								11435
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 5567.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "/home/tim/.config/sublime-text-2/Packages/User/HTML.sublime-settings",
+					"settings":
+					{
+						"buffer_size": 118,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								118,
+								118
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/app.js",
+					"settings":
+					{
+						"buffer_size": 23169,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 7924.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/users.json",
+					"settings":
+					{
+						"buffer_size": 3195,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1572,
+								1572
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/socks-ninja.js",
+					"settings":
+					{
+						"buffer_size": 5455,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5409,
+								5409
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1938.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/socks-mentor.js",
+					"settings":
+					{
+						"buffer_size": 6639,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4576,
+								4576
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1241.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/lib/Storage.js",
+					"settings":
+					{
+						"buffer_size": 1241,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/config.json",
+					"settings":
+					{
+						"buffer_size": 261,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								21,
+								21
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/dojos.json",
+					"settings":
+					{
+						"buffer_size": 188,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/rtc.js",
+					"settings":
+					{
+						"buffer_size": 10899,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								8886,
+								8886
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 5579.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"file": "ninja.html",
+					"settings":
+					{
+						"buffer_size": 5044,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5024,
+								5024
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 2071.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "mentor.html",
+					"settings":
+					{
+						"buffer_size": 4892,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1879,
+								1879
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 15,
+					"file": "head.html",
+					"settings":
+					{
+						"buffer_size": 3500,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2100,
+								2100
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 513.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 16,
+					"file": "/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/common/js/main.js",
+					"settings":
+					{
+						"buffer_size": 8511,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4857,
+								4857
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 2812.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 35.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"replace":
+	{
+		"height": 64.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"selected_items":
+		[
+			[
+				"",
+				"/home/tim/Documents/UWA/CITS5552/RemoteDojoV3/resources/CITS555x.sublime-project"
+			]
+		],
+		"width": 380.0
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true
+}

@@ -3,20 +3,96 @@
 
 	<div class="heading-spacer" style="height:42px;width:100%"></div>
 	<div class="container">
+		<div class="modal fade profileModal" id="profileOverlay">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Edit profile</h4>
+					</div>
+					<div class="modal-body">
+						<!-- Rework this modal to use more bootstrap form classes -->
+						<div class="info-div">
+							Username: <span class="info-username">{{user.username}}</span>
+						</div>
+						<div class="info-div">
+							Edit password: 
+							<button class="input-edit btn btn-primary btn-sm right-align" data-id="password"><i class="fa fa-pencil-square-o"></i></button>
+							<div class="input-div hidden" data-id="password">
+								Current password: <br>
+								<input type="password" id="input-current-password" class="form-control" placeholder="Your current password."><br>
+								<p class="alert-current-password form-error-text hidden">Invalid password</p>
+								New password: <br>
+								<input type="password" id="input-password" class="form-control" placeholder="Your new password."><br>
+								<p class="alert-password form-error-text hidden">Password must be at least 8 characters and contain an uppercase and a lowercase letter, a number, and a symbol</p>
+								Re-enter password: <br>
+								<input type="password" id="input-password2" class="form-control" placeholder="Re-enter the new password."><br>
+								<p class="alert-password2 form-error-text hidden">Passwords do not match</p>
+								<button type="button" class="password-submit btn btn-default" data-id="password">Submit</button>
+								<button type="button" class="input-cancel btn btn-default" data-id="password">Cancel</button>
+							</div>
+						</div>
+						<div class="info-div">
+							Full name: <span class="info-fullname">{{user.fullname}}</span>
+							<button class="input-edit btn btn-primary btn-sm right-align" data-id="fullname"><i class="fa fa-pencil-square-o"></i></button>
+							<div class="input-div hidden" data-id="fullname">
+								<input type="text" id="input-fullname" class="form-control" placeholder="Your full name (ninjas will see this name)." maxlength="20"><br>
+								<p class="alert-fullname form-error-text hidden"></p>
+								<button type="button" class="fullname-submit btn btn-default" data-id="fullname">Submit</button>
+								<button type="button" class="input-cancel btn btn-default" data-id="fullname">Cancel</button>
+							</div>
+						</div>
+						<div class="info-div">
+							Email: <span class="info-email">{{user.email}}</span>
+							<button class="input-edit btn btn-primary btn-sm right-align" data-id="email"><i class="fa fa-pencil-square-o"></i></button>
+							<div class="input-div hidden" data-id="email">
+								<input type="text" id="input-email" class="form-control" placeholder="Your email."><br>
+								<p class="alert-email form-error-text hidden"></p>
+								<button type="button" class="email-submit btn btn-default" data-id="email">Submit</button>
+								<button type="button" class="input-cancel btn btn-default" data-id="email">Cancel</button>
+							</div>
+						</div>
+						<!-- This code may be adapted if mentors are restricted to certain dojos -->
+						<!-- <div class="info-div"> 
+							Dojos: 
+							<button class="input-edit btn btn-primary btn-sm right-align" data-id="dojos"><i class="fa fa-pencil-square-o"></i></button>
+							<div class="input-div hidden" data-id="dojos">
+								Your dojos: 
+								<ul id="dojo-list">
+								-->
+									<!-- populate list from server
+									<input type="checkbox" class="input-dojo form-control">
+								 -->
+								 <!--
+								</ul>
+								<button type="button" class="dojos-submit btn btn-default" data-id="dojos">Submit</button>
+								<button type="button" class="input-cancel btn btn-default" data-id="dojos">Cancel</button>
+							</div>
+						</div> -->
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="container">
 		<div class="row">
 			<div class="col-md-3 controls">
-				<div class="user-info-panel panel panel-primary" data-name="{{user.fullname}}" data-type="mentor" {{user.expire}} {{user.demomode}}>
+				<div class="user-info-panel panel panel-primary" data-name="{{user.fullname}}" data-email="{{user.email}}" data-username="{{user.username}}" data-type="mentor" {{user.expire}} {{user.demomode}}>
 					<div class="panel-heading">
 						<h3 class="panel-title">CoderDojo</h3>
 					</div>
 					<div class="panel-body">
-						user info: <input type="text" class="user-info-username form-control" value="{{user.fullname}}"><br>
-						<button type="button" class="user-info-btn btn btn-primary btn-sm">
+						<p class="col-xs-12">
+							user info: <span class="info-fullname">{{user.fullname}}</span>
+						</p>
+						<button type="button" class="col-xs-12 user-info-btn btn btn-primary btn-sm" data-toggle="modal" data-target="#profileOverlay">
 							<i class="fa fa-pencil-square-o"></i>
 							Edit profile
-						</button><br>
-						<br>
-						<a href="./logout" class="btn btn-default">Logout</a>
+						</button>
+						<a href="./logout" class="col-xs-12 btn btn-default btn-sm">Logout</a>
 					</div>
 				</div>
 				<div class="chat-panel panel panel-primary">
@@ -92,6 +168,7 @@
 			</div>
 		</div>
 	</div>
+	<div class="footer-spacer"></div>
 
 </body>
 {{foot}}
