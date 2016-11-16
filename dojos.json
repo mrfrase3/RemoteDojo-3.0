@@ -1,3 +1,1 @@
-{
-"UWA": {"dojoname": "UWA", "name":"UWA", "password": "$2a$10$27wfagtc8wUeF6kNVazKtOqfDShHfg6XJ7.y.AObJMjxHKx4iRA82", "location": "UWA", "email": "UWA-dojo@coderdojo.com", "expire": -1}
-}
+{"UWA":{"dojoname":"UWA","name":"UWA","password":"$2a$10$E8WUbDL.mkTsNMGmmI5jQeTN63TEFb7wk1KuImT7ER7G6EhJr9OlG","location":"UWA","email":"UWA-dojo@coderdojo.com","expire":-1},"perth modern":{"dojoname":"perth modern","email":"Perth@Modern.com","name":"Perth Modern","location":"Perth Modern","password":"$2a$10$BEujrN6CmOHRgAE52Ucq/elutO4WgMPuD7ONtWA332FoIZkvUQBFa","perm":0},"test":{"dojoname":"test","email":"test","name":"test","location":"test","password":"$2a$10$ep.RaFd/OF9bC/mcFXeUoOedDxQxFgrDXdYXuadO9nInUF1k9aW1q","perm":0}}test","location":"test","password":"$2a$10$ep.RaFd/OF9bC/mcFXeUoOedDxQxFgrDXdYXuadO9nInUF1k9aW1q","perm":0}}

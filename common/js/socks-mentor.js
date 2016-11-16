@@ -89,7 +89,6 @@ var offerTutorial = function() {
 var hideInputDiv = function(id){
 	var p = $(".input-div[data-id=" + id + "]");
 	p.hide();
-	p.children("p").text("");
 	p.children("input").val("");
 	$(".input-edit[data-id=" + id + "]").show();
 }
@@ -224,8 +223,7 @@ socket.on('mentor.requestMentor', function(data){ // when a ninja has requested 
 		}
 	});
 	$('#req-ignore-btn-'+data.cleanstok).click(function(){ // add click event to the 'Ignore' button
-		$('#req-'+data.cleanstok).remove();
-		request_checkEmpty();
+		$('#req-'+data.cleanstok).hide(); // TODO show number of ninjas in queue, add button to show hidden requests
 	});
 });
 
@@ -248,7 +246,7 @@ $( document ).ready(function() {
 
 	// Set password rules
 	pwdRules.push(new RegExp(/.{8,}/)); // minimum 8 characters
-	pwdRules.push(new RegExp(/^[a-z]/i)) // alpha
+	// pwdRules.push(new RegExp(/^[a-z]/i)) // alpha
 	// pwdRules.push(new RegExp(/[a-z]/)); // lowercase
 	// pwdRules.push(new RegExp(/[A-Z]/)); // uppercase
 	// pwdRules.push(new RegExp(/[\d]/)); // numeric

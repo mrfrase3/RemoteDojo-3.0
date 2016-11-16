@@ -113,12 +113,10 @@ var audio_vis = function(au, qu){
 	analyser.connect(audioCtx.destination);
 
 	function visualize() {
-
+		// TODO fix visualiser
 		//if(visualSetting == "sinewave") {
 		analyser.fftSize = 512;
 		var bufferLength = analyser.fftSize;
-		console.log(bufferLength);
-
 
 		function drawv() {
 
@@ -239,25 +237,27 @@ var switchVideoPositions = function(){
 // TODO tmp function used for demonstration. Need to switch 'nina's screen' title with 'your screenshare' etc.
 $(".chat-body-stop .switch-canvas").click(switchVideoPositions);
 
-// Keybinings
+// Keybindings
 $(document).keydown(function(e) {
 	var chatInput = $(".input-group .chat-input");
 	var profileField = $(".first-modal-field");
 	if (e.which == 13) {	// if enter
-		if (profileField.is(":focus") && profileField.val().length != 0) {
+		if (profileField.is(":focus") && profileField.val().trim().length != 0) {
 			submitProfile();
 			$("#profileOverlay").modal("hide");
 			return false;
 		}
-		if (e.shiftKey || e.ctrlKey || !live) return true; // continue if not in chat or additional keys held.
+		if (e.shiftKey || e.ctrlKey || !live) return false; // continue if not in chat or additional keys held.
 		if (chatInput.is(":focus")) {
-			if (chatInput.val().length != 0) {
+			if (chatInput.val().trim().length != 0) {
 				// if the chat has focus and isn"t empty, send the message
 				rtcSendMessage();
 				return false; // return false prevents default actions
 			} else {
 				// if the chat is empty, enter hides the chat
+				chatInput.val("");
 				$(".button-menu .chat-list-wrap").toggle(false);
+				chatInput.blur();
 				return false;
 			}
 		} else if (!($("input").is(":focus") || $("button").is(":focus"))) {

@@ -18,39 +18,41 @@
 			</div>
 			<div class="panel-body">
 				<ul class="nav nav-tabs">
-					<li class=""><a href="#admin" data-toggle="tab" aria-expanded="false">Admin</a></li>
+					<li class=""><a href="#admin" data-toggle="tab" aria-expanded="true">Admin</a></li>
 					<li class=""><a href="#champion" data-toggle="tab" aria-expanded="false">Champion</a></li>
 					<li class=""><a href="#mentor" data-toggle="tab" aria-expanded="false">Mentor</a></li>
-					<li class="active"><a href="#dojo" data-toggle="tab" aria-expanded="true">Dojo</a></li>
+					<li class="active"><a href="#dojo" data-toggle="tab" aria-expanded="false">Dojo</a></li>
 				</ul>
 				<div class="tab-content">
 					<div class="tab-pane fade" id="admin">
 						<fieldset>
            		 	        <div class="form-group">
-            		            <select class="form-control" name="admin_list" required>
+            		            <select class="admin-select form-control" name="admin_list">
                                 	{{#each admins}}
 										<option value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}">
 											{{this.fullname}}</option>
 									{{/each}}
+									<option value="" data-fullname="" data-email="">
+											Add a new user</option>
                                 </select>
             		        </div>
             		    </fieldset>
 						<fieldset>
 							<div class="form-group">
 								<label for="username">Username:</label>
-								<input class="form-control" placeholder="Username" name="username" type="text" value="">
+								<input class="admin-username form-control" placeholder="{{admins.0.username}}" name="username" type="text" value="">
 							</div>
 							<div class="form-group">
 								<label for="password">Password:</label>
-								<input class="form-control" placeholder="Password" name="password" type="text" value="">
+								<input class="admin-password form-control" placeholder="*****" name="password" type="text" value="">
 							</div>
 							<div class="form-group">
 								<label for="email">Email:</label>
-								<input class="form-control" placeholder="Email" name="email" type="text" value="">
+								<input class="admin-email form-control" placeholder="{{admins.0.email}}" name="email" type="text" value="">
 							</div>
 							<div class="form-group">
 								<label for="fullname">Fullname:</label>
-								<input class="form-control" placeholder="Fullname" name="fullname" type="text" value="">
+								<input class="admin-fullname form-control" placeholder="{{admins.0.fullname}}" name="fullname" type="text" value="">
 							</div>
 							<button class="btn btn-lg btn-success btn-block">Submit</button>
 						</fieldset>
@@ -58,30 +60,32 @@
 					<div class="tab-pane fade" id="champion">
 						<fieldset>
            		 	        <div class="form-group">
-            		            <select class="form-control" name="admin_list" required>
+            		            <select class="champion-select form-control" name="champion-list" required>
                                 	{{#each champions}}
 										<option value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}">
 											{{this.fullname}}</option>
 									{{/each}}
+									<option value="" data-fullname="" data-email="">
+											Add a new user</option>
                                 </select>
             		        </div>
             		    </fieldset>
 						<fieldset>
 							<div class="form-group">
 								<label for="username">Username:</label>
-								<input class="form-control" placeholder="Username" name="username" type="text" value="">
+								<input class="champion-username form-control" placeholder="{{champions.0.username}}" name="username" type="text" value="">
 							</div>
 							<div class="form-group">
 								<label for="password">Password:</label>
-								<input class="form-control" placeholder="Password" name="password" type="text" value="">
+								<input class="champion-password form-control" placeholder="*****" name="password" type="text" value="">
 							</div>
 							<div class="form-group">
 								<label for="email">Email:</label>
-								<input class="form-control" placeholder="Email" name="email" type="text" value="">
+								<input class="champion-email form-control" placeholder="{{champions.0.email}}" name="email" type="text" value="">
 							</div>
 							<div class="form-group">
 								<label for="fullname">Fullname:</label>
-								<input class="form-control" placeholder="Fullname" name="fullname" type="text" value="">
+								<input class="champion-fullname form-control" placeholder="{{champions.0.fullname}}" name="fullname" type="text" value="">
 							</div>
 							<button class="btn btn-lg btn-success btn-block">Submit</button>
 						</fieldset>
@@ -89,30 +93,32 @@
 					<div class="tab-pane fade" id="mentor">
 						<fieldset>
            		 	        <div class="form-group">
-            		            <select class="form-control" name="admin_list" required>
+            		            <select class="mentor-select form-control" name="mentor-list" required>
                                 	{{#each mentors}}
 										<option value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}">
 											{{this.fullname}}</option>
 									{{/each}}
+									<option value="" data-fullname="" data-email="">
+											Add a new user</option>
                                 </select>
             		        </div>
             		    </fieldset>
 						<fieldset>
 							<div class="form-group">
 								<label for="username">Username:</label>
-								<input class="form-control" placeholder="Username" name="username" type="text" value="">
+								<input class="mentor-username form-control" placeholder="{{mentors.0.username}}" name="username" type="text" value="">
 							</div>
 							<div class="form-group">
 								<label for="password">Password:</label>
-								<input class="form-control" placeholder="Password" name="password" type="text" value="">
+								<input class="mentor-password form-control" placeholder="*****" name="password" type="text" value="">
 							</div>
 							<div class="form-group">
 								<label for="email">Email:</label>
-								<input class="form-control" placeholder="Email" name="email" type="text" value="">
+								<input class="mentor-email form-control" placeholder="{{mentors.0.email}}" name="email" type="text" value="">
 							</div>
 							<div class="form-group">
 								<label for="fullname">Fullname:</label>
-								<input class="form-control" placeholder="Fullname" name="fullname" type="text" value="">
+								<input class="mentor-fullname form-control" placeholder="{{mentors.0.fullname}}" name="fullname" type="text" value="">
 							</div>
 							<button class="btn btn-lg btn-success btn-block">Submit</button>
 						</fieldset>
@@ -120,33 +126,35 @@
 					<div class="tab-pane fade" id="dojo">
 						<fieldset>
            		 	        <div class="form-group">
-            		            <select class="form-control" name="admin_list" required>
+            		            <select class="dojo-select form-control" name="dojo_list" required>
                                 	{{#each dojos}}
 										<option value="{{this.dojoname}}" data-fullname="{{this.name}}" data-email="{{this.email}}" data-email="{{this.location}}">{{this.name}}</option>
 									{{/each}}
+									<option value="" data-fullname="" data-email="">
+											Add a new user</option>
                                 </select>
             		        </div>
             		    </fieldset>
 						<fieldset>
 							<div class="form-group">
 								<label for="dojoname">Dojoname:</label>
-								<input class="form-control" placeholder="Dojoname" name="dojoname" type="text" value="">
+								<input class="dojo-dojoname form-control" placeholder="{{dojos.0.dojoname}}" name="dojoname" type="text" value="">
 							</div>
 							<div class="form-group">
 								<label for="name">Name:</label>
-								<input class="form-control" placeholder="Name" name="name" type="text" value="">
+								<input class="dojo-name form-control" placeholder="{{dojos.0.name}}" name="name" type="text" value="">
 							</div>
 							<div class="form-group">
 								<label for="location">Location:</label>
-								<input class="form-control" placeholder="Location" name="location" type="text" value="">
+								<input class="dojo-location form-control" placeholder="{{dojos.0.location}}" name="location" type="text" value="">
 							</div>
 							<div class="form-group">
 								<label for="email">Email:</label>
-								<input class="form-control" placeholder="Email" name="email" type="text" value="">
+								<input class="dojo-email form-control" placeholder="{{dojos.0.email}}" name="email" type="text" value="">
 							</div>
 							<div class="form-group">
 								<label for="password">Password:</label>
-								<input class="form-control" placeholder="Password" name="password" type="text" value="">
+								<input class="dojo-password form-control" placeholder="*****" name="password" type="text" value="">
 							</div>
 							<button class="btn btn-lg btn-success btn-block">Submit</button>
 						</fieldset>

@@ -1,131 +1,141 @@
-var pwdRules = [];
-var negativePwdRule;
 
-var hideInputDiv = function(id){
-	var p = $(".input-div[data-id=" + id + "]");
-	p.hide();
-	p.children("p").text("");
-	p.children("input").val("");
-	$(".input-edit[data-id=" + id + "]").show();
-}
-
-var checkPwdStrength = function(pwd){
-	var pass = true;
-	for (var i = 0; i < pwdRules.length; ++i) {
-		if (!pwdRules[i].test(pwd)) {
-			pass = false;
-			break;
-		}
-	}
-	if (negativePwdRule.test(pwd)) pass = false;
-	return pass;
-}
-
-// TODO sanitise
-var submitPassword = function(){
-	$(".alert-current-password").hide();
-	$(".alert-password").hide();
-	$(".alert-password2").hide();
-	var curPwd = $("#input-current-password").val().trim();
-	var pwd = $("#input-password").val().trim();
-	var pwd2 = $("#input-password2").val().trim();
-
-	var pass = checkPwdStrength(pwd);
-	$(".alert-password").toggle(!pass);
-	
-	var match = pwd === pwd2;
-	if (!match) $(".alert-password2").show();
-
-	if (pass && match) {
-		socket.emit('mentor.passwordChange', {newPwd: pwd, curPwd: curPwd});
-	}
-}
-
-$("#input-current-password").on("change keyup keypress blur", function(){
-	$(".alert-current-password").hide();
+$(".submit-admin").click(function(){
+	var user = $(".admin-select").find(":selected").val();
+	var username = $(".admin-username").val();
+	var email = $(".admin-email").val();
+	var fullname = $(".admin-fullname").val();
+	var password = $(".admin-password").val();
+	socket.emit("admin.adminEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: ""});
+	$(".admin-input").val("");
 });
 
-$("#input-password").on("change keyup keypress blur", function(){
-	var pwd = $("#input-password").val();
-	var pass = checkPwdStrength(pwd);
-	$(".alert-password").toggle(!pass);
+$(".submit-champion").click(function(){
+	var user = $(".champion-select").find(":selected").val();
+	var username = $(".champion-username").val();
+	var email = $(".champion-email").val();
+	var fullname = $(".champion-fullname").val();
+	var password = $(".champion-password").val();
+	socket.emit("admin.championEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: ""});
+	$(".champion-input").val("");
 });
 
-$("#input-password, #input-password2").on("change keyup keypress blur", function(){
-	var pwd = $("#input-password").val();
-	var pwd2 = $("#input-password2").val();
-	$(".alert-password2").toggle(!(pwd === pwd2));
+$(".submit-mentor").click(function(){
+	var user = $(".mentor-select").find(":selected").val();
+	var username = $(".mentor-username").val();
+	var email = $(".mentor-email").val();
+	var fullname = $(".mentor-fullname").val();
+	var password = $(".mentor-password").val();
+	var dojos = $(".mentor-dojos").val();
+	socket.emit("admin.mentorEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: dojos});
+	$(".mentor-input").val("");
 });
 
-var submitFullname = function(){
-	$(".alert-fullname").hide();
-	var name = $("#input-fullname").val().trim();
-	var nonalpha = new RegExp(/[^a-z ]/i);
-	if (nonalpha.test(name)) {
-		$(".alert-fullname").text("Please choose a name with only letters and spaces.");
-		$(".alert-fullname").show();
-		return false;
-	} else if (name.length > 20) {
-		$(".alert-fullname").text("Please choose a name with at most 20 letters.");
-		$(".alert-fullname").show();
-		return false;
-	} else {
-		$(".info-fullname").html(name);
-		$(".info-panel").data("name",name);
-		socket.emit("mentor.fullnameChange", name);
-		return true;
-	}
-}
+$(".submit-dojo").click(function(){
+	var user = $(".dojo-select").find(":selected").val();
+	var dojoname = $(".dojo-dojoname").val();
+	var name = $(".dojo-name").val();
+	var email = $(".dojo-email").val();
+	var location = $(".dojo-location").val();
+	var password = $(".dojo-password").val();
+	socket.emit("admin.dojoEdit",{user: user, dojoname: dojoname, name: name, email: email, location: location, password: password});
+	$(".dojo-input").val("");
+});
 
-var submitEmail = function(){
-	// TODO check email validity
-	var email = $("#input-email").val().trim();
-	$(".info-email").html(email);
-	$(".info-panel").data("email",email);
-	socket.emit("mentor.emailChange", email);
-	return true;
-}
-
-socket.on("mentor.passwordChange", function(data){
-	if (data) {
-		console.log("Successfully changed password");
-		hideInputDiv("password");
-	} else {
-		console.log("Failed to change password");
-		$(".alert-current-password").show();
+$(".remove").click(function(){
+	var type = $(this).data("id");
+	var uid = $("select[data-id=" + type + "]").val();
+	if (window.confirm("Are you sure you want to delete the user/dojo " + uid + "?")){
+		socket.emit("admin.deleteUser", {type: type, uid: uid});
 	}
 });
 
-$(".password-submit").click(submitPassword);
+socket.on("admin.fullDatabase", function(data){
+	$("input").val("");
+	$("input").attr("placeholder", "");
+	$("select").find("option").remove();
+	for (var i = 0; i < data.admins.length; ++i) {
+		var u = data.admins[i];
+		$(".select-admin").append("<option value=\"" + u.username + 
+			"\" data-fullname=\"" + u.fullname + 
+			"\" data-email=\"" + u.email + "\">");
+	}
+	for (var i = 0; i < data.champions.length; ++i) {
+		var u = data.champions[i];
+		$(".select-champion").append("<option value=\"" + u.username + 
+			"\" data-fullname=\"" + u.fullname + 
+			"\" data-email=\"" + u.email + "\">");
+	}
+	for (var i = 0; i < data.mentors.length; ++i) {
+		var u = data.mentors[i];
+		$(".select-mentors").append("<option value=\"" + u.username + 
+			"\" data-fullname=\"" + u.fullname + 
+			"\" data-email=\"" + u.email + "\">");
+	}
+	for (var i = 0; i < data.dojos.length; ++i) {
+		var u = data.dojos[i];
+		$(".select-dojos").append("<option value=\"" + u.dojoname + 
+			"\" data-name=\"" + u.name + 
+			"\" data-email=\"" + u.email + 
+			"\" data-location=\"" + u.location + "\">");
+		$(".mentor-dojos").append("<option value=\"" + u.dojoname + "\">");
+	} // TODO add text to each option
 
-$(".fullname-submit").click(function(){
-	var success = submitFullname();
-	if (success) hideInputDiv($(this).data("id"));
 });
 
-$(".email-submit").click(function(){
-	var success = submitEmail();
-	if (success) hideInputDiv($(this).data("id"));
+$(".admin-select").change(function(){
+	var o = $(this).find(":selected");
+	$(".admin-input").val("");
+	$(".admin-username").prop("disabled", o.val() !== "");
+	$(".admin-username").attr("placeholder", o.val());
+	$(".admin-email").attr("placeholder", o.data("email"));
+	$(".admin-fullname").attr("placeholder", o.data("fullname"));
 });
 
-$(".input-edit").click(function(){
-	var id = $(this).data("id");
-	$(".input-div[data-id=" + id + "]").show();
-	$(this).hide();
+$(".champion-select").change(function(){
+	var o = $(this).find(":selected");
+	$(".champion-input").val("");
+	$(".champion-username").prop("disabled", o.val() !== "");
+	$(".champion-username").attr("placeholder", o.val());
+	$(".champion-email").attr("placeholder", o.data("email"));
+	$(".champion-fullname").attr("placeholder", o.data("fullname"));
 });
 
-$(".input-cancel").click(function(){
-	hideInputDiv($(this).data("id"));
+$(".mentor-select").change(function(){
+	var o = $(this).find(":selected");
+	$(".mentor-input").val("");
+	$(".mentor-username").prop("disabled", o.val() !== "");
+	$(".mentor-username").attr("placeholder", o.val());
+	$(".mentor-email").attr("placeholder", o.data("email"));
+	$(".mentor-fullname").attr("placeholder", o.data("fullname"));
+	var dojos = [o.data("dojos")];
+	if (o.data("all-dojos")) dojos.push("all");
+	$(".mentor-dojos").val(dojos);
 });
 
-$( document ).ready(function() {
+$(".dojo-select").change(function(){
+	var o = $(this).find(":selected");
+	$(".dojo-input").val("");
+	$(".dojo-dojoname").prop("disabled", o.val() !== "");
+	$(".dojo-dojoname").attr("placeholder", o.val());
+	$(".dojo-name").attr("placeholder", o.data("name"));
+	$(".dojo-email").attr("placeholder", o.data("email"));
+	$(".dojo-location").attr("placeholder", o.data("location"));
+});
 
-	// Set password rules
-	pwdRules.push(new RegExp(/.{8,}/)); // minimum 8 characters
-	pwdRules.push(new RegExp(/^[a-z]/i)) // alpha
-	// pwdRules.push(new RegExp(/[a-z]/)); // lowercase
-	// pwdRules.push(new RegExp(/[A-Z]/)); // uppercase
-	// pwdRules.push(new RegExp(/[\d]/)); // numeric
-	// pwdRules.push(new RegExp(/[.\/,<>?;:"'`~!@#$%^&*()[\]{}_+=|\\-]/)); // special character
-	negativePwdRule = new RegExp(/[^a-zA-Z\d.\/,<>?;:"'`~!@#$%^&*()[\]{}_+=|\\-]/); // none of the above
+$(document).ready(function(){
+	$(".user-select").each(function(){
+		$(this).find("option:eq(0)").prop("selected",true);
+		var type = $(this).data("id");
+		var uidInput;
+		if (type == "dojo") uidInput = $(".dojo-dojoname");
+		else uidInput = $("." + type + "-username");
+		if ($(this).val() !== "") uidInput.prop("disabled", true);
+		else uidInput.prop("disabled", false);
+		uidInput.val("");
+	});
+	var o = $(".mentor-select").find(":selected");
+	var dojos = [o.data("dojos")];
+	if (o.data("all-dojos")) dojos.push("all");
+	console.dir(dojos);
+	$(".mentor-dojos").val(dojos);
 });

@@ -118,6 +118,7 @@ $(function() {
 	$('.chat-btn-cancel').click(function(){ // add even to the 'leave' button
 		console.log('canceling mentor request');
 		socket.emit('ninja.cancelRequest');
+		$('.mentor-list-panel').show();
 		$('.chat-body-request').show();
 		$('.chat-body-start').hide();
 		$('.chat-body-start').data("calling", false);

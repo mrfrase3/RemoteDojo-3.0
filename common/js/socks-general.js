@@ -92,6 +92,7 @@ socket.on('general.startChat',function(){ //start a chat session when the server
 	answeredRequest = true;
 	if (live) return;
 	var isNinja = $(".user-info-panel").data("type") == "ninja";
+	if (isNinja) $('.mentor-list-panel').hide();
 	startRTC(isNinja);
 	//setTimeout(Mediaconn.openOrJoin,joinDelay,data.ninja, onJoin); // the ninja and mentor cannot connect at the same time, so one is delayed (look in their socks files)
 	$('.chat-body-start').data("calling", false);
