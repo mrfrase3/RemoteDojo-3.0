@@ -28,12 +28,12 @@
 						<fieldset>
            		 	        <div class="form-group">
             		            <select class="admin-select user-select form-control" name="admin_list" data-id="admin">
+									<option value="" data-fullname="" data-email="">
+											Add a new user</option>
                                 	{{#each admins}}
 										<option value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}">
 											{{this.fullname}}</option>
 									{{/each}}
-									<option value="" data-fullname="" data-email="">
-											Add a new user</option>
                                 </select>
             		        </div>
             		    </fieldset>
@@ -44,7 +44,7 @@
 							</div>
 							<div class="form-group">
 								<label for="password">Password:</label>
-								<input class="admin-input admin-password form-control" placeholder="*****" name="password" type="password" value="">
+								<input class="admin-input admin-password form-control" placeholder="********" name="password" type="password" value="">
 							</div>
 							<div class="form-group">
 								<label for="email">Email:</label>
@@ -62,12 +62,12 @@
 						<fieldset>
            		 	        <div class="form-group">
             		            <select class="champion-select user-select form-control" name="champion-list" data-id="champion">
+									<option value="" data-fullname="" data-email="">
+											Add a new user</option>
                                 	{{#each champions}}
 										<option value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}">
 											{{this.fullname}}</option>
 									{{/each}}
-									<option value="" data-fullname="" data-email="">
-											Add a new user</option>
                                 </select>
             		        </div>
             		    </fieldset>
@@ -78,7 +78,7 @@
 							</div>
 							<div class="form-group">
 								<label for="password">Password:</label>
-								<input class="champion-input champion-password form-control" placeholder="*****" name="password" type="password" value="">
+								<input class="champion-input champion-password form-control" placeholder="********" name="password" type="password" value="">
 							</div>
 							<div class="form-group">
 								<label for="email">Email:</label>
@@ -96,12 +96,12 @@
 						<fieldset>
            		 	        <div class="form-group">
             		            <select class="mentor-select user-select form-control" name="mentor-list" data-id="mentor">
+									<option value="" data-fullname="" data-email="" data-dojos="[]" data-all-dojos="false">
+											Add a new user</option>
                                 	{{#each mentors}}
 										<option value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}" data-dojos="{{this.dojos}}" data-all-dojos="{{this.allDojos}}">
 											{{this.fullname}}</option>
 									{{/each}}
-									<option value="" data-fullname="" data-email="" data-dojos="[]" data-all-dojos="false">
-											Add a new user</option>
                                 </select>
             		        </div>
             		    </fieldset>
@@ -112,7 +112,7 @@
 							</div>
 							<div class="form-group">
 								<label for="password">Password:</label>
-								<input class="mentor-input mentor-password form-control" placeholder="*****" name="password" type="password" value="">
+								<input class="mentor-input mentor-password form-control" placeholder="********" name="password" type="password" value="">
 							</div>
 							<div class="form-group">
 								<label for="email">Email:</label>
@@ -139,11 +139,11 @@
 						<fieldset>
            		 	        <div class="form-group">
             		            <select class="dojo-select user-select form-control" name="dojo_list" data-id="dojo">
+									<option value="" data-name="" data-email="" data-location="">
+											Add a new dojo</option>
                                 	{{#each dojos}}
 										<option value="{{this.dojoname}}" data-name="{{this.name}}" data-email="{{this.email}}" data-location="{{this.location}}">{{this.name}}</option>
 									{{/each}}
-									<option value="" data-name="" data-email="" data-location="">
-											Add a new dojo</option>
                                 </select>
             		        </div>
             		    </fieldset>
@@ -166,10 +166,10 @@
 							</div>
 							<div class="form-group">
 								<label for="password">Password:</label>
-								<input class="dojo-input dojo-password form-control" placeholder="*****" name="password" type="password" value="">
+								<input class="dojo-input dojo-password form-control" placeholder="********" name="password" type="password" value="">
 							</div>
 							<button class="submit-dojo btn btn-lg btn-success btn-block">Submit</button>
-							<button class="remove btn btn-lg btn-danger btn-block" data-id="dojo">Delete user</button>
+							<button class="remove btn btn-lg btn-danger btn-block" data-id="dojo">Delete dojo</button>
 						</fieldset>
 					</div>
 				</div>

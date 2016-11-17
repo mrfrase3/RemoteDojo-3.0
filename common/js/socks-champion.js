@@ -5,7 +5,7 @@ $(".submit-admin").click(function(){
 	var email = $(".admin-email").val();
 	var fullname = $(".admin-fullname").val();
 	var password = $(".admin-password").val();
-	socket.emit("admin.adminEdit",{user: user, username: username, email: email, fullname: fullname, password: password});
+	socket.emit("admin.adminEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: ""});
 	$(".admin-input").val("");
 });
 
@@ -15,7 +15,7 @@ $(".submit-champion").click(function(){
 	var email = $(".champion-email").val();
 	var fullname = $(".champion-fullname").val();
 	var password = $(".champion-password").val();
-	socket.emit("admin.championEdit",{user: user, username: username, email: email, fullname: fullname, password: password});
+	socket.emit("admin.championEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: ""});
 	$(".champion-input").val("");
 });
 
@@ -25,7 +25,8 @@ $(".submit-mentor").click(function(){
 	var email = $(".mentor-email").val();
 	var fullname = $(".mentor-fullname").val();
 	var password = $(".mentor-password").val();
-	socket.emit("admin.mentorEdit",{user: user, username: username, email: email, fullname: fullname, password: password});
+	var dojos = $(".mentor-dojos").val();
+	socket.emit("admin.mentorEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: dojos});
 	$(".mentor-input").val("");
 });
 
@@ -42,47 +43,68 @@ $(".submit-dojo").click(function(){
 
 $(".remove").click(function(){
 	var type = $(this).data("id");
-	var user = $("select[data-id=" + type + "]");
-	if (window.confirm("Are you sure you want to delete the user " + user + "?")){
-		socket.emit("admin.deleteUser", {type: type, user: user});
+	var uid = $("select[data-id=" + type + "]").val();
+	if (window.confirm("Are you sure you want to delete the user/dojo " + uid + "?")){
+		socket.emit("admin.deleteUser", {type: type, uid: uid});
 	}
 });
 
-socket.on("admin.fullUserUpdate", function(data){
+socket.on("admin.fullDatabase", function(data){
 	$("input").val("");
 	$("input").attr("placeholder", "");
-	$("select").find("option").remove();
-	for (int i = 0; i < data.admins.length; ++i) {
+	$("input[type=password]").attr("placeholder", "********");
+	$("select").find("option").filter(function(){
+		return $(this).val() !== "" && $(this).val() !== "all";	
+	}).remove();
+	for (var i = 0; i < data.admins.length; ++i) {
 		var u = data.admins[i];
-		$(".select-admin").append("<option value=\"" + u.username + 
-			"\" data-fullname=\"" + u.fullname + 
-			"\" data-email=\"" + u.email + "\">");
+		$(".admin-select").append($("<option>",{
+			"value": u.username,
+			"data-fullname": u.fullname,
+			"text": u.fullname,
+			"data-email": u.email
+		}));
 	}
-	for (int i = 0; i < data.champions.length; ++i) {
+	for (var i = 0; i < data.champions.length; ++i) {
 		var u = data.champions[i];
-		$(".select-champion").append("<option value=\"" + u.username + 
-			"\" data-fullname=\"" + u.fullname + 
-			"\" data-email=\"" + u.email + "\">");
+		$(".champion-select").append($("<option>",{
+			"value": u.username,
+			"data-fullname": u.fullname,
+			"text": u.fullname,
+			"data-email": u.email
+		}));
 	}
-	for (int i = 0; i < data.mentors.length; ++i) {
+	for (var i = 0; i < data.mentors.length; ++i) {
 		var u = data.mentors[i];
-		$(".select-mentors").append("<option value=\"" + u.username + 
-			"\" data-fullname=\"" + u.fullname + 
-			"\" data-email=\"" + u.email + "\">");
+		$(".mentor-select").append($("<option>",{
+			"value": u.username,
+			"data-fullname": u.fullname,
+			"text": u.fullname,
+			"data-email": u.email,
+			"data-dojos": u.dojos,
+			"data-all-dojos": u.allDojos
+		}));
 	}
-	for (int i = 0; i < data.dojos.length; ++i) {
-		var u = data.dojos[i];
-		$(".select-dojos").append("<option value=\"" + u.dojoname + 
-			"\" data-name=\"" + u.name + 
-			"\" data-email=\"" + u.email + 
-			"\" data-location=\"" + u.location + "\">");
+	for (var i = 0; i < data.dojos.length; ++i) {
+		var d = data.dojos[i];
+		$(".dojo-select").append($("<option>",{
+			"value": d.dojoname,
+			"data-name": d.name,
+			"text": d.name,
+			"data-email": d.email,
+			"data-location": d.location
+		}));
+		$(".mentor-dojos").append($("<option>", {
+			"value": d.dojoname,
+			"text": d.name
+		}));
 	}
-
 });
 
 $(".admin-select").change(function(){
 	var o = $(this).find(":selected");
 	$(".admin-input").val("");
+	$(".admin-username").prop("disabled", o.val() !== "");
 	$(".admin-username").attr("placeholder", o.val());
 	$(".admin-email").attr("placeholder", o.data("email"));
 	$(".admin-fullname").attr("placeholder", o.data("fullname"));
@@ -91,6 +113,7 @@ $(".admin-select").change(function(){
 $(".champion-select").change(function(){
 	var o = $(this).find(":selected");
 	$(".champion-input").val("");
+	$(".champion-username").prop("disabled", o.val() !== "");
 	$(".champion-username").attr("placeholder", o.val());
 	$(".champion-email").attr("placeholder", o.data("email"));
 	$(".champion-fullname").attr("placeholder", o.data("fullname"));
@@ -99,17 +122,38 @@ $(".champion-select").change(function(){
 $(".mentor-select").change(function(){
 	var o = $(this).find(":selected");
 	$(".mentor-input").val("");
+	$(".mentor-username").prop("disabled", o.val() !== "");
 	$(".mentor-username").attr("placeholder", o.val());
 	$(".mentor-email").attr("placeholder", o.data("email"));
 	$(".mentor-fullname").attr("placeholder", o.data("fullname"));
+	var dojos = [o.data("dojos")];
+	if (o.data("all-dojos")) dojos = dojos.concat("all");
+	$(".mentor-dojos").val(dojos);
 });
 
 $(".dojo-select").change(function(){
 	var o = $(this).find(":selected");
 	$(".dojo-input").val("");
+	$(".dojo-dojoname").prop("disabled", o.val() !== "");
 	$(".dojo-dojoname").attr("placeholder", o.val());
 	$(".dojo-name").attr("placeholder", o.data("name"));
 	$(".dojo-email").attr("placeholder", o.data("email"));
 	$(".dojo-location").attr("placeholder", o.data("location"));
+});
 
+$(document).ready(function(){
+	$(".user-select").each(function(){
+		$(this).find("option:eq(0)").prop("selected",true);
+		var type = $(this).data("id");
+		var uidInput;
+		if (type == "dojo") uidInput = $(".dojo-dojoname");
+		else uidInput = $("." + type + "-username");
+		if ($(this).val() !== "") uidInput.prop("disabled", true);
+		else uidInput.prop("disabled", false);
+		uidInput.val("");
+	});
+	var o = $(".mentor-select").find(":selected");
+	var dojos = [o.data("dojos")];
+	if (o.data("all-dojos")) dojos = dojos.concat("all");
+	$(".mentor-dojos").val(dojos);
 });

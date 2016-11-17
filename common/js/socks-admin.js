@@ -52,34 +52,53 @@ $(".remove").click(function(){
 socket.on("admin.fullDatabase", function(data){
 	$("input").val("");
 	$("input").attr("placeholder", "");
-	$("select").find("option").remove();
+	$("input[type=password]").attr("placeholder", "********");
+	$("select").find("option").filter(function(){
+		return $(this).val() !== "" && $(this).val() !== "all";	
+	}).remove();
 	for (var i = 0; i < data.admins.length; ++i) {
 		var u = data.admins[i];
-		$(".select-admin").append("<option value=\"" + u.username + 
-			"\" data-fullname=\"" + u.fullname + 
-			"\" data-email=\"" + u.email + "\">");
+		$(".admin-select").append($("<option>",{
+			"value": u.username,
+			"data-fullname": u.fullname,
+			"text": u.fullname,
+			"data-email": u.email
+		}));
 	}
 	for (var i = 0; i < data.champions.length; ++i) {
 		var u = data.champions[i];
-		$(".select-champion").append("<option value=\"" + u.username + 
-			"\" data-fullname=\"" + u.fullname + 
-			"\" data-email=\"" + u.email + "\">");
+		$(".champion-select").append($("<option>",{
+			"value": u.username,
+			"data-fullname": u.fullname,
+			"text": u.fullname,
+			"data-email": u.email
+		}));
 	}
 	for (var i = 0; i < data.mentors.length; ++i) {
 		var u = data.mentors[i];
-		$(".select-mentors").append("<option value=\"" + u.username + 
-			"\" data-fullname=\"" + u.fullname + 
-			"\" data-email=\"" + u.email + "\">");
+		$(".mentor-select").append($("<option>",{
+			"value": u.username,
+			"data-fullname": u.fullname,
+			"text": u.fullname,
+			"data-email": u.email,
+			"data-dojos": u.dojos,
+			"data-all-dojos": u.allDojos
+		}));
 	}
 	for (var i = 0; i < data.dojos.length; ++i) {
-		var u = data.dojos[i];
-		$(".select-dojos").append("<option value=\"" + u.dojoname + 
-			"\" data-name=\"" + u.name + 
-			"\" data-email=\"" + u.email + 
-			"\" data-location=\"" + u.location + "\">");
-		$(".mentor-dojos").append("<option value=\"" + u.dojoname + "\">");
-	} // TODO add text to each option
-
+		var d = data.dojos[i];
+		$(".dojo-select").append($("<option>",{
+			"value": d.dojoname,
+			"data-name": d.name,
+			"text": d.name,
+			"data-email": d.email,
+			"data-location": d.location
+		}));
+		$(".mentor-dojos").append($("<option>", {
+			"value": d.dojoname,
+			"text": d.name
+		}));
+	}
 });
 
 $(".admin-select").change(function(){
@@ -108,7 +127,7 @@ $(".mentor-select").change(function(){
 	$(".mentor-email").attr("placeholder", o.data("email"));
 	$(".mentor-fullname").attr("placeholder", o.data("fullname"));
 	var dojos = [o.data("dojos")];
-	if (o.data("all-dojos")) dojos.push("all");
+	if (o.data("all-dojos")) dojos = dojos.concat("all");
 	$(".mentor-dojos").val(dojos);
 });
 
@@ -135,7 +154,6 @@ $(document).ready(function(){
 	});
 	var o = $(".mentor-select").find(":selected");
 	var dojos = [o.data("dojos")];
-	if (o.data("all-dojos")) dojos.push("all");
-	console.dir(dojos);
+	if (o.data("all-dojos")) dojos = dojos.concat("all");
 	$(".mentor-dojos").val(dojos);
 });
