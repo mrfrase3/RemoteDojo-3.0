@@ -1,0 +1,70 @@
+1,11d0
+< 
+< $(".submit-admin").click(function(){
+< 	var user = $(".admin-select").find(":selected").val();
+< 	var username = $(".admin-username").val();
+< 	var email = $(".admin-email").val();
+< 	var fullname = $(".admin-fullname").val();
+< 	var password = $(".admin-password").val();
+< 	socket.emit("admin.adminEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: ""});
+< 	$(".admin-input").val("");
+< });
+< 
+18c7
+< 	socket.emit("admin.championEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: ""});
+---
+> 	socket.emit("champion.championEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: ""});
+29c18
+< 	socket.emit("admin.mentorEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: dojos});
+---
+> 	socket.emit("champion.mentorEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: dojos});
+40c29
+< 	socket.emit("admin.dojoEdit",{user: user, dojoname: dojoname, name: name, email: email, location: location, password: password});
+---
+> 	socket.emit("champion.dojoEdit",{user: user, dojoname: dojoname, name: name, email: email, location: location, password: password});
+45c34
+< 	var type = $(this).data("id");
+---
+> 	var type = $(this).data("id"); // can only delete dojos and mentors
+48c37
+< 		socket.emit("admin.deleteUser", {type: type, uid: uid});
+---
+> 		socket.emit("champion.deleteUser", {type: type, uid: uid});
+52c41,42
+< socket.on("admin.fullDatabase", function(data){
+---
+> socket.on("champion.fullDatabase", function(data){
+> 	// TODO remember selection, try to reselect after modifications
+70c60
+< 		}).addClass("db-option"));
+---
+> 		}).addClass("db-option")); // TODO add class
+110,115c100,102
+< 	$(".admin-input").val("");
+< 	$(".admin-username").prop("disabled", o.val() !== "");
+< 	$(".admin-username").attr("placeholder", o.val());
+< 	$(".admin-email").attr("placeholder", o.data("email"));
+< 	$(".admin-fullname").attr("placeholder", o.data("fullname"));
+< 	if (o.hasClass("self")) $(".remove[data-id=\"admin\"]").prop("disabled", true);
+---
+> 	$(".admin-username").attr("text", o.val());
+> 	$(".admin-email").attr("text", o.data("email"));
+> 	$(".admin-fullname").attr("text", o.data("fullname"));
+124a112,114
+> 	// champions can only modify themselves
+> 	var isSelf = o.hasClass("self");
+> 	$(".submit-champion, .champion-input").prop("disabled": isSelf);
+156,157c146,147
+< 		var isNew = $(this).val() == "";
+< 		uidInput.prop("disabled", !isNew);
+---
+> 		if ($(this).val() !== "") uidInput.prop("disabled", true);
+> 		else uidInput.prop("disabled", false);
+164c154
+< 	// prevent admins from deleting themselves
+---
+> 	// champions can only modify themselves
+166c156
+< 	$(".remove[data-id=\"admin\"]").prop("disabled", isSelf);
+---
+> 	$(".submit-champion, .champion-input").prop("disabled": isSelf);
