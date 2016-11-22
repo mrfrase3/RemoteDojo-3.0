@@ -378,7 +378,6 @@ var socketValidate = function(socket, cb, nodupe, ns){
 			socket.disconnect(true);
 		}
 	});
-
 };
 
 // basic object to hold info about ninja to mentor sessions (calls)
@@ -414,7 +413,6 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 	if (user.allDojos) {
 		for(var i = 0; i < dojos._indexes.length; i++){
         	var d = dojos._indexes[i];
-        	console.log("dojoname: " + d);
         	socket.join(d + "-" + user.perm);
 			socket.join(d);
 		}
@@ -456,13 +454,13 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 
 			// TODO move pwdRules to global scope, perform push at startup only.
 			var pwdRules = [];
-			pwdRules.push(new RegExp(/.{8,}/)); // minimum 8 characters
-			pwdRules.push(new RegExp(/^[a-z]/i)) // alpha
+			// pwdRules.push(new RegExp(/.{8,}/)); // minimum 8 characters
+			// pwdRules.push(new RegExp(/^[a-z]/i)) // alpha
 			// pwdRules.push(new RegExp(/[a-z]/)); // lowercase
 			// pwdRules.push(new RegExp(/[A-Z]/)); // uppercase
 			// pwdRules.push(new RegExp(/[\d]/)); // numeric
 			// pwdRules.push(new RegExp(/[.\/,<>?;:"'`~!@#$%^&*()[\]{}_+=|\\-]/)); // special character
-			negativePwdRule = new RegExp(/[^a-zA-Z\d.\/,<>?;:"'`~!@#$%^&*()[\]{}_+=|\\-]/); // none of the above
+			negativePwdRule = new RegExp(/[^a-zA-Z\d.\/,<>?;:"'`~!@#$%^&*()[\]{}_+=|\\-]/); // keyboard character
 
 			var pass = true;  // repeat of checks performed client side.
 			for (var i = 0; i < pwdRules.length; ++i) {
@@ -491,7 +489,6 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 				user.fullname = newName;
 				users.save();
 			}
-			// TODO Transmit change to ninjas to help requests/mentor availability?
 		});
 
 		socket.on("mentor.emailChange", function(data){
@@ -541,7 +538,7 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 			data.user = {username: user.username, fullname: user.fullname, email: user.email};
         	for(var i = 0; i < users._indexes.length; i++){
             	var u = users._indexes[i];
-            	if (users[u].username == user.username) continue; // TODO u == user.username?
+            	if (users[u].username == user.username) continue;
             	if (users[u].perm == 1) data.mentors.push({username: u, fullname: users[u].fullname, email: users[u].email, 
         																dojos: users[u].dojos, allDojos: users[u].allDojos});
             	else if (users[u].perm == 2) data.champions.push({username: u, fullname: users[u].fullname, email: users[u].email});
@@ -587,18 +584,15 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 
 		socket.on("champion.championEdit", function(data){
 			champAddUserFields(data, 2);
-			console.log("GOT TODO CHAMPIONEDIT");
 			champEmitFullDatabase();
 		});
 
 		socket.on("champion.mentorEdit", function(data){
 			champAddUserFields(data, 1);
-			console.log("GOT TODO MENTOREDIT");
 			champEmitFullDatabase();
 		});
 
 		socket.on("champion.dojoEdit", function(data){
-			console.log("GOT TODO DOJOEDIT");
 			var d = data.user;
 			var newdojo = d === "";
 			if (newdojo) {
@@ -617,7 +611,6 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 		});
 
 		socket.on("champion.deleteUser", function(data){
-			console.log("GOT TODO DELETEUSER");
 			if (data.type == "admin" || data.type == "champion") return;
 			if (data.type == "dojo") removeDojo(data.uid);
 			else removeUser(data.uid);
@@ -633,7 +626,7 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 			data.user = {username: user.username, fullname: user.fullname, email: user.email};
         	for(var i = 0; i < users._indexes.length; i++){
             	var u = users._indexes[i];
-            	if (users[u].username == user.username) continue; // TODO u == user.username?
+            	if (users[u].username == user.username) continue;
             	if (users[u].perm == 1) data.mentors.push({username: u, fullname: users[u].fullname, email: users[u].email, 
         																dojos: users[u].dojos, allDojos: users[u].allDojos});
             	else if (users[u].perm == 2) data.champions.push({username: u, fullname: users[u].fullname, email: users[u].email});
@@ -646,7 +639,6 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 			socket.emit("admin.fullDatabase", data);
 		}
 
-		// TODO add admins and champions to a room so as to be updated on any changes (without having to refresh)
 		// This function entirely trusts the admin and champion. Checks may be added here and to the admin/champion pages as required
 		var addUserFields = function(data, perm) {
 			var u = data.user;

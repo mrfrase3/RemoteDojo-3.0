@@ -245,11 +245,11 @@ $( document ).ready(function() {
 	offerTutorial();
 
 	// Set password rules
-	pwdRules.push(new RegExp(/.{8,}/)); // minimum 8 characters
+	// pwdRules.push(new RegExp(/.{8,}/)); // minimum 8 characters
 	// pwdRules.push(new RegExp(/^[a-z]/i)) // alpha
 	// pwdRules.push(new RegExp(/[a-z]/)); // lowercase
 	// pwdRules.push(new RegExp(/[A-Z]/)); // uppercase
 	// pwdRules.push(new RegExp(/[\d]/)); // numeric
 	// pwdRules.push(new RegExp(/[.\/,<>?;:"'`~!@#$%^&*()[\]{}_+=|\\-]/)); // special character
-	negativePwdRule = new RegExp(/[^a-zA-Z\d.\/,<>?;:"'`~!@#$%^&*()[\]{}_+=|\\-]/); // none of the above
+	negativePwdRule = new RegExp(/[^a-zA-Z\d.\/,<>?;:"'`~!@#$%^&*()[\]{}_+=|\\-]/); // keyboard character
 });

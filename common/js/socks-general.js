@@ -2,7 +2,7 @@ var socket = io.connect('/main');
 var live = false;
 var answeredRequest = false; // answeredRequest is distinct from 'live' in that it occurs before rtc connection.
 
-$('.hidden').hide(); //I'm lazy
+$('.hidden').hide();
 $('.hidden').removeClass('hidden');
 
 //Helper Function to authenticate the connection

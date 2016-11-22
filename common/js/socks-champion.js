@@ -1,3 +1,5 @@
+var socket = io.connect('/main');
+
 $(".submit-champion").click(function(){
 	var user = $(".champion-select").find(":selected").val();
 	var username = $(".champion-username").val();
@@ -102,6 +104,7 @@ socket.on("champion.fullDatabase", function(data){
 		.text(data.user.fullname)
 		.data("fullname", data.user.fullname)
 		.data("email", data.user.email);
+	$(".info-fullname").text(data.user.fullname);
 	for (var i = 0; i < data.admins.length; ++i) {
 		var u = data.admins[i];
 		$(".admin-select").append($("<option>",{
@@ -146,6 +149,58 @@ socket.on("champion.fullDatabase", function(data){
 		}).addClass("db-option"));
 	}
 	loadAll();
+});
+
+//Helper Function to authenticate the connection
+// socket and callback are passed, callback is called if the socket is authenticated
+var authSock = function(sock, cb){
+	sock.on('sockauth.request', function(){ //when the server requests authentication
+		$.get('/sockauth'+window.location.search, function(res){ //get the user session token to prove identity
+			if(res.err){
+				sock.close();
+				alert('Authentication with server failed, please log back in.');
+				console.log('Failed to authorise socket connection: ' + res.err);
+			} else sock.emit('sockauth.validate', res); //send the token to the server
+		});
+	});
+
+	sock.on('sockauth.dupeConflict', function(){ //server says the token is valid
+		socket.emit('sockauth.dupeResolution', confirm("You currently have another active session in another window/tab.\nForce the other to disconnect?"));
+	});
+
+	sock.on('sockauth.valid', function(){ //server says the token is valid
+		console.log('socket connection authorised');
+		if(cb) cb();
+	});
+
+	sock.on('sockauth.invalid', function(){ //server says the token is not valid
+		sock.close();
+		//alert('Authentication with server failed, please log back in.');
+		$(".alert-wrapper").prepend(genalert("danger", false, "Authentication with server failed, please log back in."));
+		console.log('Failed to authorise socket connection: Token was not valid.');
+	});
+}
+
+// Socket Processing
+
+socket.on('connect', function(){
+	console.log('socket connection made.');
+	authSock(socket, function(){
+		socket.auth = true;
+		$(".loading-overlay").hide(200);
+	});
+});
+
+socket.on('reconnect', function(){
+	console.log('socket connection made.');
+});
+
+socket.on('disconnect', function(){
+	console.log('socket disconnected.');
+});
+
+socket.on('general.disconnect', function(m){
+	$(".alert-wrapper").prepend(genalert("danger", false, "You were disconnected from the server!<br>Because " + m));
 });
 
 $(document).ready(function(){
