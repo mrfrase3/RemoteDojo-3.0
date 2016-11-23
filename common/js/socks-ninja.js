@@ -73,6 +73,26 @@ var offerTutorial = function() {
 	}, 3000);
 }
 
+var submitProfile = function(){
+	$(".alert-fullname").hide();
+	var name = $("#input-fullname").val();
+	var nonalpha = new RegExp(/[^a-z ]/i);
+	if (nonalpha.test(name)) {
+		$(".alert-fullname").text("Please choose a name with only letters and spaces.");
+		$(".alert-fullname").show();
+	} else if (name.length > 10) {
+		$(".alert-fullname").text("Please choose a name with at most 10 letters.");
+		$(".alert-fullname").show();
+	} else {
+		$(".info-fullname").html(name);
+		$(".info-panel").data("name",name);
+		socket.emit('ninja.fullnameChange', name);
+		$('#profileOverlay').modal('hide');
+	}
+}
+
+$(".fullname-submit").click(submitProfile);
+
 $(function() {
 
 	var callingTimeout = function(totaltime, lapse, waited){
@@ -98,13 +118,22 @@ $(function() {
 	$('.chat-btn-cancel').click(function(){ // add even to the 'leave' button
 		console.log('canceling mentor request');
 		socket.emit('ninja.cancelRequest');
+		$('.mentor-list-panel').show();
 		$('.chat-body-request').show();
 		$('.chat-body-start').hide();
 		$('.chat-body-start').data("calling", false);
 	});
-
 });
 
 $( document ).ready(function() {
 	offerTutorial();
+// TODO onshow/onhide? Set fields to current...
+	// $('#profileOverlay').on('shown.bs.modal', function() {
+	// 	$("#input-username").focus();
+	// });
+
+	$('#profileOverlay').on('hidden.bs.modal', function() {
+		$("#input-fullname").val("");
+		$(".form-error-text").hide();
+	});
 });

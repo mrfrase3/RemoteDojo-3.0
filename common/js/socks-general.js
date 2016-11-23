@@ -2,7 +2,7 @@ var socket = io.connect('/main');
 var live = false;
 var answeredRequest = false; // answeredRequest is distinct from 'live' in that it occurs before rtc connection.
 
-$('.hidden').hide(); //I'm lazy
+$('.hidden').hide();
 $('.hidden').removeClass('hidden');
 
 //Helper Function to authenticate the connection
@@ -92,6 +92,7 @@ socket.on('general.startChat',function(){ //start a chat session when the server
 	answeredRequest = true;
 	if (live) return;
 	var isNinja = $(".user-info-panel").data("type") == "ninja";
+	if (isNinja) $('.mentor-list-panel').hide();
 	startRTC(isNinja);
 	//setTimeout(Mediaconn.openOrJoin,joinDelay,data.ninja, onJoin); // the ninja and mentor cannot connect at the same time, so one is delayed (look in their socks files)
 	$('.chat-body-start').data("calling", false);

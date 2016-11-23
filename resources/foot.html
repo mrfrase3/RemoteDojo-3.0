@@ -11,12 +11,10 @@
 	
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
 
-	<script src="./common/js/main.js"></script>
 	{{js}}
-
+<!-- 
 	<script>
 		try{
-        	console.log(__dirname);
         	var remoteCursor = require("../../../../../../desktop");
         	if(remoteCursor){
             	setTimeout(function(){
@@ -24,7 +22,11 @@
                 	remoteCursor.setpos(50, 80);
                 }, 1000);
             }
-        }catch(e){console.log(e)};
+        }catch(e){
+        	console.log("RemoteCursor not available");
+        	console.log(e)
+        };
 	</script>
+	 -->
 </footer>
 </html>

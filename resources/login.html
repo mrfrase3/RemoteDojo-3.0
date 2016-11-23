@@ -42,10 +42,40 @@
                     	<ul class="nav nav-tabs">
                         	<li class="active"><a href="#ninja" data-toggle="tab" aria-expanded="true">Ninja</a></li>
                         	<li class=""><a href="#mentor" data-toggle="tab" aria-expanded="false">Mentor</a></li>
+                        	<li class=""><a href="#champion" data-toggle="tab" aria-expanded="false">Champion</a></li>
+                        	<li class=""><a href="#admin" data-toggle="tab" aria-expanded="false">Admin</a></li>
                         </ul>
                     	<br>
                         {{msg}}
                         <div id="myTabContent" class="tab-content">
+                        	<div class="tab-pane fade" id="admin">
+                        		<form role="form" method="post">
+                        		    <fieldset>
+                        		    	<input class="hidden" name="type" type="hidden" value="user">
+                       		 	        <div class="form-group">
+                        		            <input class="form-control" placeholder="Username" name="login_username" type="text" value="{{usr}}">
+                        		        </div>
+                        		        <div class="form-group">
+                        		            <input class="form-control" placeholder="Password" name="login_password" type="password" value="">
+                        		        </div>
+                        		        <button class="btn btn-lg btn-success btn-block">Login</button>
+                        		    </fieldset>
+                        		</form>
+                            </div>
+                        	<div class="tab-pane fade" id="champion">
+                        		<form role="form" method="post">
+                        		    <fieldset>
+                        		    	<input class="hidden" name="type" type="hidden" value="user">
+                       		 	        <div class="form-group">
+                        		            <input class="form-control" placeholder="Username" name="login_username" type="text" value="{{usr}}">
+                        		        </div>
+                        		        <div class="form-group">
+                        		            <input class="form-control" placeholder="Password" name="login_password" type="password" value="">
+                        		        </div>
+                        		        <button class="btn btn-lg btn-success btn-block">Login</button>
+                        		    </fieldset>
+                        		</form>
+                            </div>
                         	<div class="tab-pane fade" id="mentor">
                         		<form role="form" method="post">
                         		    <fieldset>

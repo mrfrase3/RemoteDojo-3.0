@@ -12,15 +12,15 @@ $(function(){
 
 	var elem = {local: {}, remote: {}};
 
-	elem.local.v = $('.dump video.dump-local').get(0);
-	elem.local.a = $('.dump audio.dump-local').get(0);
-	elem.local.c = $('.screen-local-canvas').get(0);
-	elem.local.context = elem.local.c.getContext('2d');
+	elem.local.v = $(".dump video.dump-local").get(0);
+	elem.local.a = $(".dump audio.dump-local").get(0);
+	elem.local.c = $(".screen-local-canvas").get(0);
+	elem.local.context = elem.local.c.getContext("2d");
 
-	elem.remote.v = $('.dump video.dump-remote').get(0);
-	elem.remote.a = $('.dump audio.dump-remote').get(0);
-	elem.remote.c = $('.screen-remote-canvas').get(0);
-	elem.remote.context = elem.remote.c.getContext('2d');
+	elem.remote.v = $(".dump video.dump-remote").get(0);
+	elem.remote.a = $(".dump audio.dump-remote").get(0);
+	elem.remote.c = $(".screen-remote-canvas").get(0);
+	elem.remote.context = elem.remote.c.getContext("2d");
 
 	var cw = 1280;
 	var ch = 720;
@@ -29,10 +29,10 @@ $(function(){
 	elem.remote.c.width = cw;
 	elem.remote.c.height = ch;
 
-	elem.local.v.addEventListener('play', function(){
+	elem.local.v.addEventListener("play", function(){
 		draw(this,elem.local.context,cw,ch,true);
 	},false);
-	elem.remote.v.addEventListener('play', function(){
+	elem.remote.v.addEventListener("play", function(){
 		draw(this,elem.remote.context,cw,ch,false);
 	},false);
 
@@ -78,15 +78,15 @@ $(function(){
 			}
 			p = 0;
 			if(c > 0) p = ((t/c)/255)*100;
-			$(b).css('width',p+'%');
+			$(b).css("width",p+"%");
 			console.log(p +' '+ b +' '+c+' '+t+' '+bufferLength);
 		}
 		drawvis(v,b);
 
 
 	}
-	audiovis(elem.local.v, '.levels-local .progress-bar');
-	audiovis(elem.remote.v, '.levels-remote .progress-bar');*/
+	audiovis(elem.local.v, ".levels-local .progress-bar");
+	audiovis(elem.remote.v, ".levels-remote .progress-bar");*/
 
 
 
@@ -94,7 +94,7 @@ var audio_vis = function(au, qu){
 
 	var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 	if(!au){
-		var myAudio = document.querySelector('audio');
+		var myAudio = document.querySelector("audio");
 	} else {
 		var myAudio = au;
 	}
@@ -113,12 +113,10 @@ var audio_vis = function(au, qu){
 	analyser.connect(audioCtx.destination);
 
 	function visualize() {
-
+		// TODO fix visualiser
 		//if(visualSetting == "sinewave") {
 		analyser.fftSize = 512;
 		var bufferLength = analyser.fftSize;
-		console.log(bufferLength);
-
 
 		function drawv() {
 
@@ -217,7 +215,7 @@ function resizeTextBox(o){
 	}
 }
 
-$(".resizeBox").keyup(function() {
+$(".resizeBox").on("change keyup keypress blur", function() {
 	resizeTextBox(this);
 });
 
@@ -239,30 +237,38 @@ var switchVideoPositions = function(){
 // TODO tmp function used for demonstration. Need to switch 'nina's screen' title with 'your screenshare' etc.
 $(".chat-body-stop .switch-canvas").click(switchVideoPositions);
 
-// Keybinings
+// Keybindings
 $(document).keydown(function(e) {
 	var chatInput = $(".input-group .chat-input");
+	var profileField = $(".first-modal-field");
 	if (e.which == 13) {	// if enter
-		if (e.shiftKey || e.ctrlKey || !chats) return true; // continue if not in chat or additional keys held.
-		if (chatInput.is(':focus')) {
-			if (chatInput.val().length != 0) {
-				// if the chat has focus and isn't empty, send the message
+		if (profileField.is(":focus") && profileField.val().trim().length != 0) {
+			submitProfile();
+			$("#profileOverlay").modal("hide");
+			return false;
+		}
+		if (e.shiftKey || e.ctrlKey || !live) return false; // continue if not in chat or additional keys held.
+		if (chatInput.is(":focus")) {
+			if (chatInput.val().trim().length != 0) {
+				// if the chat has focus and isn"t empty, send the message
 				rtcSendMessage();
 				return false; // return false prevents default actions
 			} else {
 				// if the chat is empty, enter hides the chat
+				chatInput.val("");
 				$(".button-menu .chat-list-wrap").toggle(false);
+				chatInput.blur();
 				return false;
 			}
-		} else if (!($('input').is(':focus')	|| $('button').is(':focus'))) {
-			// if no inputs have focus, show the chat
+		} else if (!($("input").is(":focus") || $("button").is(":focus"))) {
+			// if no inputs or modals are shown, show the chat
 			$(".button-menu .chat-list-wrap").toggle(true);
 			chatInput.focus();
 			return false;
 		}
 	} else if (e.which == 27) { // if esc
 		// hide the chat if chat has focus, and blurs the active element
-		if (chatInput.is(':focus')) {
+		if (chatInput.is(":focus")) {
 			$(".button-menu .chat-list-wrap").toggle(false);
 		}
 		document.activeElement.blur();

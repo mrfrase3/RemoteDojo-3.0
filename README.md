@@ -14,7 +14,7 @@ Pretty simple!
 Notes:
 
  - If you are using the sscerts.sh, make sure you are running it as either root or a user that has sudo privileges. Also make sure openssl is installed on your system.
- - Default logins for everything is 'tomato' with the mentor username being 'mentor', champion username being 'champion' and admin username being 'admin'
+ - Default logins for everything is 'tomato' with the dojo login name being 'dojo', the mentor username being 'mentor', champion username being 'champion', and the admin username being 'admin'
 
 ## Configuration ##
 Settings can be found in `config.json`.
