@@ -12,7 +12,7 @@ var server = require("https").createServer(keys, app);
 var io = require("socket.io")(server);
 var bodyParser = require("body-parser");
 var helmet = require("helmet");
-var bcrypt = require("bcrypt");
+var crypto = require("crypto");
 var config = require("./config.json");
 
 // User and Dojo objects, contains the persistant info on users/dojos (see the Storage.js file in the lib folder)
@@ -74,7 +74,7 @@ var ipverification = function(ipaddress, maxtoday) {
 
 // token generator, pretty random, but can be replaced if someone has something stronger
 var token = function() {
-	return bcrypt.hashSync(Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2), 10).replace(/\W/g, "t");
+	return crypto.randomBytes(256).toString('hex');
 };
 
 // function that generates a new User, can be easily copied/modified to create a new random, expirable user
@@ -234,8 +234,10 @@ app.use("/", function(req, res){
 				fill.msg = genalert("danger", true, "Invalid username provided, please check and try again.");
 				return renderfile("login");
 			}
-			bcrypt.compare(req.body.login_password.trim(), users[fill.usr].password, function(err, match){ //check the password (yes encyption! spooky)
-				if(!match || err){ //if the password check failed
+        	var hash = crypto.createHash('sha256').update(req.body.login_password.trim()).digest('hex');
+        	
+			//bcrypt.compare(req.body.login_password.trim(), users[fill.usr].password, function(err, match){ //check the password (yes encyption! spooky)
+				if(users[fill.usr].password !== hash){ //if the password check failed
 					fill.msg = genalert("danger", true, "Invalid password was provided, please try again.");
 					renderfile("login");
 				} else { // else the password check succeeded, setup the user session
@@ -246,7 +248,7 @@ app.use("/", function(req, res){
 						req.session.loginpath = undefined;
 					} else res.redirect("/");
 				}
-			});
+			//});
 			return;
 		} else if(req.body.type == "ninja"){ // handle dojo based logins (ninjas)
 			var dojo = req.body.login_dojo;
@@ -469,24 +471,27 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 					break;
 				}
 			}
+        	if(pwd.trim().length < 6) pass = false
 			if (negativePwdRule.test(pwd)) pass = false;
 
-			bcrypt.compare(curPwd, user.password, function(err, match){ //check the password
-				if(match && !err) {
-					user.password = bcrypt.hashSync(pwd, 10)
+			//bcrypt.compare(curPwd, user.password, function(err, match){ //check the password
+        	var hash = crypto.createHash('sha256').update(curPwd).digest('hex');
+				if(hash === users[socket.user].password && pass) {
+					users[socket.user].password = crypto.createHash('sha256').update(pwd).digest('hex');
 					users.save();
 					socket.emit("mentor.passwordChange", true);
 				} else {
 					socket.emit("mentor.passwordChange", false);
 				}
-			});
+			//});
 		});
 
 		socket.on("mentor.fullnameChange", function(data){
-			var newName = data.substring(0,20);
-			var nonalpha = new RegExp(/[^a-z ]/i);
+			var newName = data;//.substring(0,20);
+			var nonalpha = new RegExp(/[^a-zA-Z -]/);
 			if (!nonalpha.test(newName)) { // Repeating check performed on client side. Fails silently if error occurs
 				user.fullname = newName;
+            	users[socket.user].fullname = newName;
 				users.save();
 			}
 		});
@@ -494,6 +499,7 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 		socket.on("mentor.emailChange", function(data){
 			var email = data;
 			user.email = email;
+            users[socket.user].email = email;
 			users.save();
 		});
 
@@ -516,7 +522,7 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 		});
 		socket.on("ninja.fullnameChange", function(data){
 			var newName = data.substring(0,10);
-			var nonalpha = new RegExp(/[^a-z ]/i);
+			var nonalpha = new RegExp(/[^a-zA-Z -]/);
 			if (!nonalpha.test(newName)) { // Repeating check performed on client side. Fails silently if error occurs
 				user.fullname = newName;
 			}
@@ -567,7 +573,7 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 			}
 			if (newusr) {
 				var username = data.username.toLowerCase();
-				var password = bcrypt.hashSync(data.password, 10);
+				var password = crypto.createHash('sha256').update(data.password).digest('hex');
 				users.add(username, {username: username, fullname: data.fullname, email: data.email, 
 								password: password, perm: perm, dojos: data.dojos, allDojos: allDojos, expire: -1});
 			} else {
@@ -575,7 +581,7 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 				if (!users[u]) return;
 				if (data.email !== "") users[u].email = data.email;
 				if (data.fullname !== "") users[u].fullname = data.fullname;
-				if (data.password !== "") users[u].password = bcrypt.hashSync(data.password, 10);
+				if (data.password !== "") users[u].password = crypto.createHash('sha256').update(data.password).digest('hex');
 				users[u].dojos = data.dojos;
 				users[u].allDojos = allDojos;
 				users.save();
@@ -597,14 +603,14 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 			var newdojo = d === "";
 			if (newdojo) {
 				var dojoname = data.dojoname.toLowerCase()
-				var password = bcrypt.hashSync(data.password, 10);
+				var password = crypto.createHash('sha256').update(data.password).digest('hex');
 				dojos.add(dojoname, {dojoname: dojoname, name: data.name, password: password, location: data.location, email: data.email, expire: -1});
 			} else {
 				if (!dojos[d]) return;
 				if (data.name !== "") dojos[d].name = data.name;
 				if (data.email !== "") dojos[d].email = data.email;
 				if (data.location !== "") dojos[d].location = data.location;
-				if (data.password !== "") dojos[d].password = bcrypt.hashSync(data.password, 10);
+				if (data.password !== "") crypto.createHash('sha256').update(data.password).digest('hex');
 				dojos.save();
 			}
 			champEmitFullDatabase();
@@ -653,7 +659,7 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 			}
 			if (newusr) {
 				var username = data.username.toLowerCase();
-				var password = bcrypt.hashSync(data.password, 10);
+				var password = crypto.createHash('sha256').update(data.password).digest('hex');
 				users.add(username, {username: username, fullname: data.fullname, email: data.email, 
 								password: password, perm: perm, dojos: data.dojos, allDojos: allDojos, expire: -1});
 			} else {
@@ -661,7 +667,7 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 				if (!users[u]) return;
 				if (data.email !== "") users[u].email = data.email;
 				if (data.fullname !== "") users[u].fullname = data.fullname;
-				if (data.password !== "") users[u].password = bcrypt.hashSync(data.password, 10);
+				if (data.password !== "") users[u].password = crypto.createHash('sha256').update(data.password).digest('hex');
 				users[u].dojos = data.dojos;
 				users[u].allDojos = allDojos;
 				users.save();
@@ -688,14 +694,14 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 			var newdojo = d === "";
 			if (newdojo) {
 				var dojoname = data.dojoname.toLowerCase()
-				var password = bcrypt.hashSync(data.password, 10);
+				var password = crypto.createHash('sha256').update(data.password).digest('hex');
 				dojos.add(dojoname, {dojoname: dojoname, name: data.name, password: password, location: data.location, email: data.email, expire: -1});
 			} else {
 				if (!dojos[d]) return;
 				if (data.name !== "") dojos[d].name = data.name;
 				if (data.email !== "") dojos[d].email = data.email;
 				if (data.location !== "") dojos[d].location = data.location;
-				if (data.password !== "") dojos[d].password = bcrypt.hashSync(data.password, 10);
+				if (data.password !== "") dojos[d].password = crypto.createHash('sha256').update(data.password).digest('hex');
 				dojos.save();
 			}
 			emitFullDatabase();
@@ -805,7 +811,7 @@ var checkExpired = function(){
 checkExpired();
 
 server.listen(config.serverPort); // start main server
-console.log("Server Started");
+console.log("Server Started on port: " + config.serverPort);
 
 //exports for testing
 exports.testing = {app: app};

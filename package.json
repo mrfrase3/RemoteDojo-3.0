@@ -9,15 +9,14 @@
   "main": "app",
   "private": true,
   "dependencies": {
+    "body-parser": "x",
     "express": "x",
     "express-session": "x",
-    "session-file-store": "x",
-    "socket.io-stream": "x",
-    "socket.io": "x",
-    "body-parser": "x",
+    "handlebars": "x",
     "helmet": "x",
-    "bcrypt": "x",
-    "handlebars": "x"
+    "session-file-store": "x",
+    "socket.io": "x",
+    "socket.io-stream": "x"
   },
   "devDependencies": {
     "chai": "^3.5.0",
