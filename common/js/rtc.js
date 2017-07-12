@@ -132,7 +132,7 @@ var updateCoords = function(msg) {
 	rtcCursorRY = msg.ry;
 
 	// If using electron move remoteCursor
-	if (remoteCursor) {
+	if (typeof remoteCursor !== 'undefined') {
 		if (cursorShowing) { // declared in main.js
 			remoteCursor.show();
 			remoteCursor.setpos(rtcCursorRX*100, rtcCursorRY*100);
@@ -285,6 +285,7 @@ var stopRTC = function(){
 	negotiating = null;
 	peerconn.close();
 	peerconn = null;
+	$('.mentor-list-panel').show();
 }
 
 var startRTC = function(offer){

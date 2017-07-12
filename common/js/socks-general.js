@@ -79,6 +79,10 @@ socket.on('general.disconnect', function(m){
 	$(".alert-wrapper").prepend(genalert("danger", false, "You were disconnected from the server!<br>Because " + m));
 });
 
+socket.on('general.genalert', function(level, diss, msg){
+	$(".alert-wrapper").prepend(genalert(level, diss, msg));
+});
+
 socket.on('general.mentorStatus',function(data){ // change a mentors status if theres a list
 	labels = {offline: 'default', available: 'success', busy: 'warning'};
 	currstat = $('#mentor-'+data.username + ' .label').html();
@@ -119,3 +123,14 @@ $(function(){
 		$(".chat-btn-stop").popover("hide"); //for tutorial, hide leave chat popup if it's still showing
 	});
 });
+
+if(!genalert){
+	var genalert = function(type, havediss, msg, timeout){
+		var diss = "'";
+		var eid = "alert-" + Math.random().toString(36).substr(2);
+		while($("#"+eid).length) eid = "alert-" + Math.random().toString(36).substr(2);
+		if(timeout && timeout > 0) setTimeout(function(){$("#"+eid).remove();}, timeout);
+		if(havediss) diss = "alert-dismissable'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>×</button";
+		return "<div id='"+eid+"' class='alert alert-"+type+" "+diss+">"+msg+"</div>";
+	}
+}

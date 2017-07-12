@@ -1,4 +1,3 @@
-var socket = io.connect('/main');
 
 $(".submit-admin").click(function(){
 	var user = $(".admin-select").find(":selected").val();
@@ -6,7 +5,7 @@ $(".submit-admin").click(function(){
 	var email = $(".admin-email").val();
 	var fullname = $(".admin-fullname").val();
 	var password = $(".admin-password").val();
-	socket.emit("admin.adminEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: ""});
+	socket.emit("admin.adminEdit",{user, username, email, fullname, password, dojos: ["all"]});
 	$(".admin-input").val("");
 });
 
@@ -16,7 +15,8 @@ $(".submit-champion").click(function(){
 	var email = $(".champion-email").val();
 	var fullname = $(".champion-fullname").val();
 	var password = $(".champion-password").val();
-	socket.emit("admin.championEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: ""});
+	var dojos = $(".champion-dojos").val();
+	socket.emit("admin.championEdit",{user, username, email, fullname, password, dojos});
 	$(".champion-input").val("");
 });
 
@@ -27,7 +27,7 @@ $(".submit-mentor").click(function(){
 	var fullname = $(".mentor-fullname").val();
 	var password = $(".mentor-password").val();
 	var dojos = $(".mentor-dojos").val();
-	socket.emit("admin.mentorEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: dojos});
+	socket.emit("admin.mentorEdit",{user, username, email, fullname, password, dojos});
 	$(".mentor-input").val("");
 });
 
@@ -38,7 +38,7 @@ $(".submit-dojo").click(function(){
 	var email = $(".dojo-email").val();
 	var location = $(".dojo-location").val();
 	var password = $(".dojo-password").val();
-	socket.emit("admin.dojoEdit",{user: user, dojoname: dojoname, name: name, email: email, location: location, password: password});
+	socket.emit("admin.dojoEdit",{user, dojoname, name, email, location, password});
 	$(".dojo-input").val("");
 });
 
@@ -55,8 +55,8 @@ var loadAdmin = function() {
 	$(".admin-input").val("");
 	$(".admin-username").prop("disabled", o.val() !== "");
 	$(".admin-username").attr("placeholder", o.val());
-	$(".admin-email").attr("placeholder", o.data("email"));
-	$(".admin-fullname").attr("placeholder", o.data("fullname"));
+	$(".admin-email").attr("placeholder", o.data("email") || o.attr("data-email"));
+	$(".admin-fullname").attr("placeholder", o.data("fullname") || o.attr("data-fullname"));
 	var isSelf = o.hasClass("self");
 	$(".remove[data-id=\"admin\"]").prop("disabled", isSelf);
 }
@@ -66,8 +66,11 @@ var loadChampion = function() {
 	$(".champion-input").val("");
 	$(".champion-username").prop("disabled", o.val() !== "");
 	$(".champion-username").attr("placeholder", o.val());
-	$(".champion-email").attr("placeholder", o.data("email"));
-	$(".champion-fullname").attr("placeholder", o.data("fullname"));
+	$(".champion-email").attr("placeholder", o.data("email") || o.attr("data-email"));
+	$(".champion-fullname").attr("placeholder", o.data("fullname") || o.attr("data-fullname"));
+	let dojos = (o.data("dojos") || o.attr("data-dojos")).split(',');
+	if (o.data("all-dojos") || o.attr("data-all-dojos")) dojos.push("all");
+	$(".champion-dojos").val(dojos);
 }
 
 var loadMentor = function() {
@@ -75,10 +78,10 @@ var loadMentor = function() {
 	$(".mentor-input").val("");
 	$(".mentor-username").prop("disabled", o.val() !== "");
 	$(".mentor-username").attr("placeholder", o.val());
-	$(".mentor-email").attr("placeholder", o.data("email"));
-	$(".mentor-fullname").attr("placeholder", o.data("fullname"));
-	var dojos = [o.data("dojos")];
-	if (o.data("all-dojos")) dojos = dojos.concat("all");
+	$(".mentor-email").attr("placeholder", o.data("email") || o.attr("data-email"));
+	$(".mentor-fullname").attr("placeholder", o.data("fullname") || o.attr("data-fullname"));
+	let dojos = (o.data("dojos") || o.attr("data-dojos")).split(',');
+	if (o.data("all-dojos") || o.attr("data-all-dojos")) dojos.push("all");
 	$(".mentor-dojos").val(dojos);
 }
 
@@ -87,9 +90,9 @@ var loadDojo = function() {
 	$(".dojo-input").val("");
 	$(".dojo-dojoname").prop("disabled", o.val() !== "");
 	$(".dojo-dojoname").attr("placeholder", o.val());
-	$(".dojo-name").attr("placeholder", o.data("name"));
-	$(".dojo-email").attr("placeholder", o.data("email"));
-	$(".dojo-location").attr("placeholder", o.data("location"));
+	$(".dojo-name").attr("placeholder", o.data("name") || o.attr("data-name"));
+	$(".dojo-email").attr("placeholder", o.data("email") || o.attr("data-email"));
+	$(".dojo-location").attr("placeholder", o.data("location") || o.attr("data-location"));
 }
 
 var loadAll = function() {
@@ -112,8 +115,8 @@ socket.on("admin.fullDatabase", function(data){
 	$(".db-option").remove();
 	$("option.self").attr({"value": data.user.username})
 		.text(data.user.fullname)
-		.data("fullname", data.user.fullname)
-		.data("email", data.user.email);
+		.attr("data-fullname", data.user.fullname)
+		.attr("data-email", data.user.email);
 	$(".info-fullname").text(data.user.fullname);
 	for (var i = 0; i < data.admins.length; ++i) {
 		var u = data.admins[i];
@@ -130,7 +133,9 @@ socket.on("admin.fullDatabase", function(data){
 			"value": u.username,
 			"data-fullname": u.fullname,
 			"text": u.fullname,
-			"data-email": u.email
+			"data-email": u.email,
+			"data-dojos": u.dojos,
+			"data-all-dojos": u.allDojos ? "true" : ""
 		}).addClass("db-option"));
 	}
 	for (var i = 0; i < data.mentors.length; ++i) {
@@ -141,7 +146,7 @@ socket.on("admin.fullDatabase", function(data){
 			"text": u.fullname,
 			"data-email": u.email,
 			"data-dojos": u.dojos,
-			"data-all-dojos": u.allDojos
+			"data-all-dojos": u.allDojos ? "true" : ""
 		}).addClass("db-option"));
 	}
 	for (var i = 0; i < data.dojos.length; ++i) {
@@ -153,14 +158,14 @@ socket.on("admin.fullDatabase", function(data){
 			"data-email": d.email,
 			"data-location": d.location
 		}).addClass("db-option"));
-		$(".mentor-dojos").append($("<option>", {
+		$("select[name=\"dojo-list\"]").append($("<option>", {
 			"value": d.dojoname,
 			"text": d.name
 		}).addClass("db-option"));
 	}
 	loadAll();
 });
-
+/*
 //Helper Function to authenticate the connection
 // socket and callback are passed, callback is called if the socket is authenticated
 var authSock = function(sock, cb){
@@ -211,7 +216,7 @@ socket.on('disconnect', function(){
 
 socket.on('general.disconnect', function(m){
 	$(".alert-wrapper").prepend(genalert("danger", false, "You were disconnected from the server!<br>Because " + m));
-});
+});*/
 
 $(document).ready(function(){
 	$(".user-select").each(function(){

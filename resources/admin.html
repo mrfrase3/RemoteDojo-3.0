@@ -2,18 +2,18 @@
 <body style="height: 100%;">
 
 	<div class="heading-spacer" style="height:42px;width:100%"></div>
-	<div class="user-info-panel panel panel-primary" data-name="{{user.fullname}}" data-email="{{user.email}}" data-username="{{user.name}}" data-type="admin">
-		<div class="panel-heading">
-			<h3 class="panel-title">CoderDojo</h3>
-		</div>
-		<div class="panel-body">
+	<div class="container">
+    	<div class="col-md-3"><div class="user-info-panel panel panel-primary" data-name="{{user.fullname}}" data-email="{{user.email}}" data-username="{{user.name}}" data-type="admin">
+			<div class="panel-heading">
+				<h3 class="panel-title">CoderDojo</h3>
+			</div>
+			<div class="panel-body">
 				User info: <span class="info-fullname">{{user.fullname}}</span><br>
 				Account type: admin
 				<a href="./logout" class="col-xs-12 btn btn-default btn-sm">Logout</a>
-		</div>
-	</div>
-	<div class="container">
-		<div class="profilePanel panel panel-default">
+			</div>
+		</div></div>
+		<div class="col-md-9"><div class="profilePanel panel panel-default">
 			<div class="panel-heading">
 				<h3 class="panel-title">Modify users</h3>
 			</div>
@@ -65,10 +65,10 @@
 						<fieldset>
            		 	        <div class="form-group">
             		            <select class="champion-select user-select form-control" name="champion-list" data-id="champion">
-									<option value="" data-fullname="" data-email="">
+									<option value="" data-fullname="" data-email="" data-dojos="" data-all-dojos="">
 											Add a new user</option>
                                 	{{#each champions}}
-										<option class="db-option" value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}">
+										<option class="db-option" value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}" data-dojos="{{this.dojos}}" data-all-dojos="{{this.allDojos}}">
 											{{this.fullname}}</option>
 									{{/each}}
                                 </select>
@@ -91,6 +91,15 @@
 								<label for="fullname">Fullname:</label>
 								<input class="champion-input champion-fullname form-control" placeholder="" name="fullname" type="text" value="">
 							</div>
+                        	<div class="form-group">
+								<label for="dojo-list">Dojos: (hold shift or ctrl to select multiple)</label>
+								<select multiple class="champion-input champion-dojos form-control" name="dojo-list">
+									<option value="all">All</option>
+                                	{{#each dojos}}
+										<option class="db-option" value="{{this.dojoname}}">{{this.name}}</option>
+									{{/each}}
+								</select>
+							</div>
 							<button class="submit-champion btn btn-lg btn-success btn-block">Submit</button>
 							<button class="remove btn btn-lg btn-danger btn-block" data-id="champion">Delete user</button>
 						</fieldset>
@@ -99,7 +108,7 @@
 						<fieldset>
            		 	        <div class="form-group">
             		            <select class="mentor-select user-select form-control" name="mentor-list" data-id="mentor">
-									<option value="" data-fullname="" data-email="" data-dojos="[]" data-all-dojos="false">
+									<option value="" data-fullname="" data-email="" data-dojos="" data-all-dojos="">
 											Add a new user</option>
                                 	{{#each mentors}}
 										<option class="db-option" value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}" data-dojos="{{this.dojos}}" data-all-dojos="{{this.allDojos}}">
@@ -179,7 +188,7 @@
 			</div>
 			<div class="panel-footer">
 			</div>
-		</div>
+		</div></div>
 	</div>
 	<div class="footer-spacer"></div>
 </body>

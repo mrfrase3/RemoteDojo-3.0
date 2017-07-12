@@ -3,7 +3,9 @@ var path = require("path");
 var fs = require("fs");
 var express = require("express");
 var session = require("express-session");
-var fstore = require("session-file-store")(session);
+const MongoStore = require('connect-mongo')(session);
+const mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 var app = express();
 // get the SSL keys, change to location of your certificates
 // TODO replace SSL keys system with letsencrypt
@@ -15,10 +17,9 @@ var helmet = require("helmet");
 var crypto = require("crypto");
 var config = require("./config.json");
 
-// User and Dojo objects, contains the persistant info on users/dojos (see the Storage.js file in the lib folder)
-var storage = require("./lib/Storage.js");
-var users = new storage(__dirname+"/users.json");
-var dojos = new storage(__dirname+"/dojos.json");
+
+const users = mongoose.model('user', require("./lib/user.schema.js"));
+const dojos = mongoose.model('dojo', require("./lib/dojo.schema.js"));
 var ipaddresses = [];
 
 //load in the renderer, handlebars, and then load in the html templates
@@ -30,20 +31,10 @@ var templates = {404: getTemp("404"), index: getTemp("index"), head: getTemp("he
 								login: getTemp("login"), demo: getTemp("demo")};
 
 var mentorstats = {}; //keeps track of mentor statuses which are displayed to
-if(config.runInDemoMode){
-	var demoUserAuth = function(atok){
-		for(var j=0; j < users._indexes.length; j++){
-			i = users._indexes[j];
-			if(users[i].authtok && users[i].authtok == atok){
-				return i;
-			}
-		}
-    	return null;
-	};
-}
 
-// user permission structure:
-// 0: ninja, 1: mentor, 2: champion, 3: admin
+
+// user rolls structure:
+// ninja, mentor, champion, admin
 //
 
 //This will check the ip address of the clients. If they are not able to connect
@@ -73,33 +64,21 @@ var ipverification = function(ipaddress, maxtoday) {
 };
 
 // token generator, pretty random, but can be replaced if someone has something stronger
-var token = function() {
-	return crypto.randomBytes(256).toString('hex');
+var token = function(length=256) {
+	return crypto.randomBytes(length).toString('hex');
 };
 
-// function that generates a new User, can be easily copied/modified to create a new random, expirable user
-function tempUser(dojo, perm, expire){
-	if(expire < 0) return "no";
-	var tok = "temp-" + perm + "-" + token();
-	var names = ["Ninja", "Mentor", "Champion", "Admin"];
-	while(users[tok]) tok = "temp-" + perm + "-" + token();
-	users.add(tok, {username:tok,password:"temp",email:"temp",fullname:"Anonymous "+names[perm],token:[],perm:perm,dojos:[dojo], expire: Date.now() + expire});
-	setTimeout(removeUser, expire, tok);
-
-	if(config.runInDemoMode){
-		var atok = token();
-		while(demoUserAuth(atok) != null) atok = token();
-		users[tok].authtok = atok;
-	}
-	return tok;
+// gets mongoose errors
+var geterrs = (errors) => {
+	var msgs = {};
+	for(var i in errors) msgs[i] = errors[i].message;
+	return msgs;
 }
 
-function tempDojo(expire){
-	var tok = "temp-dojo-" + token();
-	while(dojos[tok]) tok = "temp-dojo-" + token();
-	dojos.add(tok, {dojoname: tok, name:"A Demo Dojo", password: "temp", location: "temp", email: "temp", expire: Date.now() + expire});
-	setTimeout(removeDojo, expire, tok);
-	return tok;
+var getvalues = (obj) =>{
+	var vals = [];
+	for(let i in obj) vals.push(obj[i]);
+	return vals;
 }
 
 // generates a html/bootstrap alert to display to the user, should be used to parse a message to the client side
@@ -109,16 +88,25 @@ function genalert(type, diss, msg){
 	return "<div class='alert alert-"+type+" "+diss+">"+msg+"</div>";
 }
 
-// setup for express
-app.use(helmet());
+// Mongo Stuff
+
+var mongouri = `mongodb://${config.database.mongo.user}:${config.database.mongo.password}`
+    +`@${config.database.mongo.host}:${config.database.mongo.port}/${config.database.mongo.name}`;
+
+// Setup express modules/settings/renderer
+
 app.use(session({
-	resave: false,
-	saveUninitialized: false,
-	store: new fstore(),
-	secret: config.sessionSecret,
-	duration: 24 * 60 * 60 * 1000,
-	activeDuration: 24 * 60 * 60 * 1000,
+    secret: config.sessionSecret,
+    saveUninitialized: false, // dont save empty sessions
+    resave: false, //don't save unchanged sessions
+    store: new MongoStore({ 
+        mongooseConnection: mongoose.connection, //reuse the existing mongoose connection
+        touchAfter: 24 * 3600 //sec
+    })
 }));
+
+app.use(helmet());
+
 app.use( bodyParser.json() );
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -131,20 +119,18 @@ app.use("/common", express.static( __dirname + "/common" ));
 // socket session to the user session. This was not being done in remotedojo 1 or 2
 // More info on socket auth: https://auth0.com/blog/auth-with-socket-io/
 app.use("/sockauth", function(req, res){
-	if(req.session.loggedin || ( config.runInDemoMode && req.query.u) ){
-		var user;
-		if(config.runInDemoMode) user = demoUserAuth(req.query.u);
-		else user = req.session.user;
-		if(user){
-			var tok = token();
-			if(!users[user].token) users[user].token = [];
-			users[user].token.push(tok);
-			res.json({usr: user, token: tok});
-			users.save();
-			return;
-		}
-	}
-	res.json({err: "Not Logged in"});
+	let reject = err => {
+    	console.error(err);
+    	res.json({err: "Unknown Error", success: false});
+    }
+	users.loadUser( req, dojos, config.runInDemoMode ).catch(reject).then(([user, msg])=>{
+    	if(!user) res.json({err: msg || "Not Logged in", success: false});
+    	user.genToken('sockauth', Date.now() + 5*60*60*1000).catch(reject).then(token=>{
+        	user.save().catch(reject).then(()=>{
+            	res.json({usr: user.username, token: token, success: true});
+            });
+        });
+    });
 });
 
 // logout, pretty basic, delete the user's session
@@ -152,10 +138,10 @@ app.use("/sockauth", function(req, res){
 app.post("/logout", function(req, res){
 	req.session.destroy(function(err){
 		if(err){
-			console.log(err);
-			res.json({err: err});
+			console.error(err);
+			res.json({err: err, success: false});
 		} else {
-			res.json({});
+			res.json({success: true});
 		}
 	});
 });
@@ -163,14 +149,20 @@ app.post("/logout", function(req, res){
 // get for directed logout (using href)
 app.get("/logout", function(req, res){
 	req.session.destroy(function(err){
+    	if(err) console.error(err);
 		res.redirect("/");
 	});
 });
 
 // Main express processing
 app.use("/", function(req, res){
+	let reject = err => {
+    	console.error(err);
+    	res.sendStatus(500);
+    }
+
 	var fill = {js: " ", css: " ", feedback: config.feedbackLink}; //fill, the object passed to the renderer, custom js and css files can be added based on circumstance
-	var uid;
+	var uid, user;
 	if(req.path.indexOf("common/") !== -1){
 		return; //fixes an error
 	}
@@ -183,36 +175,20 @@ app.use("/", function(req, res){
 	var renderfile = function(f){
 		fill.permhead = "";
 		if (!uid) {
-			fill.dojos = []; //this is the list of dojos shown to ninjas on the login page
-        	for(var i = 0; i < dojos._indexes.length; i++){
-            	var d = dojos._indexes[i];
-            	fill.dojos.push({dojoname: d, name: dojos[d].name});
-			}
-			res.send(templates[f](fill, {noEscape: true}));
-		} else if(users[uid].perm == 0 || users[uid].perm == 1){
+        	dojos.find().catch(reject).then(all_dojos =>{
+				fill.dojos = all_dojos; //this is the list of dojos shown to ninjas on the login page
+				res.send(templates[f](fill, {noEscape: true}));
+            });
+		} else if(user.roll == "ninja" || user.roll == "mentor"){
 			fill.head = templates.head(fill, {noEscape: true});
 			fill.foot = templates.foot(fill, {noEscape: true});
 			res.send(templates[f](fill, {noEscape: true}));
-		} else if (users[uid].perm == 2 || users[uid].perm == 3) {
+		} else if (user.roll == "champion" || user.roll == "admin") {
 			fill.admins = []; //this is the list of admins
 			fill.champions = []; //this is the list of champions
 			fill.mentors = []; //this is the list of mentors
-			for(var i = 0; i < users._indexes.length; i++){
-            	var u = users._indexes[i];
-            	if (u == uid) continue;
-            	if (users[u].perm == 1) fill.mentors.push({username: u, fullname: users[u].fullname, email: users[u].email, 
-        																dojos: users[u].dojos, allDojos: users[u].allDojos});
-            	else if (users[u].perm == 2) fill.champions.push({username: u, fullname: users[u].fullname, email: users[u].email, 
-            															dojos: users[u].dojos, allDojos: users[u].allDojos});
-            	else if (users[u].perm == 3) fill.admins.push({username: u, fullname: users[u].fullname, email: users[u].email, 
-            															dojos: users[u].dojos, allDojos: users[u].allDojos});
-			}
 
 			fill.dojos = []; //this is the list of dojos
-        	for(var i = 0; i < dojos._indexes.length; i++){
-            	var d = dojos._indexes[i];
-            	fill.dojos.push({dojoname: d, name: dojos[d].name, email: dojos[d].email, location: dojos[d].location});
-			}
 
 			fill.head = templates.adminhead(fill, {noEscape: true});
 			fill.foot = templates.foot(fill, {noEscape: true});
@@ -221,75 +197,34 @@ app.use("/", function(req, res){
 		}
 	};
 
-	//Login processing
-	if((!users[req.session.user] || !req.session.loggedin) && !config.runInDemoMode){
-		fill = {usr: "", msg: ""};
-		if(req.path.indexOf("login.html") === -1) req.session.loginpath = req.path; //save the path that the user was trying to access for after login
-		if(!req.body.login_username && !req.body.login_dojo){ //if no data has been passed, simply show the login page
-			return renderfile("login");
-		}
-		if(req.body.type == "user"){ // handle user based logins (mentors, champions and admins)
-			fill.usr = req.body.login_username.toLowerCase(); //remember the username
-			if(!users[fill.usr]){ //check the username
-				fill.msg = genalert("danger", true, "Invalid username provided, please check and try again.");
-				return renderfile("login");
-			}
-        	var hash = crypto.createHash('sha256').update(req.body.login_password.trim()).digest('hex');
-        	
-			//bcrypt.compare(req.body.login_password.trim(), users[fill.usr].password, function(err, match){ //check the password (yes encyption! spooky)
-				if(users[fill.usr].password !== hash){ //if the password check failed
-					fill.msg = genalert("danger", true, "Invalid password was provided, please try again.");
-					renderfile("login");
-				} else { // else the password check succeeded, setup the user session
-					req.session.loggedin = true;
-					req.session.user = fill.usr;
-					if(req.session.loginpath){
-						res.redirect(req.session.loginpath);
-						req.session.loginpath = undefined;
-					} else res.redirect("/");
-				}
-			//});
-			return;
-		} else if(req.body.type == "ninja"){ // handle dojo based logins (ninjas)
-			var dojo = req.body.login_dojo;
-			if(!dojos[dojo]){ //check the dojo
-				fill.msg = genalert("danger", true, "Invalid dojo provided, please check and try again.");
-				return renderfile("login");
-			}
-			bcrypt.compare(req.body.login_password.trim(), dojos[dojo].password, function(err, match){ //check the password
-				if(!match || err){ //if the password check failed
-					fill.msg = genalert("danger", true, "Invalid password was provided, please try again.");
-					renderfile("login");
-				} else { // else the password check succeeded, setup the temp user session for the ninja
-					req.session.loggedin = true;
-					req.session.user = tempUser(dojo, 0, 24 * 60 * 60 * 1000);
-					if(req.session.loginpath) res.redirect(req.session.loginpath);
-					else res.redirect("/");
-				}
-			});
-			return;
-		}
-		fill.msg = genalert("danger", true, "¯\\_(ツ)_/¯"); //this code should never run
-		return renderfile("login");
-	} else if(config.runInDemoMode){
-		if(req.query.u){
-			uid = demoUserAuth(req.query.u);
-		} else if(req.method == "POST"){
-			var ip = req.ip;
-			if(req.ips.length) ip = req.ips[0]; //detects through proxies
-			if(ipverification(ip,config.maxAccessesPerDay)){ //check ip here to see if max
-				dojo = tempDojo(config.demoDuration);
-				fill.mentor = "/?u=" + users[tempUser(dojo, 1, config.demoDuration)].authtok;
-				fill.ninja = "/?u=" + users[tempUser(dojo, 0, config.demoDuration)].authtok;
-				return renderfile("demo");
-			}
-		}
-		if(!uid) return renderfile("index");
-	}
+	
+	users.loadUser( req, dojos, config.runInDemoMode ).catch(reject).then(([loaded_user, msg])=>{
+    if(!loaded_user){
+    	if(msg) fill.msg = genalert("danger", true, msg);
+    	if(config.runInDemoMode){
+        	if(req.method == "POST"){
+            	let expire = Date.now() + (config.demoDuration || 200000);
+            	dojos.tempDojo(expire).catch(reject).then((temp_dojo) =>{
+            		users.tempUser(temp_dojo.dojoname, "ninja", expire, true).catch(reject).then(([temp_ninja, temp_ninja_token]) =>{
+                		users.tempUser(temp_dojo.dojoname, "mentor", expire, true).catch(reject).then(([temp_mentor, temp_mentor_token]) =>{
+            				fill.mentor = "/?u=" + temp_mentor + "&a=" + temp_mentor_token;
+							fill.ninja = "/?u=" + temp_ninja + "&a=" + temp_ninja_token;
+							renderfile("demo");
+                    	});
+                	});
+                });
+            }
+        	else return renderfile("demo");
+    	}
+    	return renderfile("login");
+    }
+    user = loaded_user;
+    uid = user.username;
+
 	// Login end
 	// From here it is assumed the user is authenticated and logged in (either as a user or temp user)
 	if(!uid) uid = req.session.user;
-    var user = users[uid];
+    var user = users[uid];*/
 	fill.user = {username: user.username, fullname: user.fullname, email: user.email, expire: " ", demomode: " "}; //give some user info to the renderer, as well as common js files
 	if(user.expire > -1) fill.user.expire = " data-expire=\"" + user.expire + "\" ";
 	if(config.runInDemoMode) fill.user.demomode = " data-demo-mode=\"true\" ";
@@ -297,34 +232,36 @@ app.use("/", function(req, res){
 		"<script src=\"https://cdn.webrtc-experiment.com/getScreenId.js\"></script>"+
 		"<script src=\"./common/js/socks-general.js\"></script>"+
 		"<script src=\"./common/js/rtc.js\"></script>";
-	if(user.perm == 0){ //if the user is a ninja
-		dojo = user.dojos[0];
+	if(user.roll == "ninja"){ //if the user is a ninja
+		let dojo = user.dojos[0];
 		fill.mentors = [];
-		for(var i=0; i < users._indexes.length; i++){ //find all
-			u = users[users._indexes[i]];
-			if(u.perm == 1 && (u.allDojos || u.dojos.indexOf(dojo) !== -1)){ //the mentors that belong to the ninja's dojo
-				status = mentorstats[u.username] || "offline"; //and get their status
-				labels = {offline: "default", available: "success", busy: "warning"};
+    	users.find({roll: 'mentor', $or: [ {allDojos: true}, {dojos: {$in: [dojo]}} ] }).catch(reject).then(mentors=>{ //the mentors that belong to the ninja's dojo
+			for(var i=0; i < mentors.length; i++){ //find all
+            	let u = mentors[i];
+				let status = mentorstats[u.username] || "offline"; //and get their status
+				let labels = {offline: "default", available: "success", busy: "warning"};
 				fill.mentors.push({username: u.username, fullname: u.fullname, status: status, label: labels[status]}); //and pass this status list to the renderer
 			}
-		}
 			//add the ninja based js files, render the file and give it to the user
-		fill.js += "<script src=\"./common/js/ninja.js\"></script><script src=\"./common/js/socks-ninja.js\"></script><script src=\"./common/js/main.js\"></script>";
-		return renderfile("ninja");
-	} else if(user.perm == 1){ //if the user is a mentor
+			fill.js += "<script src=\"./common/js/ninja.js\"></script><script src=\"./common/js/socks-ninja.js\"></script><script src=\"./common/js/main.js\"></script>";
+			return renderfile("ninja");
+        });
+    	return;
+	} else if(user.roll == "mentor"){ //if the user is a mentor
 			//add the mentor based js files, render the file and give it to the user
 		fill.js += "<script src=\"./common/js/mentor.js\"></script><script src=\"./common/js/socks-mentor.js\"></script><script src=\"./common/js/main.js\"></script>";
 		return renderfile("mentor");
-	} else if(user.perm == 2){ //if the user is a champion
+	} else if(user.roll == "champion"){ //if the user is a champion
 		fill.js += "<script src=\"./common/js/socks-champion.js\"></script>";
 		return renderfile("champion");
-	} else if(user.perm == 3){ //if the user is a admin
+	} else if(user.roll == "admin"){ //if the user is a admin
 		fill.js += "<script src=\"./common/js/socks-admin.js\"></script>";
 		return renderfile("admin");
 	}
 
+    console.log(user);
 	renderfile("404"); //this shouldn't have to run
-});
+});});
 // End of main express processing
 
 // Socket Processing
@@ -334,16 +271,26 @@ app.use("/", function(req, res){
 // if the socket becomes authorised, the callback with the authorised socket is called
 // More info on socket auth: https://auth0.com/blog/auth-with-socket-io/
 var socketValidate = function(socket, cb, nodupe, ns){
+	var reject = ([err, msg]) =>{
+    	if(err) console.error(err);
+        socket.emit("general.disconnect", msg || "Unknown Error");
+        socket.emit("sockauth.invalid");
+		socket.disconnect(true);
+    }
+
 	if(!ns) ns = "/"
 	socket.authorised = false;
 
 	socket.emit("sockauth.request");//initiate the authentication process
 
 	socket.once("sockauth.validate", function(data){ //when the client responds with a auth token, validate it with the user session
-		if(users[data.usr] && users[data.usr].token && users[data.usr].token.indexOf(data.token) !== -1){ //token's valid
-			users[data.usr].token.splice(users[data.usr].token.indexOf(data.token), 1); //remove the token now that it's used
+    users.findByUsername(data.usr, (err, user) =>{
+    	if(err) return reject([err]);
+    	if(!user) return reject([null, "Unknown user."]);
+    	user.useToken("sockauth", data.token).catch(reject).then( valid =>{
+        if(!valid) return reject([null, "Invalid authorisation details."]);
         	if(nodupe){
-        		for(var s in io.of(ns).connected){
+        		for(let s in io.of(ns).connected){
 					if(io.of(ns).connected[s].user && io.of(ns).connected[s].user == data.usr){
                 		if(!socket.other) socket.other = [];
         				socket.other.push( io.of(ns).connected[s]);
@@ -354,7 +301,7 @@ var socketValidate = function(socket, cb, nodupe, ns){
         	if(socket.other){
                	socket.once("sockauth.dupeResolution", function(r){
                    	if(r && socket.other){
-                       	for(var i = 0; i < socket.other.length; i++){
+                       	for(let i = 0; i < socket.other.length; i++){
             	           	socket.other[i].emit("general.disconnect", "A newer duplicate session has kicked this session.");
                             socket.other[i].disconnect();
                         }
@@ -373,12 +320,9 @@ var socketValidate = function(socket, cb, nodupe, ns){
 				cb(socket); // call the callback, passing the now authorised socket
 				socket.emit("sockauth.valid");
             }
-			users.save();
-		} else { // token's not valid
-			socket.emit("sockauth.invalid");
-        	socket.emit("general.disconnect", "Invalid authorisation details.");
-			socket.disconnect(true);
-		}
+			user.save();
+		});
+    });
 	});
 };
 
@@ -394,63 +338,82 @@ var nmsessions_getuser = function(username){
 	return false;
 };
 // Helper Function to update a mentor's status, and pass that update to everyone relevant
-var updateStatus = function(stat, socket){
-	user = users[socket.user];
+var updateStatus = function(stat, user){
+	let update_rooms = udojos => {
+    	for(var i=0; i < udojos.length; i++){
+			mainio.to(udojos[i]).emit("general.mentorStatus", {username: user.username, status: stat});
+		}
+    }
 	if (user.allDojos) {
-		for(var i = 0; i < dojos._indexes.length; i++){
-        	var d = dojos._indexes[i];
-        	mainio.to(d).emit("general.mentorStatus", {username: socket.user, status: stat});
-		}
+		dojos.find().catch(console.error).then(all_dojos=>{
+        	var udojos = [];
+        	for(let i in all_dojos) udojos.push(all_dojos[i].dojoname);
+        	update_rooms(udojos)
+        });
 	} else {
-		for(var i=0; i < user.dojos.length; i++){
-			mainio.to(user.dojos[i]).emit("general.mentorStatus", {username: socket.user, status: stat});
-		}
+		update_rooms(user.dojos)
 	}
-	mentorstats[socket.user] = stat;
+	mentorstats[user.username] = stat;
 };
 
 var mainio = io.of("/main"); //use the '/main' socket.io namespace
 mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ //on connection, authorise the socket, then do the following once authorised
-	var user = users[socket.user];
+users.findByUsername(socket.user, (err, user) =>{
+	if(err) return console.error(err);
 	if (user.allDojos) {
-		for(var i = 0; i < dojos._indexes.length; i++){
-        	var d = dojos._indexes[i];
-        	socket.join(d + "-" + user.perm);
-			socket.join(d);
-		}
+    	dojos.find().catch(console.error).then( all_dojos =>{
+			for(let i = 0; i < all_dojos.length; i++){
+        		let d = all_dojos[i].dojoname;
+        		socket.join(d + "-" + user.roll);
+				socket.join(d);
+			}
+        });
 	} else {
-		for(var i=0; i < user.dojos.length; i++){ //make the socket join the relevant rooms for easy communication
-			socket.join(user.dojos[i] + "-" + user.perm);
+		for(let i=0; i < user.dojos.length; i++){ //make the socket join the relevant rooms for easy communication
+			socket.join(user.dojos[i] + "-" + user.roll);
 			socket.join(user.dojos[i]);
 		}
 	}
-	if(user.perm == 1){ // if the user is a mentor
-		for(var i in nmsessions){ // update the mentor with current open ninja requests
-			if(!nmsessions[i].mentor && (user.allDojos || user.dojos.indexOf(nmsessions[i].dojo) !== -1)){
-				socket.emit("mentor.requestMentor", {sessiontoken: i, dojo: nmsessions[i].dojo, fullname: users[nmsessions[i].ninja.user].fullname});
+	socket.updateUserVar = () => {
+    	users.findByUsername(socket.user, (err, newuser) =>{
+        	if(err) return console.error(err);
+        	if(!newuser) return socket.disconnect();
+        	user = newuser;
+        });
+    }
+
+	if(user.roll == "mentor"){ // if the user is a mentor
+		for(let i in nmsessions) (nmsession =>{ // update the mentor with current open ninja requests
+			if(!nmsession.mentor && (user.allDojos || user.dojos.indexOf(nmsession.dojo) !== -1)){
+            	users.findByUsername(nmsession.ninja.user, (err, ninja) =>{
+                	if(err) return console.error(err);
+					socket.emit("mentor.requestMentor", {sessiontoken: i, dojo: nmsession.dojo, fullname: ninja.fullname});
+                });
 			}
-		}
+		})(nmsessions[i]);
 
 		// initiate the status update events
-		updateStatus("available", socket);
-		socket.on("disconnect", function(){updateStatus("offline", socket);});
-		socket.on("reconnect", function(){updateStatus("available", socket);});
-		socket.on("mentor.updateStatus", function(stat){updateStatus(stat, socket);});
+		updateStatus("available", user);
+		socket.on("disconnect", function(){updateStatus("offline", user);});
+		socket.on("reconnect", function(){updateStatus("available", user);});
+		socket.on("mentor.updateStatus", function(stat){updateStatus(stat, user);});
 
 		// when a mentor accepts a ninja's call request
 		socket.on("mentor.acceptRequest", function(stok){
+        	if(typeof stok !== "string") return;
 			if(stok in nmsessions && !nmsessions[stok].mentor){ //check if request is still active
 				nmsessions[stok].mentor = socket; //join the chatroom
 				socket.join(stok);
-				mainio.to(nmsessions[stok].dojo+"-1").emit("mentor.cancelRequest", stok);
+				mainio.to(nmsessions[stok].dojo+"-mentor").emit("mentor.cancelRequest", stok);
 				mainio.to(stok).emit("general.startChat"); //tell the ninja and mentor to start the RTC connection
-				updateStatus("busy", socket); //update the mentor's status
+				updateStatus("busy", user); //update the mentor's status
 			} else { // otherwise update the mentor that the request is closed
 				socket.emit("mentor.cancelRequest", stok);
 			}
 		});
 
-		socket.on("mentor.passwordChange", function(data){
+		socket.on("mentor.passwordChange", function(data){ // TODO - fix... whatever this is...
+        	if(typeof data.newPwd !== "string" || typeof data.curPwd !== "string") return;
 			var pwd = data.newPwd;
 			var curPwd = data.curPwd;
 
@@ -473,156 +436,224 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 			}
         	if(pwd.trim().length < 6) pass = false
 			if (negativePwdRule.test(pwd)) pass = false;
-
-			//bcrypt.compare(curPwd, user.password, function(err, match){ //check the password
-        	var hash = crypto.createHash('sha256').update(curPwd).digest('hex');
-				if(hash === users[socket.user].password && pass) {
-					users[socket.user].password = crypto.createHash('sha256').update(pwd).digest('hex');
-					users.save();
-					socket.emit("mentor.passwordChange", true);
-				} else {
-					socket.emit("mentor.passwordChange", false);
-				}
-			//});
+        	
+        	
+        	if(!pass) return socket.emit("mentor.passwordChange", false); // reason needs to be passed through as well.
+        	user.changePassword(curPwd, pwd).catch(console.error).then(valid =>{
+            	if(!valid){
+                	socket.emit("mentor.passwordChange", false); //curPwd doesn't match
+                	return socket.emit('general.genalert', "danger", true, "Invalid password given, check capslock and try again.");
+                }
+            	user.save().catch(err =>{
+                	console.error(err);
+                	socket.emit("mentor.passwordChange", false);
+                	socket.emit('general.genalert', "danger", true, "Unknown Error. Password was not updated.");
+                }).then(() =>{
+                	socket.emit("mentor.passwordChange", true);
+                	socket.emit('general.genalert', "success", true, "Password changed!");
+                })
+            });
 		});
 
-		socket.on("mentor.fullnameChange", function(data){
-			var newName = data;//.substring(0,20);
-			var nonalpha = new RegExp(/[^a-zA-Z -]/);
-			if (!nonalpha.test(newName)) { // Repeating check performed on client side. Fails silently if error occurs
-				user.fullname = newName;
-            	users[socket.user].fullname = newName;
-				users.save();
-			}
+		socket.on("mentor.fullnameChange", function(fullname){ // fullname is being discont. use first/last name instead
+        	if(typeof fullname !== "string") return;
+        	let oldname = user.fullname;
+        	user.fullname = fullname;
+        	let error = user.validateSync();
+        	if(error && error.errors){ 
+            	user.fullname = oldname;
+            	socket.emit('general.genalert', "danger", true, getvalues(geterrs(error.errors)).join('<br>'));
+            } else user.save().catch(console.error).then(()=>{
+            	socket.emit('general.genalert', "success", true, "Name changed!");
+            });
 		});
 
-		socket.on("mentor.emailChange", function(data){
-			var email = data;
+		socket.on("mentor.emailChange", function(email){
+        	if(typeof email !== "string") return;
+        	let oldemail = user.email;
 			user.email = email;
-            users[socket.user].email = email;
-			users.save();
+            let error = user.validateSync();
+        	if(error && error.errors){ 
+            	user.email = oldemail;
+            	socket.emit('general.genalert', "danger", true, getvalues(geterrs(error.errors)).join('<br>'));
+            } else user.save().catch(console.error).then(()=>{
+            	socket.emit('general.genalert', "success", true, "Email changed!");
+            });
 		});
 
-	} else if(user.perm == 0){ // if the user is a ninja
+	} else if(user.roll == "ninja"){ // if the user is a ninja
+    	var dojoname = user.dojos[0];
 		socket.on("ninja.requestMentor", function(){ // when a ninja requests a mentor
 			if(!nmsessions_getuser(socket.user)){ // check that the user is not already currently requesting or receiving help
 				var stok = token(); //generate a token that is used to index this chat request/session
 				while(stok in nmsessions) stok = token();
-				nmsessions[stok] = {ninja: socket, mentor: false, dojo: user.dojos[0], chatrooms: null}; //make the session
+				nmsessions[stok] = {ninja: socket, mentor: false, dojo: dojoname, chatrooms: null}; //make the session
 				socket.join(stok); // join the room for the session
-				mainio.to(user.dojos[0]+"-1").emit("mentor.requestMentor", {sessiontoken: stok, dojo: dojos[user.dojos[0]].name, fullname: user.fullname}); //emit the request to all relevant mentors
+            	dojos.findByDojoName(dojoname, (err, dojo) =>{
+                	if(err) return console.error(err);
+					mainio.to(user.dojos[0]+"-mentor").emit("mentor.requestMentor", {sessiontoken: stok, dojo: dojo.name, fullname: user.fullname}); //emit the request to all relevant mentors
+                });
 			}
 		});
 		socket.on("ninja.cancelRequest", function(){ //when a ninja decides to cancel a request
         	var stok = nmsessions_getuser(socket.user);
 			if(stok && !nmsessions[stok].mentor){ //check that the ninja is actually requesting
-				mainio.to(nmsessions[stok].dojo+"-1").emit("mentor.cancelRequest", stok); //tell the mentors
+				mainio.to(nmsessions[stok].dojo+"-mentor").emit("mentor.cancelRequest", stok); //tell the mentors
 				delete nmsessions[stok]; // delete the request
 			}
 		});
-		socket.on("ninja.fullnameChange", function(data){
-			var newName = data.substring(0,10);
-			var nonalpha = new RegExp(/[^a-zA-Z -]/);
-			if (!nonalpha.test(newName)) { // Repeating check performed on client side. Fails silently if error occurs
-				user.fullname = newName;
-			}
+		socket.on("ninja.fullnameChange", function(fullname){
+        	if(typeof fullname !== "string") return;
+        	let oldname = user.fullname;
+        	user.fullname = fullname;
+        	let error = user.validateSync();
+        	if(error && error.errors){ 
+            	user.fullname = oldname;
+            	socket.emit('general.genalert', "danger", true, getvalues(geterrs(error.errors)).join('<br>'));
+            } else user.save().catch(console.error).then(()=>{
+            	socket.emit('general.genalert', "success", true, "Name changed!");
+            });
 		});
 		socket.on("disconnect", function(){ //if the ninja disconnects
 			var stok = nmsessions_getuser(socket.user);
 			if( stok && !nmsessions[stok].mentor){ //check that the ninja is requesting, if so, cancel it
-				mainio.to(nmsessions[stok].dojo+"-1").emit("mentor.cancelRequest", stok);
+				mainio.to(nmsessions[stok].dojo+"-mentor").emit("mentor.cancelRequest", stok);
 				delete nmsessions[stok];
 			}
 		});
-	} else if(user.perm == 2){ //if the user is a champion
+	} else if(user.roll == "champion"){ //if the user is a champion
 		var champEmitFullDatabase = function(){ // A highly inefficient but convenient function to update champions after they make changes.
 			var data = {};
 			data.admins = [];
 			data.champions = [];
 			data.mentors = [];
 			data.dojos = [];
-			data.user = {username: user.username, fullname: user.fullname, email: user.email};
-        	for(var i = 0; i < users._indexes.length; i++){
-            	var u = users._indexes[i];
-            	if (users[u].username == user.username) continue;
-            	if (users[u].perm == 1) data.mentors.push({username: u, fullname: users[u].fullname, email: users[u].email, 
-        																dojos: users[u].dojos, allDojos: users[u].allDojos});
-            	else if (users[u].perm == 2) data.champions.push({username: u, fullname: users[u].fullname, email: users[u].email});
-            	else if (users[u].perm == 3) data.admins.push({username: u, fullname: users[u].fullname, email: users[u].email});
-			}
-			for(var i = 0; i < dojos._indexes.length; i++){
-            	var d = dojos._indexes[i];
-            	data.dojos.push({dojoname: d, name: dojos[d].name, email: dojos[d].email, location: dojos[d].location});
-			}
-			socket.emit("champion.fullDatabase", data);
+			data.user = {username: user.username, fullname: user.fullname, email: user.email, dojos: user.dojos, allDojos: user.allDojos};
+        	let userquery = {roll: {$ne: "ninja"}}
+            let dojoquery = {}
+            if(!user.allDojos){
+            	userquery.dojos = {$in: user.dojos};
+            	//dojoquery.dojoname = {$in: user.dojos};
+            }
+        	users.find(userquery).catch(console.error).then(all_users => {
+        		for(var i = 0; i < all_users.length; i++){
+            		var u = all_users[i];
+            		if (u.username == user.username) continue;
+            		if (u.roll == "mentor") data.mentors.push({username: u.username, fullname: u.fullname, email: u.email, 
+        																dojos: u.dojos, allDojos: u.allDojos});
+            		else if (u.roll == "champion") data.champions.push({username: u.username, fullname: u.fullname, email: u.email, 
+        																dojos: u.dojos, allDojos: u.allDojos});
+            		else if (u.roll == "admin") data.admins.push({username: u.username, fullname: u.fullname, email: u.email});
+				}
+            	dojos.find().catch(console.error).then(all_dojos => {
+					for(var i = 0; i < all_dojos.length; i++){
+            			data.dojos.push({dojoname: all_dojos[i].dojoname, name: all_dojos[i].name, email: all_dojos[i].email, location: all_dojos[i].location});
+					}
+					socket.emit("champion.fullDatabase", data);
+            	});
+        	});
 		}
+        champEmitFullDatabase();
+    	socket.on("champion.fullDatabase", champEmitFullDatabase);
 
 		// TODO add admins and champions to a room so as to be updated on any changes (without having to refresh)
 		// This function entirely trusts the admin and champion. Checks may be added here and to the admin/champion pages as required
-		var champAddUserFields = function(data, perm) {
-			if (perm == 2 && data.user != user.username) return;
-			var u = data.user;
-			var newusr = (u === "");
-			var allDojos = false;
-			for (var i = 0; i < data.dojos.length; ++i) {
-				if (data.dojos[i] == "all") {
+		var champAddUserFields = function(data, roll) {
+        	return new Promise((resolve, reject) => {
+				if (roll === "admin" || (roll === "champion" && data.user != user.username)) resolve([null, {general: "You can only modify mentors and yourself, not other champions and admins"}]);
+				var allDojos = false;
+				if (data.dojos && Array.isArray(data.dojos) && data.dojos.indexOf("all") !== -1) {
 					allDojos = true;
-					data.dojos.splice(i,1);
-					break;
+					data.dojos.splice(data.dojos.indexOf("all"),1);
 				}
-			}
-			if (newusr) {
-				var username = data.username.toLowerCase();
-				var password = crypto.createHash('sha256').update(data.password).digest('hex');
-				users.add(username, {username: username, fullname: data.fullname, email: data.email, 
-								password: password, perm: perm, dojos: data.dojos, allDojos: allDojos, expire: -1});
-			} else {
-				// Modify each field if it was not left blank
-				if (!users[u]) return;
-				if (data.email !== "") users[u].email = data.email;
-				if (data.fullname !== "") users[u].fullname = data.fullname;
-				if (data.password !== "") users[u].password = crypto.createHash('sha256').update(data.password).digest('hex');
-				users[u].dojos = data.dojos;
-				users[u].allDojos = allDojos;
-				users.save();
-			}
+				if (data.user === "") { //new user?
+            		if(!data.firstname && data.fullname) data.firstname = data.fullname.trim().split(" ")[0] || "";
+            		if(!data.lastname && data.fullname) data.lastname = data.fullname.replace(data.firstname, "").trim() || "";
+            		users.newUser(data.username, data.password, data.email, data.firstname, data.lastname, data.dojos, roll).catch(reject).then(resolve);
+				} else {
+                	users.findByUsername( data.user, (err, changee) => {
+                    	if(err) return reject(err);
+                    	if(!changee) return resolve([null, {general: "Unknown user attempting to update, try refreshing your page."}]);
+                    	let commondojo = false;
+                    	for(var i in changee.dojos){
+                        	if(user.dojos.indexOf(changee.dojos[i]) !== -1){
+                            	commondojo = true;
+                            	break;
+                            }
+                        }
+                    	if(!commondojo) return resolve([null, {general: "The user you are trying to edit does not belong to one of your dojos."}]);
+						// Modify each field if it was not left blank
+						changee.update(data).catch(reject).then(resolve);
+                    });
+				}
+            });
 		}
 
 		socket.on("champion.championEdit", function(data){
-			champAddUserFields(data, 2);
-			champEmitFullDatabase();
+			champAddUserFields(data, "champion").catch(console.error).then(([changee, msgs]) =>{
+            	if(changee){
+                	socket.emit('general.genalert', "success", true, "Changes were successfully made!");
+                	return champEmitFullDatabase(); //change to single user update here for more efficency
+                }
+				if(msgs) socket.emit('general.genalert', "danger", true, getvalues(msgs).join('<br>'));
+            	
+            });
 		});
 
 		socket.on("champion.mentorEdit", function(data){
-			champAddUserFields(data, 1);
-			champEmitFullDatabase();
+			champAddUserFields(data, "mentor").catch(console.error).then(([changee, msgs]) =>{
+            	if(changee){
+                	socket.emit('general.genalert', "success", true, "Changes were successfully made!");
+                	return champEmitFullDatabase(); //change to single user update here for more efficency
+                }
+				if(msgs) socket.emit('general.genalert', "danger", true, getvalues(msgs).join('<br>'));
+            });
 		});
 
 		socket.on("champion.dojoEdit", function(data){
-			var d = data.user;
-			var newdojo = d === "";
-			if (newdojo) {
-				var dojoname = data.dojoname.toLowerCase()
-				var password = crypto.createHash('sha256').update(data.password).digest('hex');
-				dojos.add(dojoname, {dojoname: dojoname, name: data.name, password: password, location: data.location, email: data.email, expire: -1});
+			if (data.user === "") {
+            	socket.emit('general.genalert', "danger", true, "Only Admins may create new dojos.");
 			} else {
-				if (!dojos[d]) return;
-				if (data.name !== "") dojos[d].name = data.name;
-				if (data.email !== "") dojos[d].email = data.email;
-				if (data.location !== "") dojos[d].location = data.location;
-				if (data.password !== "") crypto.createHash('sha256').update(data.password).digest('hex');
-				dojos.save();
+            	if(user.dojos.indexOf(data.user) === -1) return socket.emit('general.genalert', "danger", true, "You do not belong to the dojo you are trying to edit.");
+            	dojos.findByDojoName(data.user, (err, dojo) =>{
+                	if(err) return console.error(err);
+                	if(!dojo) return socket.emit('general.genalert', "danger", true, "Unknown dojo attempting to update, try refreshing your page.");
+                	dojo.update(data).catch(console.error).then(([changee, msgs]) =>{
+            			if(changee){
+                			socket.emit('general.genalert', "success", true, "Changes were successfully made!");
+                			return champEmitFullDatabase(); //change to single user update here for more efficency
+                		}
+						if(msgs) socket.emit('general.genalert', "danger", true, getvalues(msgs).join('<br>'));
+            		});
+                });
 			}
-			champEmitFullDatabase();
+			//champEmitFullDatabase();
 		});
 
 		socket.on("champion.deleteUser", function(data){
-			if (data.type == "admin" || data.type == "champion") return;
-			if (data.type == "dojo") removeDojo(data.uid);
-			else removeUser(data.uid);
-			champEmitFullDatabase();
+        	if(data.type === "dojo"){
+            	socket.emit('general.genalert', "danger", true, "Only admins can delete dojos.");
+            } else {
+        		users.findByUsername( data.uid || data.user || data.username, (err, changee) => {
+            		if(err) return console.error(err);
+                	if(!changee) return socket.emit('general.genalert', "danger", true, "Unknown user attempting to delete, try refreshing your page.");
+					if (changee.roll == "admin" || changee.roll == "champion") return socket.emit('general.genalert', "danger", true, "Only admins can delete other admins/champions.");
+                	let commondojo = false;
+                    for(var i in changee.dojos){
+                       	if(user.dojos.indexOf(changee.dojos[i]) !== -1){
+                           	commondojo = true;
+                           	break;
+                        }
+                    }
+                    if(!commondojo) return socket.emit('general.genalert', "danger", true, "The user you are trying to delete does not belong to one of your dojos.");
+					removeUser(data.uid).catch(console.error).then(() => {
+                    	socket.emit('general.genalert', "success", true, "User was successfully removed.");
+                    	champEmitFullDatabase();
+                    });
+            	});
+            }
 		});
-	} else if(user.perm == 3){ //if the user is an admin
+	} else if(user.roll == "admin"){ //if the user is an admin
 		var emitFullDatabase = function(){ // A highly inefficient but convenient function to update admins after they make changes.
 			var data = {};
 			data.admins = [];
@@ -630,88 +661,126 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 			data.mentors = [];
 			data.dojos = [];
 			data.user = {username: user.username, fullname: user.fullname, email: user.email};
-        	for(var i = 0; i < users._indexes.length; i++){
-            	var u = users._indexes[i];
-            	if (users[u].username == user.username) continue;
-            	if (users[u].perm == 1) data.mentors.push({username: u, fullname: users[u].fullname, email: users[u].email, 
-        																dojos: users[u].dojos, allDojos: users[u].allDojos});
-            	else if (users[u].perm == 2) data.champions.push({username: u, fullname: users[u].fullname, email: users[u].email});
-            	else if (users[u].perm == 3) data.admins.push({username: u, fullname: users[u].fullname, email: users[u].email});
-			}
-			for(var i = 0; i < dojos._indexes.length; i++){
-            	var d = dojos._indexes[i];
-            	data.dojos.push({dojoname: d, name: dojos[d].name, email: dojos[d].email, location: dojos[d].location});
-			}
-			socket.emit("admin.fullDatabase", data);
+        	users.find({roll: {$ne: "ninja"}}).catch(console.error).then(all_users => {
+        		for(var i = 0; i < all_users.length; i++){
+            		var u = all_users[i];
+            		if (u.username == user.username) continue;
+            		if (u.roll == "mentor") data.mentors.push({username: u.username, fullname: u.fullname, email: u.email, 
+        																dojos: u.dojos, allDojos: u.allDojos});
+            		else if (u.roll == "champion") data.champions.push({username: u.username, fullname: u.fullname, email: u.email, 
+        																dojos: u.dojos, allDojos: u.allDojos});
+            		else if (u.roll == "admin") data.admins.push({username: u.username, fullname: u.fullname, email: u.email});
+				}
+            	dojos.find().catch(console.error).then(all_dojos => {
+					for(var i = 0; i < all_dojos.length; i++){
+            			data.dojos.push({dojoname: all_dojos[i].dojoname, name: all_dojos[i].name, email: all_dojos[i].email, location: all_dojos[i].location});
+					}
+					socket.emit("admin.fullDatabase", data);
+            	});
+        	});
 		}
+        emitFullDatabase();
+    	socket.on("admin.fullDatabase", emitFullDatabase);
 
 		// This function entirely trusts the admin and champion. Checks may be added here and to the admin/champion pages as required
-		var addUserFields = function(data, perm) {
-			var u = data.user;
-			var newusr = (u === "");
-			var allDojos = false;
-			for (var i = 0; i < data.dojos.length; ++i) {
-				if (data.dojos[i] == "all") {
+		var addUserFields = function(data, roll) {
+			return new Promise((resolve, reject) => {
+				var allDojos = false;
+				if (data.dojos && Array.isArray(data.dojos) && data.dojos.indexOf("all") !== -1) {
 					allDojos = true;
-					data.dojos.splice(i,1);
-					break;
+					data.dojos.splice(data.dojos.indexOf("all"),1);
 				}
-			}
-			if (newusr) {
-				var username = data.username.toLowerCase();
-				var password = crypto.createHash('sha256').update(data.password).digest('hex');
-				users.add(username, {username: username, fullname: data.fullname, email: data.email, 
-								password: password, perm: perm, dojos: data.dojos, allDojos: allDojos, expire: -1});
-			} else {
-				// Modify each field if it was not left blank
-				if (!users[u]) return;
-				if (data.email !== "") users[u].email = data.email;
-				if (data.fullname !== "") users[u].fullname = data.fullname;
-				if (data.password !== "") users[u].password = crypto.createHash('sha256').update(data.password).digest('hex');
-				users[u].dojos = data.dojos;
-				users[u].allDojos = allDojos;
-				users.save();
-			}
+				if (data.user === "") { //new user?
+            		if(!data.firstname && data.fullname) data.firstname = data.fullname.trim().split(" ")[0] || "";
+            		if(!data.lastname && data.fullname) data.lastname = data.fullname.replace(data.firstname, "").trim() || "";
+            		users.newUser(data.username, data.password, data.email, data.firstname, data.lastname, data.dojos, roll).catch(reject).then(resolve);
+				} else {
+                	users.findByUsername( data.user, (err, changee) => {
+                    	if(err) return reject(err);
+                    	if(!changee) return resolve([null, {general: "Unknown user attempting to update, try refreshing your page."}]);
+						// Modify each field if it was not left blank
+						changee.update(data).catch(reject).then(resolve);
+                    });
+				}
+            });
 		}
 
 		socket.on("admin.adminEdit", function(data){
-			addUserFields(data, 3);
-			emitFullDatabase();
+			addUserFields(data, "admin").catch(console.error).then(([changee, msgs]) =>{
+            	if(changee){
+                	socket.emit('general.genalert', "success", true, "Changes were successfully made!");
+                	return emitFullDatabase(); //change to single user update here for more efficency
+                }
+				if(msgs) socket.emit('general.genalert', "danger", true, getvalues(msgs).join('<br>'));
+            });
 		});
 
 		socket.on("admin.championEdit", function(data){
-			addUserFields(data, 2);
-			emitFullDatabase();
+			addUserFields(data, "champion").catch(console.error).then(([changee, msgs]) =>{
+            	if(changee){
+                	socket.emit('general.genalert', "success", true, "Changes were successfully made!");
+                	return emitFullDatabase(); //change to single user update here for more efficency
+                }
+				if(msgs) socket.emit('general.genalert', "danger", true, getvalues(msgs).join('<br>'));
+            });
 		});
 
 		socket.on("admin.mentorEdit", function(data){
-			addUserFields(data, 1);
-			emitFullDatabase();
+			addUserFields(data, "mentor").catch(console.error).then(([changee, msgs]) =>{
+            	if(changee){
+                	socket.emit('general.genalert', "success", true, "Changes were successfully made!");
+                	return emitFullDatabase(); //change to single user update here for more efficency
+                }
+				if(msgs) socket.emit('general.genalert', "danger", true, getvalues(msgs).join('<br>'));
+            });
 		});
 
 		socket.on("admin.dojoEdit", function(data){
-			var d = data.user;
-			var newdojo = d === "";
-			if (newdojo) {
-				var dojoname = data.dojoname.toLowerCase()
-				var password = crypto.createHash('sha256').update(data.password).digest('hex');
-				dojos.add(dojoname, {dojoname: dojoname, name: data.name, password: password, location: data.location, email: data.email, expire: -1});
+			if (data.user === "") {
+            	dojos.newDojo(data.dojoname, data.password, data.email, data.name, data.location).catch(console.error).then(([newdojo, msgs])=>{
+                	if(newdojo){
+                    	socket.emit('general.genalert', "success", true, "A new dojo was successfully made!");
+                    	user.addDojo(newdojo.dojoname);
+                    	user.save().catch(console.error).then(emitFullDatabase);
+                    }
+                	else if(msgs) socket.emit('general.genalert', "danger", true, getvalues(msgs).join('<br>'));
+                });
 			} else {
-				if (!dojos[d]) return;
-				if (data.name !== "") dojos[d].name = data.name;
-				if (data.email !== "") dojos[d].email = data.email;
-				if (data.location !== "") dojos[d].location = data.location;
-				if (data.password !== "") dojos[d].password = crypto.createHash('sha256').update(data.password).digest('hex');
-				dojos.save();
+            	if(user.dojos.indexOf(data.user))
+            	dojos.findByDojoName(data.user, (err, dojo) =>{
+                	if(err) return console.error(err);
+                	if(!dojo) return socket.emit('general.genalert', "danger", true, "Unknown dojo attempting to update, try refreshing your page.");
+                	dojo.update(data).catch(console.error).then(([changee, msgs]) =>{
+            			if(changee){
+                			socket.emit('general.genalert', "success", true, "Changes were successfully made!");
+                			return emitFullDatabase(); //change to single user update here for more efficency
+                		}
+						if(msgs) socket.emit('general.genalert', "danger", true, getvalues(msgs).join('<br>'));
+            		});
+                });
 			}
-			emitFullDatabase();
 		});
 
-		socket.on("admin.deleteUser", function(data){
-			if (data.uid == user.username) return; // prevent self deletions
-			if (data.type === "dojo") removeDojo(data.uid);
-			else removeUser(data.uid);
-			emitFullDatabase();
+		socket.on("champion.deleteUser", function(data){
+        	if(data.type === "dojo"){
+            	dojos.findByDojoName( data.uid || data.dojo || data.dojoname, (err, changee) => {
+            		if(err) return console.error(err);
+                	if(!changee) return socket.emit('general.genalert', "danger", true, "Unknown dojo attempting to delete, try refreshing your page.");
+					removeDojo(changee.dojoname).catch(console.error).then(() => {
+                    	socket.emit('general.genalert', "success", true, "Dojo was successfully removed.");
+                    	emitFullDatabase();
+                    });
+            	});
+            } else {
+        		users.findByUsername( data.uid || data.user || data.username, (err, changee) => {
+            		if(err) return console.error(err);
+                	if(!changee) return socket.emit('general.genalert', "danger", true, "Unknown user attempting to delete, try refreshing your page.");
+					removeUser(changee.username).catch(console.error).then(() => {
+                    	socket.emit('general.genalert', "success", true, "User was successfully removed.");
+                    	emitFullDatabase();
+                    });
+            	});
+            }
 		});
 	}
 
@@ -722,7 +791,11 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 			mainio.to(stok).emit("general.stopChat"); // tell them to stop
 			nmsessions[stok].ninja.leave(stok);//make them leave the socket.io room
 			nmsessions[stok].mentor.leave(stok);
-			updateStatus("available",nmsessions[stok].mentor); //update the mentor's status
+        	users.findByUsername(nmsessions[stok].mentor.user, (err, mentor) =>{
+            	if(err) return console.error(err);
+            	if(!mentor) return;
+				updateStatus("available",mentor); //update the mentor's status
+            });
 			delete nmsessions[stok]; //delete the session
 		}
 	};
@@ -766,54 +839,71 @@ mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ 
 		data.fill = data.fill || {};
 		socket.emit("general.template-" + data.token, {html: getTemp("template/"+data.template)(data.fill)});
 	});
+});
 }, true, "/main");});
 
 var removeUser = function(uid){
-	if(!users[uid]) return;
-	for(var s in io.of("/main").connected){
-		if(io.of("/main").connected[s].user && io.of("/main").connected[s].user == uid){
-        	io.of("/main").connected[s].emit("general.disconnect", "Your user session has expired. <a class='btn btn-success' href='/' style='position:absolute;top:10px;right:25px;'><i class='fa fa-refresh'></i></a>");
-			io.of("/main").connected[s].disconnect();
+	return new Promise((resolve, reject) => {
+		if(typeof uid !== "string") return;
+		for(let s in io.of("/main").connected){
+			if(io.of("/main").connected[s].user && io.of("/main").connected[s].user == uid){
+        		io.of("/main").connected[s].emit("general.disconnect", "Your user session has expired. <a class='btn btn-success' href='/' style='position:absolute;top:10px;right:25px;'><i class='fa fa-refresh'></i></a>");
+				io.of("/main").connected[s].disconnect();
+			}
 		}
-	}
-	users.remove(uid);
+		users.remove({username: uid}).catch(reject).then(resolve);
+    });
 };
 
 var removeDojo = function(uid){
-	if(!dojos[uid]) return;
-	dojos.remove(uid);
+	return new Promise((resolve, reject) => {
+		if(typeof uid !== "string") return;
+		dojos.remove({dojoname: uid}).catch(reject).then(resolve);
+    });
 };
 
 //check that expires expired users
 var checkExpired = function(){
-	var t = Date.now();
-	for(var j=0; j < users._indexes.length; j++){
-		i = users._indexes[j];
-		if(users[i].expire > 0){
-			if(users[i].expire <= t){
-				removeUser(i);
+	users.find({expire: {$gt: new Date(0)}}).catch(console.error).then(expiring_users => {
+		let t = new Date();
+		for(let j=0; j < expiring_users.length; j++){
+			let u = expiring_users[j];
+			if(u.expire <= t){
+				removeUser(u.username);
 			} else {
-				setTimeout(removeUser, users[i].expire - t, i);
+				setTimeout(removeUser, u.expire.getTime() - t.getTime(), u.username);
 			}
 		}
-	}
-	for(var j=0; j < dojos._indexes.length; j++){
-		i = dojos._indexes[j];
-		if(dojos[i].expire > 0){
-			if(dojos[i].expire <= t){
-				removeDojo(i);
+    });
+	dojos.find({expire: {$gt: new Date(0)}}).catch(console.error).then(expiring_dojos => {
+		let t = new Date();
+		for(let j=0; j < expiring_dojos.length; j++){
+			let d = expiring_dojos[j];
+			if(d.expire <= t){
+				removeUser(d.dojoname);
 			} else {
-				setTimeout(removeDojo, dojos[i].expire - t, i);
+				setTimeout(removeUser, d.expire.getTime() - t.getTime(), d.dojoname);
 			}
 		}
-	}
+    });
 };
 checkExpired();
 
+users.count({roll: "admin"}).catch(console.error).then(count=>{
+	if(count > 0) return;
+	let pass = token(16);
+	users.newUser("superadmin", pass, "superadmin@example.com", "Super", "Admin", [], "admin").catch(console.error).then(([admin, msgs]) =>{
+    	if(msgs) return console.error(msgs);
+    	if(!admin) return console.error("superadmi wasn't made?");
+    	console.log("Super Admin created:\n username: superadmin\n password: " + pass);
+    });
+});
+
+mongoose.connect(mongouri);
 server.listen(config.serverPort); // start main server
 console.log("Server Started on port: " + config.serverPort);
 
 //exports for testing
-exports.testing = {app: app};
-exports.testing.functions = {tempUser: tempUser, ipverification: ipverification};
-exports.testing.vars = {ipaddresses: ipaddresses, users: users, dojos: dojos};
+//exports.testing = {app: app};
+//exports.testing.functions = {tempUser: tempUser, ipverification: ipverification};
+//exports.testing.vars = {ipaddresses: ipaddresses, users: users, dojos: dojos};
