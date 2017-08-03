@@ -99,7 +99,7 @@ app.use(session({
     secret: config.sessionSecret,
     saveUninitialized: false, // dont save empty sessions
     resave: false, //don't save unchanged sessions
-    store: new MongoStore({ 
+    store: new MongoStore({
         mongooseConnection: mongoose.connection, //reuse the existing mongoose connection
         touchAfter: 24 * 3600 //sec
     })
@@ -161,7 +161,7 @@ app.use("/", function(req, res){
     	res.sendStatus(500);
     }
 
-	var fill = {js: " ", css: " ", feedback: config.feedbackLink}; //fill, the object passed to the renderer, custom js and css files can be added based on circumstance
+	var fill = {js: " ", css: " ", feedback: config.feedbackLink, animals: users.animals}; //fill, the object passed to the renderer, custom js and css files can be added based on circumstance
 	var uid, user;
 	if(req.path.indexOf("common/") !== -1){
 		return; //fixes an error
@@ -197,7 +197,7 @@ app.use("/", function(req, res){
 		}
 	};
 
-	
+
 	users.loadUser( req, dojos, config.runInDemoMode ).catch(reject).then(([loaded_user, msg])=>{
     if(!loaded_user){
     	if(msg) fill.msg = genalert("danger", true, msg);
@@ -223,9 +223,7 @@ app.use("/", function(req, res){
 
 	// Login end
 	// From here it is assumed the user is authenticated and logged in (either as a user or temp user)
-	if(!uid) uid = req.session.user;
-    var user = users[uid];*/
-	fill.user = {username: user.username, fullname: user.fullname, email: user.email, expire: " ", demomode: " "}; //give some user info to the renderer, as well as common js files
+	fill.user = {username: user.username, fullname: user.fullname, email: user.email, expire: " ", demomode: " ", lastname: user.lastname, firstname: user.firstname}; //give some user info to the renderer, as well as common js files
 	if(user.expire > -1) fill.user.expire = " data-expire=\"" + user.expire + "\" ";
 	if(config.runInDemoMode) fill.user.demomode = " data-demo-mode=\"true\" ";
 	fill.js += "<script src=\"https://webrtc.github.io/adapter/adapter-latest.js\"></script>"+
@@ -436,8 +434,8 @@ users.findByUsername(socket.user, (err, user) =>{
 			}
         	if(pwd.trim().length < 6) pass = false
 			if (negativePwdRule.test(pwd)) pass = false;
-        	
-        	
+
+
         	if(!pass) return socket.emit("mentor.passwordChange", false); // reason needs to be passed through as well.
         	user.changePassword(curPwd, pwd).catch(console.error).then(valid =>{
             	if(!valid){
@@ -460,7 +458,7 @@ users.findByUsername(socket.user, (err, user) =>{
         	let oldname = user.fullname;
         	user.fullname = fullname;
         	let error = user.validateSync();
-        	if(error && error.errors){ 
+        	if(error && error.errors){
             	user.fullname = oldname;
             	socket.emit('general.genalert', "danger", true, getvalues(geterrs(error.errors)).join('<br>'));
             } else user.save().catch(console.error).then(()=>{
@@ -473,7 +471,7 @@ users.findByUsername(socket.user, (err, user) =>{
         	let oldemail = user.email;
 			user.email = email;
             let error = user.validateSync();
-        	if(error && error.errors){ 
+        	if(error && error.errors){
             	user.email = oldemail;
             	socket.emit('general.genalert', "danger", true, getvalues(geterrs(error.errors)).join('<br>'));
             } else user.save().catch(console.error).then(()=>{
@@ -502,17 +500,24 @@ users.findByUsername(socket.user, (err, user) =>{
 				delete nmsessions[stok]; // delete the request
 			}
 		});
-		socket.on("ninja.fullnameChange", function(fullname){
-        	if(typeof fullname !== "string") return;
-        	let oldname = user.fullname;
-        	user.fullname = fullname;
+		socket.on("ninja.lastnameChange", function(lastname){
+        	if(typeof lastname !== "string") return;
+					if(users.animals.indexOf(lastname) === -1) return;
+        	let oldname = user.lastname;
+        	user.lastname = lastname;
         	let error = user.validateSync();
-        	if(error && error.errors){ 
-            	user.fullname = oldname;
+        	if(error && error.errors){
+            	user.lastname = oldname;
             	socket.emit('general.genalert', "danger", true, getvalues(geterrs(error.errors)).join('<br>'));
-            } else user.save().catch(console.error).then(()=>{
-            	socket.emit('general.genalert', "success", true, "Name changed!");
-            });
+            } else if(error) {
+            	console.error(error);
+            } else {
+            	user.markModified('name.last');
+            	user.save().catch(console.error).then(()=>{
+            		socket.emit('general.genalert', "success", true, "Name changed! You're now " + user.fullname);
+            		socket.emit("ninja.lastname", user.lastname);
+            	});
+            }
 		});
 		socket.on("disconnect", function(){ //if the ninja disconnects
 			var stok = nmsessions_getuser(socket.user);
@@ -539,9 +544,9 @@ users.findByUsername(socket.user, (err, user) =>{
         		for(var i = 0; i < all_users.length; i++){
             		var u = all_users[i];
             		if (u.username == user.username) continue;
-            		if (u.roll == "mentor") data.mentors.push({username: u.username, fullname: u.fullname, email: u.email, 
+            		if (u.roll == "mentor") data.mentors.push({username: u.username, fullname: u.fullname, email: u.email,
         																dojos: u.dojos, allDojos: u.allDojos});
-            		else if (u.roll == "champion") data.champions.push({username: u.username, fullname: u.fullname, email: u.email, 
+            		else if (u.roll == "champion") data.champions.push({username: u.username, fullname: u.fullname, email: u.email,
         																dojos: u.dojos, allDojos: u.allDojos});
             		else if (u.roll == "admin") data.admins.push({username: u.username, fullname: u.fullname, email: u.email});
 				}
@@ -596,7 +601,7 @@ users.findByUsername(socket.user, (err, user) =>{
                 	return champEmitFullDatabase(); //change to single user update here for more efficency
                 }
 				if(msgs) socket.emit('general.genalert', "danger", true, getvalues(msgs).join('<br>'));
-            	
+
             });
 		});
 
@@ -665,9 +670,9 @@ users.findByUsername(socket.user, (err, user) =>{
         		for(var i = 0; i < all_users.length; i++){
             		var u = all_users[i];
             		if (u.username == user.username) continue;
-            		if (u.roll == "mentor") data.mentors.push({username: u.username, fullname: u.fullname, email: u.email, 
+            		if (u.roll == "mentor") data.mentors.push({username: u.username, fullname: u.fullname, email: u.email,
         																dojos: u.dojos, allDojos: u.allDojos});
-            		else if (u.roll == "champion") data.champions.push({username: u.username, fullname: u.fullname, email: u.email, 
+            		else if (u.roll == "champion") data.champions.push({username: u.username, fullname: u.fullname, email: u.email,
         																dojos: u.dojos, allDojos: u.allDojos});
             		else if (u.roll == "admin") data.admins.push({username: u.username, fullname: u.fullname, email: u.email});
 				}

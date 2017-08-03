@@ -5,6 +5,10 @@
 
 /* Common Style */
 
+.titlecaps {
+	text-transform: capitalize;
+}
+
 .vcenter{
 	position: relative;
 	top: 50%;
@@ -158,7 +162,7 @@ body {
 /* Fancy Loading (by mrfrase3 :P) */
 
 .fancy-loading{
-text-align: center;
+	text-align: center;
 }
 
 .fancy-loading .loading-block{
@@ -279,6 +283,49 @@ p.title {
 
 #ninja-img-home {
 	float: right;
+}
+
+/* name selection */
+
+input.animal-radio {
+	position: absolute;
+	opacity: 0;
+	z-index: -1;
+}
+
+.animal-label {
+    min-height: 6.5em;
+	position: relative;
+    z-index: 1;
+	cursor: pointer;
+}
+
+.animal-highlight {
+    height: 4em;
+    width: 4em;
+    border-radius: 50%;
+    background: transparent;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: -0.5em;
+}
+
+input.animal-radio:checked ~ .animal-highlight {
+	background: #2780e3;
+}
+
+.animal-label:hover ~ .animal-highlight {
+	background: #2ea9df;
+}
+
+.profileModal {
+	text-align: center;
+}
+
+.profileModal .modal-body {
+    overflow-y: auto;
+    height: 20em;
 }
 
 /* Demo page style */

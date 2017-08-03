@@ -1,5 +1,6 @@
 var socket = io.connect('/main');
 var live = false;
+var initAuth = false;
 var answeredRequest = false; // answeredRequest is distinct from 'live' in that it occurs before rtc connection.
 
 $('.hidden').hide();
@@ -33,6 +34,7 @@ var authSock = function(sock, cb){
 		$(".alert-wrapper").prepend(genalert("danger", false, "Authentication with server failed, please log back in."));
 		console.log('Failed to authorise socket connection: Token was not valid.');
 	});
+	initAuth = true;
 }
 
 
@@ -60,7 +62,7 @@ var stopChat = function(){
 
 socket.on('connect', function(){
 	console.log('socket connection made.');
-	authSock(socket, function(){
+	if(!initAuth) authSock(socket, function(){
 		socket.auth = true;
 		$(".loading-overlay").hide(200);
 	});
@@ -79,8 +81,8 @@ socket.on('general.disconnect', function(m){
 	$(".alert-wrapper").prepend(genalert("danger", false, "You were disconnected from the server!<br>Because " + m));
 });
 
-socket.on('general.genalert', function(level, diss, msg){
-	$(".alert-wrapper").prepend(genalert(level, diss, msg));
+socket.on('general.genalert', function(level, diss, msg, timeout=4000){
+	$(".alert-wrapper").prepend(genalert(level, diss, msg, timeout));
 });
 
 socket.on('general.mentorStatus',function(data){ // change a mentors status if theres a list

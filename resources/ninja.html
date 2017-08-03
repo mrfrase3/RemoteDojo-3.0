@@ -6,16 +6,25 @@
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal">&times;</button>
-						<h4 class="modal-title">Change Username</h4>
+						<button type="button" class="close lastname-close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Pick a Username</h4>
 					</div>
 					<div class="modal-body">
-						<input type="text" id="input-fullname" class="form-control" placeholder="Choose a username. Don't use your real name!" maxlength="10"><br>
-						<p class="alert-fullname form-error-text hidden"></p>
+                    	{{#each animals}}
+                    		<div class="col-xs-4 col-md-3">
+								<input type="radio" id="input-lastname-{{this}}" name="input-lastname" class="form-control animal-radio" value="{{this}}">
+                            	<label for="input-lastname-{{this}}" class="animal-label titlecaps">
+                            		<div class="animals {{this}}" style="width:3em;height:3em;"></div><br>
+                                	{{this}}
+                            	</label>
+                            	<div class="animal-highlight"></div>
+                            </div>
+                    	{{/each}}
+						<p class="alert-lastname form-error-text hidden"></p>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="fullname-submit btn btn-default">Submit</button>
-						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+						<button type="button" class="lastname-submit btn btn-default">Submit</button>
+						<button type="button" class="lastname-close btn btn-default" data-dismiss="modal">Cancel</button>
 					</div>
 				</div>
 			</div>
@@ -28,10 +37,12 @@
 					<div class="panel-heading">
 						<h3 class="panel-title">CoderDojo</h3>
 					</div>
-					<div class="panel-body">
-						<p class="col-xs-12">
-							Username: <span class="info-fullname">{{user.fullname}}</span>
-						</p>
+					<div class="panel-body" style="text-align: center;">
+						<div class="col-xs-12">
+                        	<div class="animals {{user.lastname}}" style="width:5em;height:5em;"></div><br>
+							Name: 
+                        	<span class="info-fullname titlecaps"><span class="info-firstname">{{user.firstname}}</span> <span class="info-lastname">{{user.lastname}}</span></span>
+						</div>
 						<button type="button" class="col-xs-12 user-info-btn btn btn-primary btn-sm" data-toggle="modal" data-target="#profileOverlay">
 							<i class="fa fa-pencil-square-o"></i>
 							Change name
@@ -45,7 +56,7 @@
 					</div>
 					<ul class="panel-body list-group mentor-list" style="padding: 0px;">
 						{{#each mentors}}
-							<li class="list-group-item mentor-list-item" data-username="{{this.username}}" id="mentor-{{this.username}}">
+							<li class="list-group-item mentor-list-item titlecaps" data-username="{{this.username}}" id="mentor-{{this.username}}">
 								<span class="label label-{{this.label}}" style="float: right">{{this.status}}</span>
 								{{this.fullname}}
 							</li>
