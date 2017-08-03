@@ -112,7 +112,7 @@
 								<div class="progress-bar progress-bar-success" style="width: 0%"></div>
 							</div>
 						</div>
-						<div class="col-xs-12 screen-local-box hidden">
+						<!--<div class="col-xs-12 screen-local-box hidden">
 							Your Screen/Webcam:<br>
 							<div class="screen-local">
 								<canvas class="screen-local-canvas" style="width:100%;"></canvas>
@@ -125,7 +125,7 @@
 							<div class="col-xs-6 btn btn-default screen-local-start">Screen</div>
 							<div class="col-xs-6 btn btn-default webcam-local-start">Webcam</div>
 							<div class="col-xs-12 btn btn-default switch-canvas">Expand video</div>
-						</div>
+						</div>-->
 						<br>
 						<div class="col-xs-12 btn btn-default chat-btn-stop">Leave Chat</div>
 
@@ -152,11 +152,41 @@
 			</div>
 			<div class="col-md-9 workarea">
 				<div class="screen-remote-box panel panel-primary hidden">
-					<div class="panel-heading">
-						<h3 class="panel-title">Ninja's Screen</h3>
-					</div>
-					<div class="panel-body screen-remote">
-						<canvas class="screen-remote-canvas" style="width:100%"></canvas>
+					<ul class="panel-heading nav nav-tabs">
+                    	<li class="active tab-chat"><a href="#wa-chat" data-toggle="tab"><i class="fa fa-terminal"></i> Chat</a></li>
+						<li style="display:none;" class="tab-remote-screen"><a href="#wa-ninja-screen" data-toggle="tab">Ninja Screen</a></li>
+                    	<li style="display:none;" class="tab-local-screen"><a href="#wa-mentor-screen" data-toggle="tab">Mentor Screen <i class="fa fa-times screen-local-stop"></i></a></li>
+                    	<li style="display:none;" class="tab-local-webcam"><a href="#wa-mentor-screen" data-toggle="tab">Mentor Webcam <i class="fa fa-times screen-local-stop"></i></a></li>
+                    	<li class="dropdown">
+    						<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+      							Share <span class="caret"></span>
+    						</a>
+    						<ul class="dropdown-menu">
+      							<li><a class="screen-local-start" href="javascript:;">Screen</a></li>
+                            	<li><a class="webcam-local-start" href="javascript:;">Webcam</a></li>
+      							<li class="divider"></li>
+      							<li><a href="#dropdown2" data-toggle="tab">Another action</a></li>
+    						</ul>
+  						</li>
+					</ul>
+					<div class="panel-body tab-content">
+                    	<div class="tab-pane fade active in" id="wa-chat">
+                    		<div class="chat-list-wrap">
+    							<ul class="list-group chat-list"></ul>
+        						<div class="input-group">
+                					<textarea class="form-control resizeBox chat-input" placeholder="Type a message" rows="1"></textarea>
+									<span class="input-group-btn">
+										<button class="btn btn-default btn-sm chat-send" type="button">Send</button>
+									</span>
+								</div>
+    						</div>
+                    	</div>
+                    	<div class="tab-pane fade screen-remote" id="wa-ninja-screen">
+							<canvas class="screen-remote-canvas" style="width:100%;"></canvas>
+                        </div>
+                    	<div class="tab-pane fade screen-local" id="wa-mentor-screen">
+							<canvas class="screen-local-canvas" style="width:100%;"></canvas>
+						</div>
 					</div>
 				</div>
 			</div>

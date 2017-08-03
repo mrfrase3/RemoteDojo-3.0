@@ -45,6 +45,9 @@ var stopChat = function(){
 	stopRTC();
 	live = false;
 	answeredRequest = false;
+	$('.workarea .nav-tabs .tab-remote-screen, .workarea .nav-tabs .tab-remote-webcam').hide();
+	$('.workarea .nav-tabs .tab-local-screen, .workarea .nav-tabs .tab-local-webcam').hide();
+	$('.workarea .nav-tabs .tab-chat a').click();
 	$('.screen-remote-box').hide();
 	$(".button-menu .chat-list-wrap").hide();
 	$(".button-menu-buttons .chat-open").hide();
