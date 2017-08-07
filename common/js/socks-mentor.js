@@ -86,6 +86,8 @@ var offerTutorial = function() {
 	}, 3000);
 }
 
+$(()=>{
+
 var hideInputDiv = function(id){
 	var p = $(".input-div[data-id=" + id + "]");
 	p.hide();
@@ -141,26 +143,26 @@ $("#input-password, #input-password2").on("change keyup keypress blur", function
 	$(".alert-password2").toggle(!(pwd === pwd2));
 });
 
-// TODO replace this with a form submission and a check / response on the server side.
-var submitFullname = function(){
+$(".fullname-submit").click(function(){
 	$(".alert-fullname").hide();
-	var name = $("#input-fullname").val().trim();
-	var nonalpha = new RegExp(/[^a-z ]/i);
-	if (nonalpha.test(name)) {
-		$(".alert-fullname").text("Please choose a name with only letters and spaces.");
-		$(".alert-fullname").show();
-		return false;
-	} else if (name.length > 20) {
-		$(".alert-fullname").text("Please choose a name with at most 20 letters.");
-		$(".alert-fullname").show();
-		return false;
-	} else {
-		$(".info-fullname").html(name);
-		$(".info-panel").data("name",name);
-		socket.emit("mentor.fullnameChange", name);
-		return true;
-	}
-}
+	var firstname = $("#input-firstname").val().trim();
+	if(firstname) socket.emit("mentor.firstnameChange", firstname);
+	var lastname = $("#input-lastname").val().trim();
+	if(lastname) socket.emit("mentor.lastnameChange", lastname);
+	hideInputDiv($(this).data("id"));
+});
+
+socket.on("mentor.firstname", firstname => {
+	$(".info-firstname").text(firstname);
+	$(".info-panel").attr("data-name", $(".user-info-panel .info-fullname").text());
+	if(RTCData.datachan) RTCData.emit("name.change", $(".user-info-panel .info-fullname").text());
+});
+
+socket.on("mentor.lastname", lastname => {
+	$(".info-lastname").text(lastname);
+	$(".info-panel").data("name",$(".user-info-panel .info-fullname").text());
+	if(RTCData.datachan) RTCData.emit("name.change", $(".user-info-panel .info-fullname").text());
+});
 
 var submitEmail = function(){
 	// TODO check email validity
@@ -183,11 +185,6 @@ socket.on("mentor.passwordChange", function(data){
 
 $(".password-submit").click(submitPassword);
 
-$(".fullname-submit").click(function(){
-	var success = submitFullname();
-	if (success) hideInputDiv($(this).data("id"));
-});
-
 $(".email-submit").click(function(){
 	var success = submitEmail();
 	if (success) hideInputDiv($(this).data("id"));
@@ -201,6 +198,8 @@ $(".input-edit").click(function(){
 
 $(".input-cancel").click(function(){
 	hideInputDiv($(this).data("id"));
+});
+
 });
 
 

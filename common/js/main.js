@@ -1,4 +1,9 @@
 // work in progress
+
+var localVis, remoteVis;
+var quadrent = 0;
+var quadrent2 = 4;
+
 $(function(){
 
 	$(".user-info-panel .panel-heading").dblclick(function(){
@@ -41,19 +46,80 @@ $(function(){
 	var cursorShowing = true; // TODO tie to button or checkbox, set to false if sharing webcam
 	function draw(v,c,w,h,l) {
 		if(v.paused || v.ended) {
-		c.clearRect(0, 0, cw, ch);
-		return false;
+			c.clearRect(0, 0, cw, ch);
+			return false;
+		}
+		c.drawImage(v,0,0,w,h);
+		// Draw the remote cursor on the local canvas
+		if (cursorShowing && l && rtcCursorRX && rtcCursorRY) {
+			c.drawImage(cursorImg, rtcCursorRX * cw, rtcCursorRY * ch);
+		}
+		setTimeout(draw,20,v,c,w,h,l);
 	}
-	c.drawImage(v,0,0,w,h);
-	// Draw the remote cursor on the local canvas
-	if (cursorShowing && l && rtcCursorRX && rtcCursorRY) {
-		c.drawImage(cursorImg, rtcCursorRX * cw, rtcCursorRY * ch);
+
+	class AudioVis {
+    	constructor (selector){
+        	this.selector = selector;
+        	this.stream;
+        	this.live = 0;
+        	this.ac = new (window.AudioContext || window.webkitAudioContext)();
+        	this.analyser;
+        	this.source;
+        	this.bufferLength;
+        	this.dataArray;
+    	}
+    	start (stream){
+        	this.stream = stream;
+        	this.live = Date.now();
+        	this.analyser = this.ac.createAnalyser();
+        	this.source = this.ac.createMediaStreamSource(this.stream);
+        
+        	this.source.connect(this.analyser);
+        	this.analyser.connect(this.ac.destination);
+        
+        	this.analyser.fftSize = 2048;
+			this.bufferLength = this.analyser.fftSize/2;
+			this.dataArray = new Float32Array(this.bufferLength);
+        
+        	this.display(this.live);
+    	}
+    
+    	stop (){
+        	this.live = 0;
+        }
+    
+    	display(ts){
+        	if(this.live !== ts) return;
+        
+        	let something = requestAnimationFrame(()=>this.display(ts));
+        
+        	this.analyser.getFloatTimeDomainData(this.dataArray);
+        
+        	//let sum = 0;
+			//for(let i = this.dataArray.length*quadrent/quadrent2; i < this.dataArray.length*(quadrent+1)/quadrent2 -1; i++) sum += this.dataArray[i];
+			//let sum = this.dataArray.reduce(function(a, b) { return a + b; });
+			//let avg = sum / this.dataArray.length;
+        	let max = -99999;
+        	for(let i in this.dataArray) if(this.dataArray[i] > max) max = this.dataArray[i];
+        	//let db = 20*Math.log(Math.max(max,Math.pow(10,-72/20)))/Math.LN10;
+        
+        	//let p = (avg/255)*100;
+        	let p = max*200;
+			$(this.selector).css("width",p+"%");
+        }
+    
+    	print(){
+        	this.analyser.getFloatTimeDomainData(this.dataArray);
+        	console.log(this.dataArray);
+        }
 	}
-	setTimeout(draw,20,v,c,w,h,l);
-}
+
+	localVis = new AudioVis(".levels-local .progress-bar");
+    remoteVis = new AudioVis(".levels-remote .progress-bar");
 
 	/*function audiovis(v, b){
 		var analyser = audioCtx.createAnalyser();
+        //drawVisual = requestAnimationFrame(draw);
 
 		source = audioCtx.createMediaElementSource(v);
 		source.connect(analyser);
@@ -88,7 +154,7 @@ $(function(){
 	audiovis(elem.local.v, ".levels-local .progress-bar");
 	audiovis(elem.remote.v, ".levels-remote .progress-bar");*/
 
-
+/*
 
 var audio_vis = function(au, qu){
 
@@ -143,7 +209,7 @@ var audio_vis = function(au, qu){
 }
 
 audio_vis(elem.local.a, '.levels-local .progress-bar');
-
+*/
 
 	if($(".user-info-panel").data("demo-mode")){
 		if($(".user-info-panel").data("expire")){
@@ -172,10 +238,10 @@ audio_vis(elem.local.a, '.levels-local .progress-bar');
 		$(".input-group .chat-input").focus();
 	});
 
-	fancyLoading();
+	//fancyLoading();
 });
 
-var fancyLoading = function(){
+/*var fancyLoading = function(){
 	var w = $(".fancy-loading .loading-block-half").width()
 	$(".fancy-loading .loading-block.lb1 .loading-block-divide").animate({width: w+"px"}, 300, function(){
 		$(".fancy-loading .loading-block.lb2 .loading-block-divide").animate({width: w+"px"}, 300, function(){
@@ -194,7 +260,7 @@ var fancyLoading = function(){
 			});
 		});
 	});
-};
+};*/
 
 // generates a html/bootstrap alert to display to the user
 var genalert = function(type, havediss, msg, timeout){
@@ -219,6 +285,7 @@ $(".resizeBox").on("change keyup keypress blur", function() {
 	resizeTextBox(this);
 });
 
+/*
 // TODO Rework this function
 var videosOutOfPosition = false;
 
@@ -235,9 +302,9 @@ var switchVideoPositions = function(){
 };
 
 // TODO tmp function used for demonstration. Need to switch 'nina's screen' title with 'your screenshare' etc.
-$(".chat-body-stop .switch-canvas").click(switchVideoPositions);
+$(".chat-body-stop .switch-canvas").click(switchVideoPositions);*/
 
-// Keybindings
+/*// Keybindings
 $(document).keydown(function(e) {
 	var chatInput = $(".input-group .chat-input");
 	var profileField = $(".first-modal-field");
@@ -273,4 +340,4 @@ $(document).keydown(function(e) {
 		}
 		document.activeElement.blur();
 	}
-});
+});*/

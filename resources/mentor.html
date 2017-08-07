@@ -33,10 +33,13 @@
 							</div>
 						</div>
 						<div class="info-div">
-							Full name: <span class="info-fullname">{{user.fullname}}</span>
+							Name: <span class="info-fullname titlecaps"><span class="info-firstname">{{user.firstname}}</span> <span class="info-lastname">{{user.lastname}}</span></span>
 							<button class="input-edit btn btn-primary btn-sm right-align" data-id="fullname"><i class="fa fa-pencil-square-o"></i></button>
 							<div class="input-div hidden" data-id="fullname">
-								<input type="text" id="input-fullname" class="form-control" placeholder="Your full name (ninjas will see this name)." maxlength="20"><br>
+                            	First Name: <br>
+								<input type="text" id="input-firstname" class="form-control" placeholder="Your first name (ninjas will see this name)."><br>
+                            	Last Name: <br>
+                            	<input type="text" id="input-lastname" class="form-control" placeholder="Your last name (ninjas will see this name)."><br>
 								<p class="alert-fullname form-error-text hidden"></p>
 								<button type="button" class="fullname-submit btn btn-default" data-id="fullname">Submit</button>
 								<button type="button" class="input-cancel btn btn-default" data-id="fullname">Cancel</button>
@@ -85,9 +88,9 @@
 						<h3 class="panel-title">CoderDojo</h3>
 					</div>
 					<div class="panel-body">
-						<p class="col-xs-12">
-							user info: <span class="info-fullname">{{user.fullname}}</span>
-						</p>
+						<div class="col-xs-12" style="text-align:center;">
+							Name: <span class="info-fullname titlecaps"><span class="info-firstname">{{user.firstname}}</span> <span class="info-lastname">{{user.lastname}}</span></span>
+						</div>
 						<button type="button" class="col-xs-12 user-info-btn btn btn-primary btn-sm" data-toggle="modal" data-target="#profileOverlay">
 							<i class="fa fa-pencil-square-o"></i>
 							Edit profile
@@ -95,9 +98,9 @@
 						<a href="./logout" class="col-xs-12 btn btn-default btn-sm">Logout</a>
 					</div>
 				</div>
-				<div class="chat-panel panel panel-primary">
+				<div class="chat-panel panel panel-primary" style="display: none;">
 					<div class="panel-heading">
-						<h3 class="panel-title">Chat</h3>
+						<h3 class="panel-title">Chatting With <span class="remote-name titlecaps"></span></h3>
 					</div>
 					<div class="panel-body chat-body-stop hidden">
 						<div class="col-xs-12">
@@ -154,18 +157,18 @@
 				<div class="screen-remote-box panel panel-primary hidden">
 					<ul class="panel-heading nav nav-tabs">
                     	<li class="active tab-chat"><a href="#wa-chat" data-toggle="tab"><i class="fa fa-terminal"></i> Chat</a></li>
-						<li style="display:none;" class="tab-remote-screen"><a href="#wa-ninja-screen" data-toggle="tab">Ninja Screen</a></li>
-                    	<li style="display:none;" class="tab-local-screen"><a href="#wa-mentor-screen" data-toggle="tab">Mentor Screen <i class="fa fa-times screen-local-stop"></i></a></li>
-                    	<li style="display:none;" class="tab-local-webcam"><a href="#wa-mentor-screen" data-toggle="tab">Mentor Webcam <i class="fa fa-times screen-local-stop"></i></a></li>
+						<li style="display:none;" class="tab-remote-screen"><a href="#wa-ninja-screen" data-toggle="tab"><i class="fa fa-desktop"></i> Ninja Screen</a></li>
+                    	<li style="display:none;" class="tab-local-screen"><a href="#wa-mentor-screen" data-toggle="tab"><i class="fa fa-desktop"></i> Mentor Screen <i class="fa fa-times screen-local-stop"></i></a></li>
+                    	<li style="display:none;" class="tab-local-webcam"><a href="#wa-mentor-screen" data-toggle="tab"><i class="fa fa-camera"></i> Mentor Webcam <i class="fa fa-times screen-local-stop"></i></a></li>
                     	<li class="dropdown">
     						<a class="dropdown-toggle" data-toggle="dropdown" href="#">
       							Share <span class="caret"></span>
     						</a>
     						<ul class="dropdown-menu">
-      							<li><a class="screen-local-start" href="javascript:;">Screen</a></li>
-                            	<li><a class="webcam-local-start" href="javascript:;">Webcam</a></li>
+      							<li><a class="screen-local-start" href="javascript:;"><i class="fa fa-desktop"></i> Screen</a></li>
+                            	<li><a class="webcam-local-start" href="javascript:;"><i class="fa fa-camera"></i> Webcam</a></li>
       							<li class="divider"></li>
-      							<li><a href="#dropdown2" data-toggle="tab">Another action</a></li>
+      							<li><a class="new-editor" href="javascript:;"><i class="fa fa-i-cursor"></i> Text Editor</a></li>
     						</ul>
   						</li>
 					</ul>

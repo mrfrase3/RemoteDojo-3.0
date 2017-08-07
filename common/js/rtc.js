@@ -88,6 +88,7 @@ var lastCursorUpdate;
 var lastCursorInCanvas;
 var cursorUpdateInterval = 33; // TODO find suitable update rate.
 
+
 var iceCallback = function(event) {
 	if (event.candidate) {
 		socket.emit("rtc.iceCandidate", event.candidate.toJSON());
@@ -104,6 +105,7 @@ var onRemoteStream = function(e){
 	console.log(e);
 	if(e.stream.getAudioTracks().length > 0){
 		rtcStreams.remote.a = e.stream;
+    	if(remoteVis) remoteVis.start(e.stream);
 		$('.dump audio.dump-remote').get(0).srcObject = e.stream;
 	} else if(e.stream.getVideoTracks().length > 0){
 		rtcStreams.remote.v = e.stream;
@@ -149,6 +151,7 @@ var onLocalStream = function(stream, type){
 	if(stream.getAudioTracks().length > 0){
 		if(rtcStreams.local.a) peerconn.removeStream(rtcStreams.local.a);
 		rtcStreams.local.a = stream;
+    	if(localVis) localVis.start(stream);
 		$('.dump audio.dump-local').get(0).srcObject = stream;
 	} else if(stream.getVideoTracks().length > 0){
 		if(rtcStreams.local.v) peerconn.removeStream(rtcStreams.local.v);
@@ -177,23 +180,6 @@ var negotiateRTC = function(){
 		alert("Could not create an offer, contact an admin.");
 		socket.emit("general.stopChat");
 	});
-};
-
-var addMessage = function(msg, local=false) {
-	//var item = document.createElement("li");
-	//$(item).text(msg.name + ": " + msg.data);
-	var item = "";
-	if (local) {
-		item = '<li class="local-msg"><div>' + msg.data + '</div></li>';
-    	RTCData.emit('tabs.focus', 'chat');
-	}
-	else {
-		item = '<li class="remote-msg"><div>' + msg.data + '</div></li>';
-		//$(".button-menu .chat-list-wrap").toggle(true);
-	} 
-	var chatList = $(".chat-list-wrap .chat-list");
-	chatList.append(item);
-	chatList.scrollTop(chatList.get(0).scrollHeight); // scroll to the latest message
 };
 
 var updateCoords = function(msg) {
@@ -282,6 +268,7 @@ var newTab = (title, id, focus=true, closable=true, remote=false) => {
     	destroyTab(id);
     });
 	if(focus) setTimeout(()=>$('.workarea .nav-tabs .tab-'+id+' a').click(), 100);
+	return id;
 }
 
 var destroyTab = (id, remote=false) => {
@@ -295,7 +282,7 @@ var destroyTab = (id, remote=false) => {
 
 $(function(){
 
-	RTCData.on('chat.message', addMessage);
+	
 	RTCData.on('cursor.coords', updateCoords);
 	RTCData.on('tabs.show', tab => {
 		if(tab === "remote-screen" || tab === "remote-webcam") $('.workarea .nav-tabs .tab-remote-screen, .workarea .nav-tabs .tab-remote-webcam').hide();
@@ -315,7 +302,11 @@ $(function(){
 	RTCData.on('tabs.new', newTab);
 	RTCData.on('tabs.destroy', destroyTab);
 
-	$("a[href=\"#dropdown2\"]").click(e => newTab("Result Action", "res-action"));
+	RTCData.on("name.change", name => $(".remote-name").text(name));
+
+	RTCData.on("connect", ()=>{
+    	RTCData.emit("name.change", $(".user-info-panel .info-fullname").text());
+    });
 
 	$(".screen-local-start").click(function(){
 		getScreenId(function (error, sourceId, screen_constraints) {
@@ -383,7 +374,10 @@ var stopRTC = function(){
 	stopStream(rtcStreams.local.v, $(".dump video.dump-local").get(0));
 	stopStream(rtcStreams.remote.a, $(".dump audio.dump-remote").get(0));
 	stopStream(rtcStreams.remote.v, $(".dump video.dump-remote").get(0));
-	if(RTCData.datachan) RTCData.datachan.close();
+	if(RTCData.datachan){
+		//RTCData.trigger("disconnect");
+    	RTCData.datachan.close();
+    }
 	//dataChannel = null;
 	rtcStreams = {local: {a:null,v:null}, remote:{a:null,v:null}};
 	live = false;
@@ -431,31 +425,6 @@ var startRTC = function(offer){
         }
 	}
 }
-
-var rtcSendMessage = function(){
-	var txtInput = $(".input-group .chat-input");
-	//txtInput.get(0).style.height = "auto";
-	txtInput.css("height","auto");
-	var msg = txtInput.val();
-	if (msg.length == 0) return;
-	var e = {
-		"name": $(".info-fullname").text(),
-		"data": msg
-	};
-	txtInput.val("");
-
-	addMessage(e, true);
-	//e = JSON.stringify(e);
-	//console.log("Sending message: " + e);
-	//dataChannel.send(e);
-	RTCData.emit('chat.message', e);
-}
-
-// Record and send the content of the text input
-$(".input-group .chat-send").click(function(){
-	rtcSendMessage();
-	$(".input-group .chat-input").focus();
-});
 
 // Send coordinates of the user's cursor if within the remote canvas element
 $(document).mousemove(function(event) {

@@ -48,6 +48,7 @@ var stopChat = function(){
 	$('.workarea .nav-tabs .tab-remote-screen, .workarea .nav-tabs .tab-remote-webcam').hide();
 	$('.workarea .nav-tabs .tab-local-screen, .workarea .nav-tabs .tab-local-webcam').hide();
 	$('.workarea .nav-tabs .tab-chat a').click();
+	$('#wa-chat').addClass("active in");
 	$('.screen-remote-box').hide();
 	$(".button-menu .chat-list-wrap").hide();
 	$(".button-menu-buttons .chat-open").hide();
@@ -56,9 +57,12 @@ var stopChat = function(){
 	// TODO Show for ninja
 	var isNinja = $(".user-info-panel").data("type") == "ninja";
 	if (isNinja) $('.chat-body-request').show();
-	else $(".chat-btn-start").removeClass("disabled");
+	else { 
+    	$('.chat-panel').hide();
+		$(".chat-btn-start").removeClass("disabled");
+    }
 	$(".chat-list-wrap .chat-list").empty(); // TODO Only the mentor forgets the chat, ninja sends on connection to a mentor.
-	if(videosOutOfPosition) switchVideoPositions();
+	//if(videosOutOfPosition) switchVideoPositions();
 }
 
 // Socket Processing
@@ -98,6 +102,7 @@ socket.on('general.mentorStatus',function(data){ // change a mentors status if t
 
 socket.on('general.startChat',function(){ //start a chat session when the server's made one
 	console.log("starting call");
+	$(".remote-name").text("...");
 	answeredRequest = true;
 	if (live) return;
 	var isNinja = $(".user-info-panel").data("type") == "ninja";
@@ -110,7 +115,10 @@ socket.on('general.startChat',function(){ //start a chat session when the server
 	$('.presentations-panel').hide();
 	$('.chat-body-stop').show();
 	if (isNinja) $('.chat-body-start').hide();
-	else $(".chat-btn-start").addClass("disabled");
+	else {
+    	$(".chat-btn-start").addClass("disabled");
+		$('.chat-panel').show();
+    }
 	// For the tutorial. The popover won't exist if not in tutorial mode, so in that case will do nothing
 	$(".screen-local-start").popover("show");
 	$(".webcam-controls").popover("show");

@@ -228,8 +228,7 @@ app.use("/", function(req, res){
 	if(config.runInDemoMode) fill.user.demomode = " data-demo-mode=\"true\" ";
 	fill.js += "<script src=\"https://webrtc.github.io/adapter/adapter-latest.js\"></script>"+
 		"<script src=\"https://cdn.webrtc-experiment.com/getScreenId.js\"></script>"+
-		"<script src=\"./common/js/socks-general.js\"></script>"+
-		"<script src=\"./common/js/rtc.js\"></script>";
+		"<script src=\"./common/js/socks-general.js\"></script>";
 	if(user.roll == "ninja"){ //if the user is a ninja
 		let dojo = user.dojos[0];
 		fill.mentors = [];
@@ -241,13 +240,27 @@ app.use("/", function(req, res){
 				fill.mentors.push({username: u.username, fullname: u.fullname, status: status, label: labels[status]}); //and pass this status list to the renderer
 			}
 			//add the ninja based js files, render the file and give it to the user
-			fill.js += "<script src=\"./common/js/ninja.js\"></script><script src=\"./common/js/socks-ninja.js\"></script><script src=\"./common/js/main.js\"></script>";
+			fill.js += '<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.7.2/showdown.min.js"></script>' +
+            	'<script src="./common/js/rtc.js"></script>' +
+            	'<script src="./common/js/ninja.js"></script>' +
+            	'<script src=\"./common/js/socks-ninja.js"></script>' +
+            	'<script src="./common/js/main.js"></script>' +
+            	'<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.8/ace.js" integrity="sha256-198+Grx89n2ofVwo1LWnNTXxIQZIPZJURv+K73cJ93U=" crossorigin="anonymous"></script>' +
+        		'<script src="./common/js/editor.js"></script>' +
+        		'<script src="./common/js/chat.js"></script>';
 			return renderfile("ninja");
         });
     	return;
 	} else if(user.roll == "mentor"){ //if the user is a mentor
 			//add the mentor based js files, render the file and give it to the user
-		fill.js += "<script src=\"./common/js/mentor.js\"></script><script src=\"./common/js/socks-mentor.js\"></script><script src=\"./common/js/main.js\"></script>";
+		fill.js += '<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.7.2/showdown.min.js"></script>' +
+        	'<script src="./common/js/rtc.js"></script>' +
+            '<script src="./common/js/mentor.js"></script>' +
+            '<script src="./common/js/socks-mentor.js"></script>' +
+            '<script src="./common/js/main.js"></script>' +
+    		'<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.8/ace.js" integrity="sha256-198+Grx89n2ofVwo1LWnNTXxIQZIPZJURv+K73cJ93U=" crossorigin="anonymous"></script>' +
+        	'<script src="./common/js/editor.js"></script>' +
+        	'<script src="./common/js/chat.js"></script>';
 		return renderfile("mentor");
 	} else if(user.roll == "champion"){ //if the user is a champion
 		fill.js += "<script src=\"./common/js/socks-champion.js\"></script>";
@@ -453,17 +466,38 @@ users.findByUsername(socket.user, (err, user) =>{
             });
 		});
 
-		socket.on("mentor.fullnameChange", function(fullname){ // fullname is being discont. use first/last name instead
-        	if(typeof fullname !== "string") return;
-        	let oldname = user.fullname;
-        	user.fullname = fullname;
+		socket.on("mentor.lastnameChange", function(lastname){
+        	let oldname = user.lastname;
+        	user.lastname = lastname;
         	let error = user.validateSync();
         	if(error && error.errors){
-            	user.fullname = oldname;
+            	user.lastname = oldname;
             	socket.emit('general.genalert', "danger", true, getvalues(geterrs(error.errors)).join('<br>'));
-            } else user.save().catch(console.error).then(()=>{
-            	socket.emit('general.genalert', "success", true, "Name changed!");
-            });
+            } else if(error) {
+            	console.error(error);
+            } else {
+            	user.save().catch(console.error).then(()=>{
+            		socket.emit('general.genalert', "success", true, "Last Name changed! It is now " + user.lastname);
+            		socket.emit("mentor.lastname", user.lastname);
+            	});
+            }
+		});
+    
+    	socket.on("mentor.firstnameChange", function(firstname){
+        	let oldname = user.firstname;
+        	user.firstname = firstname;
+        	let error = user.validateSync();
+        	if(error && error.errors){
+            	user.firstname = oldname;
+            	socket.emit('general.genalert', "danger", true, getvalues(geterrs(error.errors)).join('<br>'));
+            } else if(error) {
+            	console.error(error);
+            } else {
+            	user.save().catch(console.error).then(()=>{
+            		socket.emit('general.genalert', "success", true, "First Name changed! It is now " + user.firstname);
+            		socket.emit("mentor.firstname", user.firstname);
+            	});
+            }
 		});
 
 		socket.on("mentor.emailChange", function(email){

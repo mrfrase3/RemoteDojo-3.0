@@ -84,6 +84,7 @@ socket.on('ninja.lastname', name => {
 	$(".user-info-panel .animals").removeClass($(".info-lastname").text()).addClass(name);
 	$(".info-lastname").text(name);
 	$(".info-panel").data("name", $(".info-fullname").text());
+	if(RTCData.datachan) RTCData.emit("name.change", $(".info-fullname").text());
 });
 
 $(function() {
