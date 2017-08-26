@@ -117,9 +117,9 @@ $(function(){
 	localVis = new AudioVis(".levels-local .progress-bar");
     remoteVis = new AudioVis(".levels-remote .progress-bar");
 
-	if($(".user-info-panel").data("demo-mode")){
-		if($(".user-info-panel").data("expire")){
-			var expire = $(".user-info-panel").data("expire");
+	if($(".user-info-panel").attr("data-demo-mode")){
+		if($(".user-info-panel").attr("data-expire")){
+			var expire = (new Date($(".user-info-panel").attr("data-expire"))).getTime();
 			var expireTimer = function(){
 				var timeleft = Math.floor(( expire - Date.now() ) / 1000);
 				if(timeleft < 0) timeleft = 0;
@@ -128,7 +128,7 @@ $(function(){
 				var minutes = Math.floor(timeleft / 60);
 				if(minutes < 10) minutes = "0"+minutes;
 				$(".button-menu-buttons .expiry-count-down").text(minutes + ":" + seconds);
-				if(timeleft > 0) setTimeout(expireTimer, 1000);
+				if(timeleft > 0) setTimeout(expireTimer, 100);
 			}
 			expireTimer();
 			$(".button-menu-buttons .expiry-wrap").show();

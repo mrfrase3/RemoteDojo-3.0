@@ -9,9 +9,12 @@ mongoose.Promise = global.Promise;
 var app = express();
 // get the SSL keys, change to location of your certificates
 // TODO replace SSL keys system with letsencrypt
-var keys = {key: fs.readFileSync("certs/server.key", "utf8"), cert: fs.readFileSync("certs/server.crt", "utf8")};
-var server = require("https").createServer(keys, app);
-var io = require("socket.io")(server);
+//var keys = {key: fs.readFileSync("certs/server.key", "utf8"), cert: fs.readFileSync("certs/server.crt", "utf8")};
+//var server = require("https").createServer(keys, app);
+var server;
+var redirectServer;
+var port;
+//var io = require("socket.io")(server);
 var bodyParser = require("body-parser");
 var helmet = require("helmet");
 var crypto = require("crypto");
@@ -26,11 +29,44 @@ var ipaddresses = [];
 //html templates are stored in the resources folder.
 var hb = require("handlebars");
 var getTemp = function(file){return hb.compile(fs.readFileSync("./resources/" + file + ".html") + "<div></div>", {noEscape: true});};
-var templates = {404: getTemp("404"), index: getTemp("index"), head: getTemp("head"), foot: getTemp("foot"), adminhead: getTemp("adminhead"),
+var templates = {404: getTemp("404"), demo_landing: getTemp("demo-landing"), head: getTemp("head"), foot: getTemp("foot"), adminhead: getTemp("adminhead"),
 								ninja: getTemp("ninja"), mentor: getTemp("mentor"), champion: getTemp("champion"), admin: getTemp("admin"),
 								login: getTemp("login"), demo: getTemp("demo")};
 
 var mentorstats = {}; //keeps track of mentor statuses which are displayed to
+
+if(config.server.https.enabled){
+    var keys = {
+        key: fs.readFileSync(config.server.https.key || "certs/key.pem", "utf8"), 
+        cert: fs.readFileSync(config.server.https.cert || "certs/cert.pem", "utf8")
+    };
+    server = require('https').createServer(keys, app);
+    if(config.server.http.enabled){
+        redirectServer = require('http').createServer( function(req, res){
+            let report = ':' + (config.server.https.port || 4000);
+            if(report == ':443') report = '';
+            let host = (req.headers.host || config.server.https.host).split(':')[0];
+            res.writeHead(302,
+                {Location: 'https://'+host+report+req.url}
+            );
+            res.end();
+        });
+        redirectServer.listen((config.server.http.port || 4001));
+    }
+    port = (config.server.https.port || 4000);
+    
+    app.use(function(req,res,next) {
+        if (!/https/.test(req.protocol)){
+            res.redirect("https://" + req.headers.host + req.url);
+        } else {
+            return next();
+        } 
+    });
+} else {
+    server = require('http').Server(app);
+    port = (config.server.http.port || 4001);
+}
+io = require('socket.io')(server);
 
 
 // user rolls structure:
@@ -124,7 +160,7 @@ app.use("/sockauth", function(req, res){
     	res.json({err: "Unknown Error", success: false});
     }
 	users.loadUser( req, dojos, config.runInDemoMode ).catch(reject).then(([user, msg])=>{
-    	if(!user) res.json({err: msg || "Not Logged in", success: false});
+    	if(!user) return res.json({err: msg || "Not Logged in", success: false});
     	user.genToken('sockauth', Date.now() + 5*60*60*1000).catch(reject).then(token=>{
         	user.save().catch(reject).then(()=>{
             	res.json({usr: user.username, token: token, success: true});
@@ -198,7 +234,7 @@ app.use("/", function(req, res){
 	};
 
 
-	users.loadUser( req, dojos, config.runInDemoMode ).catch(reject).then(([loaded_user, msg])=>{
+	users.loadUser( req, dojos, config.runInDemoMode, removeUser ).catch(reject).then(([loaded_user, msg])=>{
     if(!loaded_user){
     	if(msg) fill.msg = genalert("danger", true, msg);
     	if(config.runInDemoMode){
@@ -207,14 +243,19 @@ app.use("/", function(req, res){
             	dojos.tempDojo(expire).catch(reject).then((temp_dojo) =>{
             		users.tempUser(temp_dojo.dojoname, "ninja", expire, true).catch(reject).then(([temp_ninja, temp_ninja_token]) =>{
                 		users.tempUser(temp_dojo.dojoname, "mentor", expire, true).catch(reject).then(([temp_mentor, temp_mentor_token]) =>{
-            				fill.mentor = "/?u=" + temp_mentor + "&a=" + temp_mentor_token;
-							fill.ninja = "/?u=" + temp_ninja + "&a=" + temp_ninja_token;
+            				fill.mentor = "/?u=" + temp_mentor.username + "&a=" + temp_mentor_token;
+							fill.ninja = "/?u=" + temp_ninja.username + "&a=" + temp_ninja_token;
+                        	fill.expire = temp_mentor.expire.getTime();
 							renderfile("demo");
+                        	setTimeout(removeUser, temp_mentor.expire.getTime() - Date.now(), temp_mentor.username);
+                        	setTimeout(removeUser, temp_ninja.expire.getTime() - Date.now(), temp_ninja.username);
+                        	setTimeout(removeDojo, temp_dojo.expire.getTime() - Date.now(), temp_dojo.dojoname);
                     	});
                 	});
                 });
+            	return;
             }
-        	else return renderfile("demo");
+        	else return renderfile("demo_landing");
     	}
     	return renderfile("login");
     }
@@ -945,9 +986,9 @@ users.count({roll: "admin"}).catch(console.error).then(count=>{
     });
 });
 
-mongoose.connect(mongouri);
-server.listen(config.serverPort); // start main server
-console.log("Server Started on port: " + config.serverPort);
+mongoose.connect(mongouri, {useMongoClient: true});
+server.listen(port); // start main server
+console.log("Server Started on port: " + port);
 
 //exports for testing
 //exports.testing = {app: app};
