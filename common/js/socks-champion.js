@@ -1,4 +1,6 @@
-var socket = io.connect('/main');
+//var socket = io.connect('/main');
+
+var nodojos, userdojos;
 
 $(".submit-champion").click(function(){
 	var user = $(".champion-select").find(":selected").val();
@@ -6,7 +8,8 @@ $(".submit-champion").click(function(){
 	var email = $(".champion-email").val();
 	var fullname = $(".champion-fullname").val();
 	var password = $(".champion-password").val();
-	socket.emit("champion.championEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: ""});
+	var dojos = $(".chamion-dojos").val();
+	socket.emit("champion.championEdit",{user, username, email, fullname, password, dojos});
 	$(".champion-input").val("");
 });
 
@@ -17,7 +20,7 @@ $(".submit-mentor").click(function(){
 	var fullname = $(".mentor-fullname").val();
 	var password = $(".mentor-password").val();
 	var dojos = $(".mentor-dojos").val();
-	socket.emit("champion.mentorEdit",{user: user, username: username, email: email, fullname: fullname, password: password, dojos: dojos});
+	socket.emit("champion.mentorEdit",{user, username, email, fullname, password, dojos});
 	$(".mentor-input").val("");
 });
 
@@ -40,24 +43,30 @@ $(".remove").click(function(){
 	}
 });
 
-var loadAdmin = function() {
+/*var loadAdmin = function() {
 	var o = $(".admin-select").find(":selected");
 	$(".admin-username").val(o.val());
 	$(".admin-email").val(o.data("email"));
 	$(".admin-fullname").val(o.data("fullname"));
-}
+}*/
 
 var loadChampion = function() {
 	var o = $(".champion-select").find(":selected");
 	$(".champion-input").val("");
 	$(".champion-username").prop("disabled", o.val() !== "");
 	$(".champion-username").attr("placeholder", o.val());
-	$(".champion-email").attr("placeholder", o.data("email"));
-	$(".champion-fullname").attr("placeholder", o.data("fullname"));
+	$(".champion-email").attr("placeholder", o.data("email")|| o.attr("data-email"));
+	$(".champion-fullname").attr("placeholder", o.data("fullname")|| o.attr("data-fullname"));
 	// champions can only modify themselves
 	var isSelf = o.hasClass("self");
 	$(".submit-champion, .champion-input").prop("disabled", !isSelf);
+	$(".champion-dojos").prop("disabled", true);
 	$(".champion-username").prop("disabled", true);
+	let dojos = (o.data("dojos") || o.attr("data-dojos")).split(',');
+	nodojos = [];
+	for(let i in dojos) if(userdojos.indexOf(dojos[i]) === -1) nodojos.push(dojos[i]);
+	if (o.data("all-dojos") || o.attr("data-all-dojos")) dojos.push("all");
+	$(".champion-dojos").val(dojos);
 }
 
 var loadMentor = function() {
@@ -65,10 +74,12 @@ var loadMentor = function() {
 	$(".mentor-input").val("");
 	$(".mentor-username").prop("disabled", o.val() !== "");
 	$(".mentor-username").attr("placeholder", o.val());
-	$(".mentor-email").attr("placeholder", o.data("email"));
-	$(".mentor-fullname").attr("placeholder", o.data("fullname"));
-	var dojos = [o.data("dojos")];
-	if (o.data("all-dojos")) dojos = dojos.concat("all");
+	$(".mentor-email").attr("placeholder", o.data("email")|| o.attr("data-email"));
+	$(".mentor-fullname").attr("placeholder", o.data("fullname")|| o.attr("data-fullname"));
+	let dojos = (o.data("dojos") || o.attr("data-dojos")).split(',');
+	nodojos = [];
+	for(let i in dojos) if(userdojos.indexOf(dojos[i]) === -1) nodojos.push(dojos[i]);
+	if (o.data("all-dojos") || o.attr("data-all-dojos")) dojos.push("all");
 	$(".mentor-dojos").val(dojos);
 }
 
@@ -77,22 +88,28 @@ var loadDojo = function() {
 	$(".dojo-input").val("");
 	$(".dojo-dojoname").prop("disabled", o.val() !== "");
 	$(".dojo-dojoname").attr("placeholder", o.val());
-	$(".dojo-name").attr("placeholder", o.data("name"));
-	$(".dojo-email").attr("placeholder", o.data("email"));
-	$(".dojo-location").attr("placeholder", o.data("location"));
+	$(".dojo-name").attr("placeholder", o.data("name")|| o.attr("data-name"));
+	$(".dojo-email").attr("placeholder", o.data("email")|| o.attr("data-email"));
+	$(".dojo-location").attr("placeholder", o.data("location")|| o.attr("data-location"));
 }
 
 var loadAll = function() {
-	loadAdmin();
+	//loadAdmin();
 	loadChampion();
 	loadMentor();
 	loadDojo();
 }
 
-$(".admin-select").change(loadAdmin);
+//$(".admin-select").change(loadAdmin);
 $(".champion-select").change(loadChampion);
 $(".mentor-select").change(loadMentor);
 $(".dojo-select").change(loadDojo);
+
+$("select[name=\"dojo-list\"]").change(function(){
+	let selected = $(this).val();
+	for(let i in nodojos) if(selected.indexOf(nodojos[i]) === -1) selected.push(nodojos[i]);
+	$(this).val(selected);
+});
 
 socket.on("champion.fullDatabase", function(data){
 	console.log("db update from server");
@@ -102,10 +119,13 @@ socket.on("champion.fullDatabase", function(data){
 	$(".db-option").remove();
 	$("option.self").attr({"value": data.user.username})
 		.text(data.user.fullname)
-		.data("fullname", data.user.fullname)
-		.data("email", data.user.email);
+		.attr("data-fullname", data.user.fullname)
+		.attr("data-dojos", data.user.dojos)
+		.attr("data-all-dojos", data.user.allDojos ? "true" : "")
+		.attr("data-email", data.user.email);
+	userdojos = data.user.dojos;
 	$(".info-fullname").text(data.user.fullname);
-	for (var i = 0; i < data.admins.length; ++i) {
+/*	for (var i = 0; i < data.admins.length; ++i) {
 		var u = data.admins[i];
 		$(".admin-select").append($("<option>",{
 			"value": u.username,
@@ -113,14 +133,16 @@ socket.on("champion.fullDatabase", function(data){
 			"text": u.fullname,
 			"data-email": u.email
 		}).addClass("db-option"));
-	}
+	}*/
 	for (var i = 0; i < data.champions.length; ++i) {
 		var u = data.champions[i];
 		$(".champion-select").append($("<option>",{
 			"value": u.username,
 			"data-fullname": u.fullname,
 			"text": u.fullname,
-			"data-email": u.email
+			"data-email": u.email,
+			"data-dojos": u.dojos,
+			"data-all-dojos": u.allDojos ? "true" : ""
 		}).addClass("db-option"));
 	}
 	for (var i = 0; i < data.mentors.length; ++i) {
@@ -131,26 +153,26 @@ socket.on("champion.fullDatabase", function(data){
 			"text": u.fullname,
 			"data-email": u.email,
 			"data-dojos": u.dojos,
-			"data-all-dojos": u.allDojos
+			"data-all-dojos": u.allDojos ? "true" : ""
 		}).addClass("db-option"));
 	}
 	for (var i = 0; i < data.dojos.length; ++i) {
 		var d = data.dojos[i];
-		$(".dojo-select").append($("<option>",{
+		if(data.user.dojos.indexOf(d.dojoname) !== -1) $(".dojo-select").append($("<option>",{
 			"value": d.dojoname,
 			"data-name": d.name,
 			"text": d.name,
 			"data-email": d.email,
 			"data-location": d.location
 		}).addClass("db-option"));
-		$(".mentor-dojos").append($("<option>", {
+		$("select[name=\"dojo-list\"]").append($("<option>", {
 			"value": d.dojoname,
 			"text": d.name
-		}).addClass("db-option"));
+		}).addClass("db-option").prop("disabled", data.user.dojos.indexOf(d.dojoname) === -1));
 	}
 	loadAll();
 });
-
+/*
 //Helper Function to authenticate the connection
 // socket and callback are passed, callback is called if the socket is authenticated
 var authSock = function(sock, cb){
@@ -201,7 +223,7 @@ socket.on('disconnect', function(){
 
 socket.on('general.disconnect', function(m){
 	$(".alert-wrapper").prepend(genalert("danger", false, "You were disconnected from the server!<br>Because " + m));
-});
+});*/
 
 $(document).ready(function(){
 	$(".user-select").each(function(){

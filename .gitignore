@@ -48,9 +48,4 @@ certs/*.key
 certs/*.crt
 certs/*.csr
 
-# User Sessions
-sessions/*.json
-
-# User Database
-./users.json
-./dojos.json
+.ftpconfig

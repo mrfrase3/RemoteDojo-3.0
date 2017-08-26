@@ -9,15 +9,16 @@
   "main": "app",
   "private": true,
   "dependencies": {
+    "body-parser": "x",
+    "connect-mongo": "^1.3.2",
     "express": "x",
     "express-session": "x",
-    "session-file-store": "x",
-    "socket.io-stream": "x",
-    "socket.io": "x",
-    "body-parser": "x",
+    "handlebars": "x",
     "helmet": "x",
-    "bcrypt": "x",
-    "handlebars": "x"
+    "mongoose": "^4.11.1",
+    "session-file-store": "x",
+    "socket.io": "x",
+    "socket.io-stream": "x"
   },
   "devDependencies": {
     "chai": "^3.5.0",

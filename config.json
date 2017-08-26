@@ -1,7 +1,29 @@
 {
-	"runInDemoMode" : true,
-	"demoDuration"  : 200000,
+	"runInDemoMode" : false,
+	"demoDuration"  : 1800000,
 	"sessionSecret" : "61_R*9P9RR;FM9_p!*18S!P0g2!SG93E26!%mjtw;S-052-8O2^77;I:17MK-_;PM6-ZN9=jeaP5~4ae765:256_676Z=3_r",
-	"serverPort"    : 4000,
-	"feedbackLink"  : "https://goo.gl/forms/RhfTEOxzpGa5IUru2"
+	"server": {
+        "http": {
+            "enabled": true,
+            "host": "localhost",
+            "port": 4001
+        },
+        "https": {
+            "enabled": true,
+            "host": "localhost",
+            "port": 4000,
+            "cert": "./certs/cert.pem",
+            "key" : "./certs/key.pem"
+        }
+    },
+	"feedbackLink"  : "https://goo.gl/forms/RhfTEOxzpGa5IUru2",
+	"database": {
+        "mongo": {
+            "host": "ds153412.mlab.com",
+            "port": 53412,
+            "name": "remotedojo",
+            "user": "test",
+            "password": "password"
+        }
+    }
 }

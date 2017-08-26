@@ -27,6 +27,6 @@ emailAddress=
 "
 
 # Generate our Private Key, CSR and Certificate
-sudo openssl genrsa -out "$SSL_DIR/server.key" 2048
-sudo openssl req -new -subj "$(echo -n "$SUBJ" | tr "\n" "/")" -key "$SSL_DIR/server.key" -out "$SSL_DIR/server.csr" -passin pass:$PASSPHRASE
-sudo openssl x509 -req -days 365 -in "$SSL_DIR/server.csr" -signkey "$SSL_DIR/server.key" -out "$SSL_DIR/server.crt"
+sudo openssl genrsa -out "$SSL_DIR/key.pem" 2048
+sudo openssl req -new -subj "$(echo -n "$SUBJ" | tr "\n" "/")" -key "$SSL_DIR/key.pem" -out "$SSL_DIR/csr.pem" -passin pass:$PASSPHRASE
+sudo openssl x509 -req -days 365 -in "$SSL_DIR/csr.pem" -signkey "$SSL_DIR/key.pem" -out "$SSL_DIR/cert.pem"

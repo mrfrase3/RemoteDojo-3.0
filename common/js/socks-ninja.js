@@ -73,25 +73,19 @@ var offerTutorial = function() {
 	}, 3000);
 }
 
-var submitProfile = function(){
-	$(".alert-fullname").hide();
-	var name = $("#input-fullname").val();
-	var nonalpha = new RegExp(/[^a-z ]/i);
-	if (nonalpha.test(name)) {
-		$(".alert-fullname").text("Please choose a name with only letters and spaces.");
-		$(".alert-fullname").show();
-	} else if (name.length > 10) {
-		$(".alert-fullname").text("Please choose a name with at most 10 letters.");
-		$(".alert-fullname").show();
-	} else {
-		$(".info-fullname").html(name);
-		$(".info-panel").data("name",name);
-		socket.emit('ninja.fullnameChange', name);
-		$('#profileOverlay').modal('hide');
-	}
-}
+$(".lastname-submit").click(() => {
+	var name = $("input.animal-radio:checked").val();
+	
+	socket.emit('ninja.lastnameChange', name);
+	$('#profileOverlay').modal('hide');
+});
 
-$(".fullname-submit").click(submitProfile);
+socket.on('ninja.lastname', name => {
+	$(".user-info-panel .animals").removeClass($(".info-lastname").text()).addClass(name);
+	$(".info-lastname").text(name);
+	$(".info-panel").data("name", $(".info-fullname").text());
+	if(RTCData.datachan) RTCData.emit("name.change", $(".info-fullname").text());
+});
 
 $(function() {
 
@@ -123,17 +117,14 @@ $(function() {
 		$('.chat-body-start').hide();
 		$('.chat-body-start').data("calling", false);
 	});
-});
 
-$( document ).ready(function() {
 	offerTutorial();
-// TODO onshow/onhide? Set fields to current...
-	// $('#profileOverlay').on('shown.bs.modal', function() {
-	// 	$("#input-username").focus();
-	// });
 
+	$('input.animal-radio[value="'+$(".info-lastname").text()+'"]').prop("checked", true);
 	$('#profileOverlay').on('hidden.bs.modal', function() {
-		$("#input-fullname").val("");
+    	$('input.animal-radio').prop("checked", false);
+		$('input.animal-radio[value="'+$(".info-lastname").text()+'"]').prop("checked", true);
 		$(".form-error-text").hide();
 	});
 });
+

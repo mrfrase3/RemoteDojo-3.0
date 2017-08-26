@@ -1,5 +1,6 @@
 var socket = io.connect('/main');
 var live = false;
+var initAuth = false;
 var answeredRequest = false; // answeredRequest is distinct from 'live' in that it occurs before rtc connection.
 
 $('.hidden').hide();
@@ -33,6 +34,7 @@ var authSock = function(sock, cb){
 		$(".alert-wrapper").prepend(genalert("danger", false, "Authentication with server failed, please log back in."));
 		console.log('Failed to authorise socket connection: Token was not valid.');
 	});
+	initAuth = true;
 }
 
 
@@ -43,6 +45,10 @@ var stopChat = function(){
 	stopRTC();
 	live = false;
 	answeredRequest = false;
+	$('.workarea .nav-tabs .tab-remote-screen, .workarea .nav-tabs .tab-remote-webcam').hide();
+	$('.workarea .nav-tabs .tab-local-screen, .workarea .nav-tabs .tab-local-webcam').hide();
+	$('.workarea .nav-tabs .tab-chat a').click();
+	$('#wa-chat').addClass("active in");
 	$('.screen-remote-box').hide();
 	$(".button-menu .chat-list-wrap").hide();
 	$(".button-menu-buttons .chat-open").hide();
@@ -51,16 +57,19 @@ var stopChat = function(){
 	// TODO Show for ninja
 	var isNinja = $(".user-info-panel").data("type") == "ninja";
 	if (isNinja) $('.chat-body-request').show();
-	else $(".chat-btn-start").removeClass("disabled");
+	else { 
+    	$('.chat-panel').hide();
+		$(".chat-btn-start").removeClass("disabled");
+    }
 	$(".chat-list-wrap .chat-list").empty(); // TODO Only the mentor forgets the chat, ninja sends on connection to a mentor.
-	if(videosOutOfPosition) switchVideoPositions();
+	//if(videosOutOfPosition) switchVideoPositions();
 }
 
 // Socket Processing
 
 socket.on('connect', function(){
 	console.log('socket connection made.');
-	authSock(socket, function(){
+	if(!initAuth) authSock(socket, function(){
 		socket.auth = true;
 		$(".loading-overlay").hide(200);
 	});
@@ -79,6 +88,10 @@ socket.on('general.disconnect', function(m){
 	$(".alert-wrapper").prepend(genalert("danger", false, "You were disconnected from the server!<br>Because " + m));
 });
 
+socket.on('general.genalert', function(level, diss, msg, timeout=4000){
+	$(".alert-wrapper").prepend(genalert(level, diss, msg, timeout));
+});
+
 socket.on('general.mentorStatus',function(data){ // change a mentors status if theres a list
 	labels = {offline: 'default', available: 'success', busy: 'warning'};
 	currstat = $('#mentor-'+data.username + ' .label').html();
@@ -89,6 +102,7 @@ socket.on('general.mentorStatus',function(data){ // change a mentors status if t
 
 socket.on('general.startChat',function(){ //start a chat session when the server's made one
 	console.log("starting call");
+	$(".remote-name").text("...");
 	answeredRequest = true;
 	if (live) return;
 	var isNinja = $(".user-info-panel").data("type") == "ninja";
@@ -101,7 +115,10 @@ socket.on('general.startChat',function(){ //start a chat session when the server
 	$('.presentations-panel').hide();
 	$('.chat-body-stop').show();
 	if (isNinja) $('.chat-body-start').hide();
-	else $(".chat-btn-start").addClass("disabled");
+	else {
+    	$(".chat-btn-start").addClass("disabled");
+		$('.chat-panel').show();
+    }
 	// For the tutorial. The popover won't exist if not in tutorial mode, so in that case will do nothing
 	$(".screen-local-start").popover("show");
 	$(".webcam-controls").popover("show");
@@ -119,3 +136,14 @@ $(function(){
 		$(".chat-btn-stop").popover("hide"); //for tutorial, hide leave chat popup if it's still showing
 	});
 });
+
+if(!genalert){
+	var genalert = function(type, havediss, msg, timeout){
+		var diss = "'";
+		var eid = "alert-" + Math.random().toString(36).substr(2);
+		while($("#"+eid).length) eid = "alert-" + Math.random().toString(36).substr(2);
+		if(timeout && timeout > 0) setTimeout(function(){$("#"+eid).remove();}, timeout);
+		if(havediss) diss = "alert-dismissable'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>×</button";
+		return "<div id='"+eid+"' class='alert alert-"+type+" "+diss+">"+msg+"</div>";
+	}
+}

@@ -5,6 +5,10 @@
 
 /* Common Style */
 
+.titlecaps {
+	text-transform: capitalize;
+}
+
 .vcenter{
 	position: relative;
 	top: 50%;
@@ -51,10 +55,10 @@ body {
 
 .detached-elements .button-menu{
 	bottom: 0px;
-	width: 100%;
+	right: 0px;
 	z-index: 1000;
 	padding-top: 10px;
-	background-color: white;
+	/*background-color: white;*/
 	max-height: 400px;
 }
 
@@ -62,23 +66,112 @@ body {
 	height: 400px;
 }
 
-.detached-elements .chat-list-wrap{
-	padding: 0;
-	border: 0;
+#wa-chat {
+	height: 30em;
+}
+
+.chat-list-wrap {
+    height: 100%;
+    position: relative;
 }
 
 .chat-list-wrap .chat-list{
-	max-height: 200px;
-	overflow-y: scroll;
+	max-height: 27em;
+	overflow-y: auto;
 	white-space: pre;
-	border-style: solid;
-	border-width: 1px;
 	padding: 0;
+	position: absolute;
+    width: 100%;
+	list-style: none;
+}
+
+.chat-list-wrap .chat-list li div{
+    max-width: 70%;
+    padding: 0.8em 1em;
+    position: relative;
+    border-radius: 0.5em;
+    display: inline-block;
+	word-break: break-word;
+    white-space: normal;
+	text-align: left;
+}
+
+.chat-list-wrap .chat-list li div p{
+	margin: 0;
+}
+
+.chat-list-wrap .chat-list li {
+    margin-top: 0.1em;
+}
+
+.chat-list-wrap .chat-list li.local-msg {
+	text-align: right;
+}
+
+.chat-list-wrap .chat-list li.local-msg div{
+    background-color: rgba(46,169,223,0.7);
+    color: white;
+}
+
+.chat-list-wrap .chat-list li.remote-msg div{
+    background-color: rgba(0,0,0,0.1);
+}
+
+.chat-list-wrap .chat-list li.remote-msg + li.local-msg,
+.chat-list-wrap .chat-list li.local-msg + li.remote-msg{
+    margin-top: 0.5em;
 }
 
 .chat-list-wrap .chat-item-remote{
 	background-color: #eee;
 	text-align: right;
+}
+
+.chat-list-wrap .input-group{
+    bottom: 0;
+    position: absolute;
+}
+
+.chat-list-wrap .input-group-btn,
+.chat-list-wrap .input-group-btn button {
+	height: 100%;
+}
+
+.chat-input {
+	resize: none;
+	max-height: 10em;
+}
+
+.workarea .panel-heading {
+	padding: 0;
+}
+
+.workarea .nav-tabs > .dropdown {
+	float: right;
+}
+
+.workarea .nav-tabs > li > a {
+	color: white;
+}
+
+.workarea .nav-tabs > li.active > a {
+	color: black;
+}
+
+.workarea .nav-tabs li .fa-times:hover {
+	cursor: pointer;
+	color: red;
+}
+
+.workarea .tab-content .ace_editor {
+	height: 30em;
+	font-size: 1em;
+}
+
+.levels-local .progress-bar,
+.levels-remote .progress-bar{
+	-webkit-transition: width 0.05s;
+	transition: width 0.05s;
 }
 
 /* TODO */
@@ -88,11 +181,12 @@ body {
 }
 
 .input-edit {
-	margin: 5px;
+	margin-right: 1em;
 }
 
 .info-div {
-	margin-top: 5px;
+	margin-top: 1em;
+	text-align: left;
 }
 
 .info-div:after {
@@ -109,23 +203,9 @@ body {
 	background-color: #F5F5F5;
 }
 
-.button-menu-buttons,
-.chat-list-wrap .input-group{
+.button-menu-buttons {
 	float: right;
 	padding: 0px;
-}
-
-.chat-list-wrap .input-group > input{
-	width: 100%;
-}
-
-.button-menu-buttons .chat-open{
-	position: relative;
-}
-
-.chat-input {
-	resize: none;
-	max-height: 10em;
 }
 
 .button-menu-buttons .badge{
@@ -152,13 +232,13 @@ body {
 }
 
 .detached-elements .alert-wrapper{
-	z-index:1003;
+	z-index:1053;
 }
 
 /* Fancy Loading (by mrfrase3 :P) */
 
 .fancy-loading{
-text-align: center;
+	text-align: center;
 }
 
 .fancy-loading .loading-block{
@@ -175,6 +255,40 @@ text-align: center;
 .fancy-loading .loading-block > div{
 	height: 20px;
 	display: inline-block;
+}
+
+.fancy-loading .loading-block.lb1 .loading-block-divide {
+	animation: fancychop 3.2s infinite;
+	-webkit-animation: fancychop 3.2s infinite;
+}
+
+.fancy-loading .loading-block.lb2 .loading-block-divide {
+	animation: fancychop 3.2s 0.3s infinite;
+	-webkit-animation: fancychop 3.2s 0.3s infinite;
+}
+
+.fancy-loading .loading-block.lb3 .loading-block-divide {
+	animation: fancychop 3.2s 0.6s infinite;
+	-webkit-animation: fancychop 3.2s 0.6s infinite;
+}
+
+.fancy-loading .loading-block.lb4 .loading-block-divide {
+	animation: fancychop 3.2s 0.9s infinite;
+	-webkit-animation: fancychop 3.2s 0.9s infinite;
+}
+
+@keyframes fancychop {
+    0% {width: 0px;}
+    9.375% {width: 10px;}
+    37.5% {width: 10px;}
+    53.125% {width: 0px;}
+}
+
+@-webkit-keyframes fancychop {
+    0% {width: 0px;}
+    9.375% {width: 10px;}
+    37.5% {width: 10px;}
+    53.125% {width: 0px;}
 }
 
 /* Homepage style */
@@ -279,6 +393,49 @@ p.title {
 
 #ninja-img-home {
 	float: right;
+}
+
+/* name selection */
+
+input.animal-radio {
+	position: absolute;
+	opacity: 0;
+	z-index: -1;
+}
+
+.animal-label {
+    min-height: 6.5em;
+	position: relative;
+    z-index: 1;
+	cursor: pointer;
+}
+
+.animal-highlight {
+    height: 4em;
+    width: 4em;
+    border-radius: 50%;
+    background: transparent;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: -0.5em;
+}
+
+input.animal-radio:checked ~ .animal-highlight {
+	background: #2780e3;
+}
+
+.animal-label:hover ~ .animal-highlight {
+	background: #2ea9df;
+}
+
+.profileModal {
+	text-align: center;
+}
+
+.profileModal .modal-body {
+    overflow-y: auto;
+    height: 20em;
 }
 
 /* Demo page style */

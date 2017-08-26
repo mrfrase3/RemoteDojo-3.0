@@ -32,6 +32,14 @@
 </head>
 
 <body>
+
+	<div class="detached-elements">
+		<div class="button-menu">
+    		<div class="button-menu-buttons">
+    			<div class="btn btn-warning expiry-wrap">Time Left: <span class="expiry-count-down">xx:xx</span></div>
+        	</div>
+		</div>
+	</div>
 	
 	<div class="container">
 		<div class="col-md-12 col-sm-12 top-margin">
@@ -85,6 +93,9 @@
 							</div>
 					</div>
 				</div>
+            </div>
+        </div>
+    </div>
 	
 		
     <!-- jQuery -->
@@ -105,6 +116,19 @@
         	$("#ninjaCopyTarget").val(ninjaURL);
 			$(".mode-link-mentor").attr("href", mentorURL);
 			$(".mode-link-ninja").attr("href", ninjaURL);
+        
+        	var expire = (new Date({{expire}})).getTime();
+			var expireTimer = function(){
+				var timeleft = Math.floor(( expire - Date.now() ) / 1000);
+				if(timeleft < 0) timeleft = 0;
+				var seconds = timeleft % 60;
+				if(seconds < 10) seconds = "0"+seconds;
+				var minutes = Math.floor(timeleft / 60);
+				if(minutes < 10) minutes = "0"+minutes;
+				$(".button-menu-buttons .expiry-count-down").text(minutes + ":" + seconds);
+				if(timeleft > 0) setTimeout(expireTimer, 100);
+			}
+			expireTimer();
         });
     </script>
 </body>

@@ -2,63 +2,36 @@
 <body style="height: 100%;">
 
 	<div class="heading-spacer" style="height:42px;width:100%"></div>
-	<div class="user-info-panel panel panel-primary" data-name="{{user.fullname}}" data-email="{{user.email}}" data-username="{{user.name}}" data-type="admin">
-		<div class="panel-heading">
-			<h3 class="panel-title">CoderDojo</h3>
-		</div>
-		<div class="panel-body">
-				User info: <span class="info-fullname">{{user.fullname}}</span><br>
-				Account type: Champion
-				<a href="./logout" class="col-xs-12 btn btn-default btn-sm">Logout</a>
-		</div>
-	</div>
 	<div class="container">
-		<div class="profilePanel panel panel-default">
+		<div class="col-md-3"><div class="user-info-panel panel panel-primary" data-name="{{user.fullname}}" data-email="{{user.email}}" data-username="{{user.name}}" data-type="admin">
+			<div class="panel-heading">
+				<h3 class="panel-title">CoderDojo</h3>
+			</div>
+			<div class="panel-body">
+					User info: <span class="info-fullname">{{user.fullname}}</span><br>
+					Account type: Champion
+					<a href="./logout" class="col-xs-12 btn btn-default btn-sm">Logout</a>
+			</div>
+		</div></div>
+		<div class="col-md-9"><div class="profilePanel panel panel-default">
 			<div class="panel-heading">
 				<h3 class="panel-title">Modify users</h3>
 			</div>
 			<div class="panel-body">
 				<ul class="nav nav-tabs">
-					<li class=""><a href="#admin" data-toggle="tab" aria-expanded="false">Admin</a></li>
 					<li class="active"><a href="#champion" data-toggle="tab" aria-expanded="true">Champion</a></li>
 					<li class=""><a href="#mentor" data-toggle="tab" aria-expanded="false">Mentor</a></li>
 					<li class=""><a href="#dojo" data-toggle="tab" aria-expanded="false">Dojo</a></li>
 				</ul>
 				<div class="tab-content">
-					<div class="tab-pane fade" id="admin">
-						<fieldset>
-           		 	        <div class="form-group">
-            		            <select class="admin-select user-select form-control" name="admin_list" data-id="admin">
-                                	{{#each admins}}
-										<option class="db-option" value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}">
-											{{this.fullname}}</option>
-									{{/each}}
-                                </select>
-            		        </div>
-            		    </fieldset>
-						<fieldset>
-							<div class="form-group">
-								<label for="username">Username:</label>
-								<input class="admin-input admin-username form-control" placeholder="" name="username" type="text" value="" disabled>
-							</div>
-							<div class="form-group">
-								<label for="email">Email:</label>
-								<input class="admin-input admin-email form-control" placeholder="" name="email" type="text" value="" disabled>
-							</div>
-							<div class="form-group">
-								<label for="fullname">Fullname:</label>
-								<input class="admin-input admin-fullname form-control" placeholder="" name="fullname" type="text" value="" disabled>
-							</div>
-						</fieldset>
-					</div>
 					<div class="tab-pane fade active in" id="champion">
 						<fieldset>
            		 	        <div class="form-group">
             		            <select class="champion-select user-select form-control" name="champion-list" data-id="champion">
-            		            	<option class="self" value="{{user.username}}" data-fullname="{{user.fullname}}" data-email="{{user.email}}">
+            		            	<option class="self" value="{{user.username}}" data-fullname="{{user.fullname}}" data-email="{{user.email}}" data-dojos="{{this.dojos}}" data-all-dojos="{{this.allDojos}}">
             		            			{{user.fullname}}</option>
                                 	{{#each champions}}
-										<option class="db-option" value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}">
+										<option class="db-option" value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}" data-dojos="{{this.dojos}}" data-all-dojos="{{this.allDojos}}">
 											{{this.fullname}}</option>
 									{{/each}}
                                 </select>
@@ -81,6 +54,15 @@
 								<label for="fullname">Fullname:</label>
 								<input class="champion-input champion-fullname form-control" placeholder="" name="fullname" type="text" value="">
 							</div>
+                        	<div class="form-group">
+								<label for="dojo-list">Dojos: (hold shift or ctrl to select multiple)</label>
+								<select multiple class="champion-input champion-dojos form-control" name="dojo-list" disabled>
+									<option value="all">All</option>
+                                	{{#each dojos}}
+										<option class="db-option" value="{{this.dojoname}}">{{this.name}}</option>
+									{{/each}}
+								</select>
+							</div>
 							<button class="submit-champion btn btn-lg btn-success btn-block">Submit changes</button>
 						</fieldset>
 					</div>
@@ -88,7 +70,7 @@
 						<fieldset>
            		 	        <div class="form-group">
             		            <select class="mentor-select user-select form-control" name="mentor-list" data-id="mentor">
-									<option value="" data-fullname="" data-email="" data-dojos="[]" data-all-dojos="false">
+									<option value="" data-fullname="" data-email="" data-dojos="" data-all-dojos="">
 											Add a new user</option>
                                 	{{#each mentors}}
 										<option class="db-option" value="{{this.username}}" data-fullname="{{this.fullname}}" data-email="{{this.email}}" data-dojos="{{this.dojos}}" data-all-dojos="{{this.allDojos}}">
@@ -117,7 +99,7 @@
 							<div class="form-group">
 								<label for="dojo-list">Dojos: (hold shift or ctrl to select multiple)</label>
 								<select multiple class="mentor-input mentor-dojos form-control" name="dojo-list">
-									<option value="all">All</option>
+									<option value="all" disabled>All</option>
                                 	{{#each dojos}}
 										<option class="db-option" value="{{this.dojoname}}">{{this.name}}</option>
 									{{/each}}
@@ -131,8 +113,6 @@
 						<fieldset>
            		 	        <div class="form-group">
             		            <select class="dojo-select user-select form-control" name="dojo_list" data-id="dojo">
-									<option value="" data-name="" data-email="" data-location="">
-											Add a new dojo</option>
                                 	{{#each dojos}}
 										<option class="db-option" value="{{this.dojoname}}" data-name="{{this.name}}" data-email="{{this.email}}" data-location="{{this.location}}">{{this.name}}</option>
 									{{/each}}
@@ -168,7 +148,7 @@
 			</div>
 			<div class="panel-footer">
 			</div>
-		</div>
+		</div></div>
 	</div>
 	<div class="footer-spacer"></div>
 </body>
