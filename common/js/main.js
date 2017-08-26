@@ -117,100 +117,6 @@ $(function(){
 	localVis = new AudioVis(".levels-local .progress-bar");
     remoteVis = new AudioVis(".levels-remote .progress-bar");
 
-	/*function audiovis(v, b){
-		var analyser = audioCtx.createAnalyser();
-        //drawVisual = requestAnimationFrame(draw);
-
-		source = audioCtx.createMediaElementSource(v);
-		source.connect(analyser);
-		analyser.connect(audioCtx.destination);
-
-		analyser.fftSize = 1024;
-		var bufferLength = analyser.frequencyBinCount;
-		console.log(bufferLength);
-		var dataArray = new Uint8Array(bufferLength);
-		analyser.getByteFrequencyData(dataArray);
-
-		function drawvis(v,b) {
-			//if(v.paused || v.ended) return false;
-			setTimeout(drawvis,40,v,b);
-			analyser.getByteFrequencyData(dataArray);
-			var c = 0, t = 0;
-			for(var i=0; i<bufferLength; i++){
-				if(dataArray[i] > 5){
-					t += dataArray[i];
-					c++;
-				}
-			}
-			p = 0;
-			if(c > 0) p = ((t/c)/255)*100;
-			$(b).css("width",p+"%");
-			console.log(p +' '+ b +' '+c+' '+t+' '+bufferLength);
-		}
-		drawvis(v,b);
-
-
-	}
-	audiovis(elem.local.v, ".levels-local .progress-bar");
-	audiovis(elem.remote.v, ".levels-remote .progress-bar");*/
-
-/*
-
-var audio_vis = function(au, qu){
-
-	var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-	if(!au){
-		var myAudio = document.querySelector("audio");
-	} else {
-		var myAudio = au;
-	}
-	var source;
-	var stream;
-
-	var analyser = audioCtx.createAnalyser();
-	//analyser.minDecibels = -90;
-	//analyser.maxDecibels = -10;
-	//analyser.smoothingTimeConstant = 0.85;
-
-	var drawVisual;
-
-	source = audioCtx.createMediaElementSource(myAudio);
-	source.connect(analyser);
-	analyser.connect(audioCtx.destination);
-
-	function visualize() {
-		// TODO fix visualiser
-		//if(visualSetting == "sinewave") {
-		analyser.fftSize = 512;
-		var bufferLength = analyser.fftSize;
-
-		function drawv() {
-
-			setTimeout(drawv,40,au,qu);
-			var dataArray = new Uint8Array(bufferLength);
-			analyser.getByteTimeDomainData(dataArray);
-
-			var c = 0, t = 0;
-			for(var i=0; i<bufferLength; i++){
-				if(dataArray[i] > 5){
-					t += dataArray[i];
-					c++;
-				}
-			}
-			var p = 0;
-			if(c > 0) p = ((t/c))*100;
-			$(qu).width(p+'%');
-			//console.log(p +' '+ qu +' '+c+' '+t+' '+bufferLength);
-		};
-		drawv();
-	}
-
-	visualize();
-}
-
-audio_vis(elem.local.a, '.levels-local .progress-bar');
-*/
-
 	if($(".user-info-panel").data("demo-mode")){
 		if($(".user-info-panel").data("expire")){
 			var expire = $(".user-info-panel").data("expire");
@@ -238,29 +144,9 @@ audio_vis(elem.local.a, '.levels-local .progress-bar');
 		$(".input-group .chat-input").focus();
 	});
 
-	//fancyLoading();
 });
 
-/*var fancyLoading = function(){
-	var w = $(".fancy-loading .loading-block-half").width()
-	$(".fancy-loading .loading-block.lb1 .loading-block-divide").animate({width: w+"px"}, 300, function(){
-		$(".fancy-loading .loading-block.lb2 .loading-block-divide").animate({width: w+"px"}, 300, function(){
-			$(".fancy-loading .loading-block.lb3 .loading-block-divide").animate({width: w+"px"}, 300, function(){
-				$(".fancy-loading .loading-block.lb4 .loading-block-divide").animate({width: w+"px"}, 300, function(){
-					$(".fancy-loading .loading-block.lb1 .loading-block-divide").animate({width: "0px"}, 500, function(){
-						$(".fancy-loading .loading-block.lb2 .loading-block-divide").animate({width: "0px"}, 500, function(){
-							$(".fancy-loading .loading-block.lb3 .loading-block-divide").animate({width: "0px"}, 500, function(){
-								$(".fancy-loading .loading-block.lb4 .loading-block-divide").animate({width: "0px"}, 500, function(){
-									fancyLoading();
-								});
-							});
-						});
-					});
-				});
-			});
-		});
-	});
-};*/
+
 
 // generates a html/bootstrap alert to display to the user
 var genalert = function(type, havediss, msg, timeout){
@@ -272,72 +158,3 @@ var genalert = function(type, havediss, msg, timeout){
 	return "<div id='"+eid+"' class='alert alert-"+type+" "+diss+">"+msg+"</div>";
 }
 
-// Resize text box to match content
-function resizeTextBox(o){
-	if (o.scrollHeight > 50) {
-		o.style.height = "1px";
-		o.style.height = (12 + o.scrollHeight) + "px";
-		$(o).scrollTop(o.scrollHeight);
-	}
-}
-
-$(".resizeBox").on("change keyup keypress blur", function() {
-	resizeTextBox(this);
-});
-
-/*
-// TODO Rework this function
-var videosOutOfPosition = false;
-
-var switchVideoPositions = function(){
-	videosOutOfPosition = !videosOutOfPosition;
-	var lc = $(".screen-local-canvas");
-	var rc = $(".screen-remote-canvas");
-	var lcp = lc.parent();
-	console.log(lc);
-	console.log(rc);
-	console.log(lcp);
-	rc.before(lc);
-	lcp.prepend(rc);
-};
-
-// TODO tmp function used for demonstration. Need to switch 'nina's screen' title with 'your screenshare' etc.
-$(".chat-body-stop .switch-canvas").click(switchVideoPositions);*/
-
-/*// Keybindings
-$(document).keydown(function(e) {
-	var chatInput = $(".input-group .chat-input");
-	var profileField = $(".first-modal-field");
-	if (e.which == 13) {	// if enter
-		if (profileField.is(":focus") && profileField.val().trim().length != 0) {
-			submitProfile();
-			$("#profileOverlay").modal("hide");
-			return false;
-		}
-		if (e.shiftKey || e.ctrlKey || !live) return false; // continue if not in chat or additional keys held.
-		if (chatInput.is(":focus")) {
-			if (chatInput.val().trim().length != 0) {
-				// if the chat has focus and isn"t empty, send the message
-				rtcSendMessage();
-				return false; // return false prevents default actions
-			} else {
-				// if the chat is empty, enter hides the chat
-				chatInput.val("");
-				$(".button-menu .chat-list-wrap").toggle(false);
-				chatInput.blur();
-				return false;
-			}
-		} else if (!($("input").is(":focus") || $("button").is(":focus"))) {
-			// if no inputs or modals are shown, show the chat
-			$(".button-menu .chat-list-wrap").toggle(true);
-			chatInput.focus();
-			return false;
-		}
-	} else if (e.which == 27) { // if esc
-		// hide the chat if chat has focus, and blurs the active element
-		if (chatInput.is(":focus")) {
-			$(".button-menu .chat-list-wrap").toggle(false);
-		}
-		document.activeElement.blur();
-	}
-});*/

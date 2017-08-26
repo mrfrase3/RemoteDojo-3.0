@@ -2,9 +2,9 @@ var peerconn;
 var rtcStreams = {local: {a:null,v:null}, remote:{a:null,v:null}};
 var isofferer = false;
 var iceservers = [{
-	url: 'turn:turn.anyfirewall.com:443?transport=tcp',
-	credential: 'webrtc',
-	username: 'webrtc'
+	urls: ['turn:numb.viagenie.ca'],
+	credential: 'muazkh',
+	username: 'webrtc@live.com'
 }];
 var negotiating; // Chrome workaround
 
@@ -16,8 +16,9 @@ var offerOptions = {
 
 class RTCDataEventHandler {
     constructor () {
-        this.datachan;
+        this.datachan = null;
         this.events = {};
+    	socket.on("rtc.datafallback", (e,a) => this.trigger.call(this,e,a));
     }
 
 	init (datachan) {
@@ -26,10 +27,16 @@ class RTCDataEventHandler {
         	var msg = JSON.parse(e.data);
         	this.trigger(msg.e, msg.a);
         };
+        console.log("datachannel setup init");
 		this.datachan.onopen = () => {
+        	console.log("datachannel opened");
 			this.trigger('connect');
 		};
+    	this.datachan.onerror = (e) => {
+			console.error(e);
+		};
 		this.datachan.onclose = () => {
+        	console.log("datachannel closed");
 			this.trigger('disconnect');
 			this.datachan = null; // TODO This may be unnecessary.
 		};
@@ -76,11 +83,12 @@ class RTCDataEventHandler {
 	emit(){
     	var a = Array.from(arguments);
     	var e = a.shift();
-    	this.datachan.send(JSON.stringify({e, a}));
+    	if(this.datachan && this.datachan.readyState != "closed") this.datachan.send(JSON.stringify({e, a}));
+    	else socket.emit("rtc.datafallback", e, a);
     }
 }
 
-var RTCData = new RTCDataEventHandler();
+var RTC_Data = new RTCDataEventHandler();
 
 var rtcCursorRX;
 var rtcCursorRY;
@@ -116,12 +124,15 @@ var onRemoteStream = function(e){
 
 var onRemoteTrack = function(e){
 	console.log(e);
-	$('.dump '+e.track.kind+'.dump-remote').get(0).srcObject = e.streams[0];
+	let stream = e.streams[0];
+	if(rtcStreams.local.a == stream || rtcStreams.local.v == stream) return;
+	onRemoteStream({stream});
+	/*$('.dump '+e.track.kind+'.dump-remote').get(0).srcObject = e.streams[0];
 	rtcStreams.remote.push(e.streams[0]);
-	//$('.dump video.dump-remote').get(0).play();
+	//$('.dump video.dump-remote').get(0).play();*/
 };
 
-var replaceLocalTracks = function(oldtracks, newtracks){
+/*var replaceLocalTracks = function(oldtracks, newtracks){
 	if(newtracks.length > 0){
 		for(var i = 0; i < oldtracks.length; i++){
 			rtcStreams.local.removeTrack(oldtracks[i]);
@@ -145,26 +156,30 @@ var onLocalTrack = function(type){
 		//$(".dump video.dump-local").get(0).play();
 		$(".screen-local-box").show();
 	}
-};
+};*/
 
 var onLocalStream = function(stream, type){
-	if(stream.getAudioTracks().length > 0){
-		if(rtcStreams.local.a) peerconn.removeStream(rtcStreams.local.a);
-		rtcStreams.local.a = stream;
+	let ats = stream.getAudioTracks();
+	let vts = stream.getVideoTracks();
+	if(ats.length > 0){
+		if(rtcStreams.local.a_sender) peerconn.removeTrack(rtcStreams.local.a_sender);
+    	rtcStreams.local.a = stream;
+    	rtcStreams.local.a_sender = peerconn.addTrack(ats[0], stream);
     	if(localVis) localVis.start(stream);
 		$('.dump audio.dump-local').get(0).srcObject = stream;
-	} else if(stream.getVideoTracks().length > 0){
-		if(rtcStreams.local.v) peerconn.removeStream(rtcStreams.local.v);
+	} else if(vts.length > 0){
+		if(rtcStreams.local.v_sender) peerconn.removeTrack(rtcStreams.local.v_sender);
 		rtcStreams.local.v = stream;
+    	rtcStreams.local.v_sender = peerconn.addTrack(vts[0], stream);
 		$('.dump video.dump-local').get(0).srcObject = stream;
 	} else return;
-	peerconn.addStream(stream);
+	//peerconn.addStream(stream);
 	$(".screen-local-box").show();
 	if(type){
     	$('.workarea .nav-tabs .tab-local-screen, .workarea .nav-tabs .tab-local-webcam').hide();
     	$('.workarea .nav-tabs .tab-local-'+type).show();
     	$('.workarea .nav-tabs .tab-local-'+type+' a').click();
-    	RTCData.emit('tabs.show', 'remote-'+type);
+    	RTC_Data.emit('tabs.show', 'remote-'+type);
     }
 };
 
@@ -259,7 +274,7 @@ var newTab = (title, id, focus=true, closable=true, remote=false) => {
 		while($('#'+id+'-'+i).length > 0) i++;
     	id = id+'-'+i;
     	title = title + ' ' + i;
-    	RTCData.emit('tabs.new', title, id, focus, closable, true);
+    	RTC_Data.emit('tabs.new', title, id, focus, closable, true);
     }
 	if(closable) closable = ' <i class="fa fa-times"></i>'
 	$('.workarea .nav-tabs .dropdown').before('<li class="tab-'+id+' titlecaps"><a href="#'+id+'" data-toggle="tab">'+title+closable+'</a></li>');
@@ -277,35 +292,35 @@ var destroyTab = (id, remote=false) => {
     }
 	$('.workarea .nav-tabs .tab-'+id).remove();
 	$('.workarea .tab-content #'+id).remove();
-	if(!remote) RTCData.emit('tabs.destroy', id, true);
+	if(!remote) RTC_Data.emit('tabs.destroy', id, true);
 }
 
 $(function(){
 
 	
-	RTCData.on('cursor.coords', updateCoords);
-	RTCData.on('tabs.show', tab => {
+	RTC_Data.on('cursor.coords', updateCoords);
+	RTC_Data.on('tabs.show', tab => {
 		if(tab === "remote-screen" || tab === "remote-webcam") $('.workarea .nav-tabs .tab-remote-screen, .workarea .nav-tabs .tab-remote-webcam').hide();
 		$('.workarea .nav-tabs .tab-'+tab).show();
 		$('.workarea .nav-tabs .tab-'+tab+' a').click();
 	});
-	RTCData.on('tabs.hide', tab => {
+	RTC_Data.on('tabs.hide', tab => {
 		if($('.workarea .nav-tabs .tab-'+tab).hasClass('active')){
         	$('.workarea .nav-tabs .tab-chat a').click();
         }
 		$('.workarea .nav-tabs .tab-'+tab).hide();
 	});
 
-	RTCData.on('tabs.focus', tab => {
+	RTC_Data.on('tabs.focus', tab => {
         $('.workarea .nav-tabs .tab-'+tab+' a').click();
 	});
-	RTCData.on('tabs.new', newTab);
-	RTCData.on('tabs.destroy', destroyTab);
+	RTC_Data.on('tabs.new', newTab);
+	RTC_Data.on('tabs.destroy', destroyTab);
 
-	RTCData.on("name.change", name => $(".remote-name").text(name));
+	RTC_Data.on("name.change", name => $(".remote-name").text(name));
 
-	RTCData.on("connect", ()=>{
-    	RTCData.emit("name.change", $(".user-info-panel .info-fullname").text());
+	RTC_Data.on("connect", ()=>{
+    	RTC_Data.emit("name.change", $(".user-info-panel .info-fullname").text());
     });
 
 	$(".screen-local-start").click(function(){
@@ -326,8 +341,8 @@ $(function(){
         	setTimeout(()=>$('.workarea .nav-tabs .tab-chat a').click(), 100);
         }
     	$('.workarea .nav-tabs .tab-local-screen, .workarea .nav-tabs .tab-local-webcam').hide();
-    	RTCData.emit('tabs.hide', 'remote-screen');
-    	RTCData.emit('tabs.hide', 'remote-webcam');
+    	RTC_Data.emit('tabs.hide', 'remote-screen');
+    	RTC_Data.emit('tabs.hide', 'remote-webcam');
     	stopStream(rtcStreams.local.v, $(".dump video.dump-local").get(0));
     });
 
@@ -346,9 +361,10 @@ $(function(){
 		} catch(e){
 			alert("Cannot get ice server list: not json, contact an admin.");
 		}
-		for(var i = 0; i < servers.length; i++){
-			iceservers.push({url:"stun:"+servers[i]});
-		}
+    	iceservers.push({urls:["stun:"+servers[0]]});
+		//for(var i = 0; i < servers.length && i < 1; i++){
+		//	iceservers.push({url:"stun:"+servers[i]});
+		//}
 	}).fail(function(){
 		alert("Cannot get ice server list: invalid link, contact an admin.");
 	});
@@ -374,9 +390,9 @@ var stopRTC = function(){
 	stopStream(rtcStreams.local.v, $(".dump video.dump-local").get(0));
 	stopStream(rtcStreams.remote.a, $(".dump audio.dump-remote").get(0));
 	stopStream(rtcStreams.remote.v, $(".dump video.dump-remote").get(0));
-	if(RTCData.datachan){
-		//RTCData.trigger("disconnect");
-    	RTCData.datachan.close();
+	if(RTC_Data.datachan){
+		//RTC_Data.trigger("disconnect");
+    	RTC_Data.datachan.close();
     }
 	//dataChannel = null;
 	rtcStreams = {local: {a:null,v:null}, remote:{a:null,v:null}};
@@ -397,7 +413,8 @@ var startRTC = function(offer){
 	};
 	peerconn = new RTCPeerConnection(pcConfig, pcConstraints);
 	peerconn.onicecandidate = iceCallback;
-	peerconn.onaddstream = onRemoteStream;
+	//peerconn.onaddstream = onRemoteStream;
+	peerconn.ontrack = onRemoteTrack;
 	peerconn.onconnectionstatechange = function(){
 		console.log("New RTC connection state: " + peerconn.connectionState);
 	};
@@ -410,25 +427,26 @@ var startRTC = function(offer){
 	};
 	isofferer = offer;
 	if(isofferer) {
-		negotiateRTC();
+		
 		var dataConstraints = {
 			ordered: false, // TODO consider two channels for TCP/UDP
-			maxRetransmitTime: 1000 // milliseconds TODO find a suitable limit, if any at all is required.
+			maxPacketLifeTime: 1000 // milliseconds TODO find a suitable limit, if any at all is required.
 		};
 		//dataChannel = peerconn.createDataChannel('dataChannel', dataConstraints);
 		//setDataChannelListeners();
-    	RTCData.init(peerconn.createDataChannel('dataChannel', dataConstraints))
+    	RTC_Data.init(peerconn.createDataChannel('dataChannel', dataConstraints));
+    	negotiateRTC();
 	} else {
 		//peerconn.ondatachannel = onRemoteDataChannel;
     	peerconn.ondatachannel = e => {
-        	if(e.channel) RTCData.init(e.channel);
+        	if(e.channel) RTC_Data.init(e.channel);
         }
 	}
 }
 
 // Send coordinates of the user's cursor if within the remote canvas element
 $(document).mousemove(function(event) {
-	if (!RTCData.datachan || !rtcStreams.remote.v) return;
+	if (!RTC_Data.datachan || !rtcStreams.remote.v) return;
 	// Send coord update if enough time has passed
 	var currTime = Date.now();
 	if (lastCursorUpdate &&  currTime - lastCursorUpdate < cursorUpdateInterval) return;
@@ -451,7 +469,7 @@ $(document).mousemove(function(event) {
 		lastCursorInCanvas = true;
 	}
 	// Create message
-	RTCData.emit('cursor.coords', {rx,ry});
+	RTC_Data.emit('cursor.coords', {rx,ry});
 	//e = JSON.stringify(e);
 	//console.log("sending message: " + e);
 	//dataChannel.send(e);

@@ -55,10 +55,10 @@ body {
 
 .detached-elements .button-menu{
 	bottom: 0px;
-	width: 100%;
+	right: 0px;
 	z-index: 1000;
 	padding-top: 10px;
-	background-color: white;
+	/*background-color: white;*/
 	max-height: 400px;
 }
 
@@ -77,22 +77,27 @@ body {
 
 .chat-list-wrap .chat-list{
 	max-height: 27em;
-	overflow-y: scroll;
+	overflow-y: auto;
 	white-space: pre;
 	padding: 0;
 	position: absolute;
     width: 100%;
+	list-style: none;
 }
 
 .chat-list-wrap .chat-list li div{
     max-width: 70%;
-    padding: 0.5em 1em;
+    padding: 0.8em 1em;
     position: relative;
     border-radius: 0.5em;
     display: inline-block;
 	word-break: break-word;
     white-space: normal;
 	text-align: left;
+}
+
+.chat-list-wrap .chat-list li div p{
+	margin: 0;
 }
 
 .chat-list-wrap .chat-list li {

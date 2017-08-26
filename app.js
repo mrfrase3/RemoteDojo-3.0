@@ -873,6 +873,13 @@ users.findByUsername(socket.user, (err, user) =>{
 			socket.broadcast.to(stok).emit("rtc.iceCandidate", candidate);
 		}
 	});
+	socket.on("rtc.datafallback", function(e, a){
+		var stok = nmsessions_getuser(socket.user);
+		if( stok && nmsessions[stok].mentor){
+			if(user.roll == "mentor") nmsessions[stok].ninja.emit("rtc.datafallback", e, a);
+			if(user.roll == "ninja") nmsessions[stok].mentor.emit("rtc.datafallback", e, a);
+		}
+	});
 
 	socket.on("general.template", function(data){ //socket call to request a rendered template (used for dynamic forms in another project)(not yet fully implemented)
 		data.fill = data.fill || {};
