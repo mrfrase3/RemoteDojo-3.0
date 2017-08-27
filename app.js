@@ -126,8 +126,9 @@ function genalert(type, diss, msg){
 
 // Mongo Stuff
 
-var mongouri = `mongodb://${config.database.mongo.user}:${config.database.mongo.password}`
-    +`@${config.database.mongo.host}:${config.database.mongo.port}/${config.database.mongo.name}`;
+var mongoauth = `mongodb://${config.database.mongo.user}:${config.database.mongo.password}@`;
+if(mongoauth == 'mongodb://:@') mongoauth = 'mongodb://'
+var mongouri = mongoauth + `${config.database.mongo.host}:${config.database.mongo.port}/${config.database.mongo.name}`;
 
 // Setup express modules/settings/renderer
 
