@@ -1,5 +1,5 @@
 {
-	"runInDemoMode" : false,
+	"runInDemoMode" : true,
 	"demoDuration"  : 1800000,
 	"sessionSecret" : "61_R*9P9RR;FM9_p!*18S!P0g2!SG93E26!%mjtw;S-052-8O2^77;I:17MK-_;PM6-ZN9=jeaP5~4ae765:256_676Z=3_r",
 	"server": {
