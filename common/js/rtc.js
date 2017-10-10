@@ -2,9 +2,11 @@ var peerconn;
 var rtcStreams = {local: {a:null,v:null}, remote:{a:null,v:null}};
 var isofferer = false;
 var iceservers = [{
-	urls: ['turn:numb.viagenie.ca'],
-	credential: 'muazkh',
-	username: 'webrtc@live.com'
+	urls: ['stun:ice.coderdojo.chat', 'turn:ice.coderdojo.chat'],
+	credential: 'superstrongpassword',
+	username: 'coderdojo'
+},{
+	urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302']
 }];
 var negotiating; // Chrome workaround
 
@@ -351,22 +353,6 @@ $(function(){
 			audio: false,
 			video: true
 		}).then(s => onLocalStream(s, 'webcam')).catch(console.error);
-	});
-
-	$.get("./common/stun.json", function(data){
-		var servers = [];
-		try{
-			if(data instanceof Array) servers = data;
-			else servers = JSON.parse(data);
-		} catch(e){
-			alert("Cannot get ice server list: not json, contact an admin.");
-		}
-    	iceservers.push({urls:["stun:"+servers[0]]});
-		//for(var i = 0; i < servers.length && i < 1; i++){
-		//	iceservers.push({url:"stun:"+servers[i]});
-		//}
-	}).fail(function(){
-		alert("Cannot get ice server list: invalid link, contact an admin.");
 	});
 });
 
