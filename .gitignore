@@ -49,3 +49,7 @@ certs/*.crt
 certs/*.csr
 
 .ftpconfig
+
+.idea/
+
+config.json

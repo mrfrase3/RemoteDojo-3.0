@@ -1,42 +1,45 @@
 // initiate packages
-var path = require("path");
-var fs = require("fs");
-var express = require("express");
-var session = require("express-session");
+//const path = require("path");
+const fs = require("fs");
+const express = require("express");
+const session = require("express-session");
 const MongoStore = require('connect-mongo')(session);
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
-var app = express();
+const app = express();
 // get the SSL keys, change to location of your certificates
 // TODO replace SSL keys system with letsencrypt
 //var keys = {key: fs.readFileSync("certs/server.key", "utf8"), cert: fs.readFileSync("certs/server.crt", "utf8")};
 //var server = require("https").createServer(keys, app);
-var server;
-var redirectServer;
-var port;
+let server;
+let redirectServer;
+let port;
 //var io = require("socket.io")(server);
-var bodyParser = require("body-parser");
-var helmet = require("helmet");
-var crypto = require("crypto");
-var config = require("./config.json");
+const bodyParser = require("body-parser");
+const helmet = require("helmet");
+const crypto = require("crypto");
+const config = require("./config.json");
 
 
 const users = mongoose.model('user', require("./lib/user.schema.js"));
 const dojos = mongoose.model('dojo', require("./lib/dojo.schema.js"));
-var ipaddresses = [];
+let ipaddresses = [];
 
 //load in the renderer, handlebars, and then load in the html templates
-//html templates are stored in the resources folder.
-var hb = require("handlebars");
-var getTemp = function(file){return hb.compile(fs.readFileSync("./resources/" + file + ".html") + "<div></div>", {noEscape: true});};
-var templates = {404: getTemp("404"), demo_landing: getTemp("demo-landing"), head: getTemp("head"), foot: getTemp("foot"), adminhead: getTemp("adminhead"),
+//html templates are stored in the views folder.
+const hb = require("handlebars");
+const exphbs  = require('express-handlebars');
+
+//var getTemp = function(file){return hb.compile(fs.readFileSync("./views/" + file + ".html") + "<div></div>", {noEscape: true});};
+/*var templates = {404: getTemp("404"), demo_landing: getTemp("demo-landing"), head: getTemp("head"), foot: getTemp("foot"), adminhead: getTemp("adminhead"),
 								ninja: getTemp("ninja"), mentor: getTemp("mentor"), champion: getTemp("champion"), admin: getTemp("admin"),
 								login: getTemp("login"), demo: getTemp("demo")};
+*/
 
-var mentorstats = {}; //keeps track of mentor statuses which are displayed to
+let mentorstats = {}; //keeps track of mentor statuses which are displayed to
 
 if(config.server.https.enabled){
-    var keys = {
+    let keys = {
         key: fs.readFileSync(config.server.https.key || "certs/key.pem", "utf8"), 
         cert: fs.readFileSync(config.server.https.cert || "certs/cert.pem", "utf8")
     };
@@ -44,7 +47,7 @@ if(config.server.https.enabled){
     if(config.server.http.enabled){
         redirectServer = require('http').createServer( function(req, res){
             let report = ':' + (config.server.https.port || 4000);
-            if(report == ':443') report = '';
+            if(report === ':443') report = '';
             let host = (req.headers.host || config.server.https.host).split(':')[0];
             res.writeHead(302,
                 {Location: 'https://'+host+report+req.url}
@@ -66,7 +69,7 @@ if(config.server.https.enabled){
     server = require('http').Server(app);
     port = (config.server.http.port || 4001);
 }
-io = require('socket.io')(server);
+const io = require('socket.io')(server);
 
 
 // user rolls structure:
@@ -76,7 +79,7 @@ io = require('socket.io')(server);
 //This will check the ip address of the clients. If they are not able to connect
 //it will return false and if they are able to connect it will return true
 //Verify the return value and then establish the connection
-var ipverification = function(ipaddress, maxtoday) {
+/*var ipverification = function(ipaddress, maxtoday) {
 	var today = new Date();
 	var dd = today.getDate();
 	var testip = {
@@ -97,38 +100,41 @@ var ipverification = function(ipaddress, maxtoday) {
 		ipaddresses[index].count = ipaddresses[index].count + 1;
 		return true;
 	}
-};
+};*/
 
 // token generator, pretty random, but can be replaced if someone has something stronger
-var token = function(length=256) {
+const token = function(length=256) {
 	return crypto.randomBytes(length).toString('hex');
 };
 
 // gets mongoose errors
-var geterrs = (errors) => {
-	var msgs = {};
-	for(var i in errors) msgs[i] = errors[i].message;
+const geterrs = (errors) => {
+	let msgs = {};
+	for(let i in errors) msgs[i] = errors[i].message;
 	return msgs;
-}
+};
 
-var getvalues = (obj) =>{
-	var vals = [];
+const getvalues = (obj) =>{
+	let vals = [];
 	for(let i in obj) vals.push(obj[i]);
 	return vals;
-}
+};
 
 // generates a html/bootstrap alert to display to the user, should be used to parse a message to the client side
+const genalert_template = hb.compile(
+    "<div id='{{eid}}' class='alert alert-{{type}} {{#if diss}}alert-dismissable{{/if}}'>" +
+    "{{#if diss}}<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>×</button>{{/if}}" +
+    "{{msg}}</div>"
+);
 function genalert(type, diss, msg){
-	if(diss) diss = "alert-dismissable'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>×</button";
-	else diss = "'";
-	return "<div class='alert alert-"+type+" "+diss+">"+msg+"</div>";
+	return genalert_template({type, diss, msg});
 }
 
 // Mongo Stuff
 
-var mongoauth = `mongodb://${config.database.mongo.user}:${config.database.mongo.password}@`;
-if(mongoauth == 'mongodb://:@') mongoauth = 'mongodb://'
-var mongouri = mongoauth + `${config.database.mongo.host}:${config.database.mongo.port}/${config.database.mongo.name}`;
+let mongoauth = `mongodb://${config.database.mongo.user}:${config.database.mongo.password}@`;
+if(mongoauth === 'mongodb://:@') mongoauth = 'mongodb://';
+const mongouri = mongoauth + `${config.database.mongo.host}:${config.database.mongo.port}/${config.database.mongo.name}`;
 
 // Setup express modules/settings/renderer
 
@@ -149,6 +155,9 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.set("trust proxy", 1); // trust first proxy
 
+app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+app.set('view engine', 'handlebars');
+
 app.use("/common", express.static( __dirname + "/common" ));
 
 // socket authentication, a post or get request on /sockauth will return a socket authentication token
@@ -159,7 +168,7 @@ app.use("/sockauth", function(req, res){
 	let reject = err => {
     	console.error(err);
     	res.json({err: "Unknown Error", success: false});
-    }
+    };
 	users.loadUser( req, dojos, config.runInDemoMode ).catch(reject).then(([user, msg])=>{
     	if(!user) return res.json({err: msg || "Not Logged in", success: false});
     	user.genToken('sockauth', Date.now() + 5*60*60*1000).catch(reject).then(token=>{
@@ -196,10 +205,10 @@ app.use("/", function(req, res){
 	let reject = err => {
     	console.error(err);
     	res.sendStatus(500);
-    }
+    };
 
-	var fill = {js: " ", css: " ", feedback: config.feedbackLink, animals: users.animals}; //fill, the object passed to the renderer, custom js and css files can be added based on circumstance
-	var uid, user;
+	let fill = {js: " ", css: " ", feedback: config.feedbackLink, animals: users.animals, isLoggedIn: false}; //fill, the object passed to the renderer, custom js and css files can be added based on circumstance
+	let uid, user;
 	if(req.path.indexOf("common/") !== -1){
 		return; //fixes an error
 	}
@@ -209,18 +218,18 @@ app.use("/", function(req, res){
 	}
 	// helper function, renders the templates and compiles them
 	// normally a file is renered as header + body + foot, except the login page due to its simplicity
-	var renderfile = function(f){
+	/*var renderfile = function(f){
 		fill.permhead = "";
 		if (!uid) {
         	dojos.find().catch(reject).then(all_dojos =>{
 				fill.dojos = all_dojos; //this is the list of dojos shown to ninjas on the login page
 				res.send(templates[f](fill, {noEscape: true}));
             });
-		} else if(user.roll == "ninja" || user.roll == "mentor"){
+		} else if(user.roll === "ninja" || user.roll === "mentor"){
 			fill.head = templates.head(fill, {noEscape: true});
 			fill.foot = templates.foot(fill, {noEscape: true});
 			res.send(templates[f](fill, {noEscape: true}));
-		} else if (user.roll == "champion" || user.roll == "admin") {
+		} else if (user.roll === "champion" || user.roll === "admin") {
 			fill.admins = []; //this is the list of admins
 			fill.champions = []; //this is the list of champions
 			fill.mentors = []; //this is the list of mentors
@@ -232,14 +241,15 @@ app.use("/", function(req, res){
 
 			res.send(templates[f](fill, {noEscape: true}));
 		}
-	};
+	};*/
 
 
 	users.loadUser( req, dojos, config.runInDemoMode, removeUser ).catch(reject).then(([loaded_user, msg])=>{
     if(!loaded_user){
     	if(msg) fill.msg = genalert("danger", true, msg);
     	if(config.runInDemoMode){
-        	if(req.method == "POST"){
+    		fill.isDemoLanding = true;
+        	if(req.method === "POST"){
             	let expire = Date.now() + (config.demoDuration || 200000);
             	dojos.tempDojo(expire).catch(reject).then((temp_dojo) =>{
             		users.tempUser(temp_dojo.dojoname, "ninja", expire, true).catch(reject).then(([temp_ninja, temp_ninja_token]) =>{
@@ -247,7 +257,7 @@ app.use("/", function(req, res){
             				fill.mentor = "/?u=" + temp_mentor.username + "&a=" + temp_mentor_token;
 							fill.ninja = "/?u=" + temp_ninja.username + "&a=" + temp_ninja_token;
                         	fill.expire = temp_mentor.expire.getTime();
-							renderfile("demo");
+                            res.render("demo", fill);
                         	setTimeout(removeUser, temp_mentor.expire.getTime() - Date.now(), temp_mentor.username);
                         	setTimeout(removeUser, temp_ninja.expire.getTime() - Date.now(), temp_ninja.username);
                         	setTimeout(removeDojo, temp_dojo.expire.getTime() - Date.now(), temp_dojo.dojoname);
@@ -256,64 +266,55 @@ app.use("/", function(req, res){
                 });
             	return;
             }
-        	else return renderfile("demo_landing");
+        	else return res.render("demo_landing", fill);
     	}
-    	return renderfile("login");
+        dojos.find().catch(reject).then(all_dojos => {
+            fill.dojos = all_dojos; //this is the list of dojos shown to ninjas on the login page
+            res.render("login", fill);
+        });
+    	return;
     }
     user = loaded_user;
     uid = user.username;
+    fill.isLoggedIn = true;
 
 	// Login end
 	// From here it is assumed the user is authenticated and logged in (either as a user or temp user)
 	fill.user = {username: user.username, fullname: user.fullname, email: user.email, expire: " ", demomode: " ", lastname: user.lastname, firstname: user.firstname}; //give some user info to the renderer, as well as common js files
 	if(user.expire > -1) fill.user.expire = " data-expire=\"" + user.expire + "\" ";
 	if(config.runInDemoMode) fill.user.demomode = " data-demo-mode=\"true\" ";
-	fill.js += "<script src=\"https://webrtc.github.io/adapter/adapter-latest.js\"></script>"+
-		"<script src=\"https://cdn.webrtc-experiment.com/getScreenId.js\"></script>"+
-		"<script src=\"./common/js/socks-general.js\"></script>";
-	if(user.roll == "ninja"){ //if the user is a ninja
+	if(user.roll === "ninja"){ //if the user is a ninja
 		let dojo = user.dojos[0];
 		fill.mentors = [];
     	users.find({roll: 'mentor', $or: [ {allDojos: true}, {dojos: {$in: [dojo]}} ] }).catch(reject).then(mentors=>{ //the mentors that belong to the ninja's dojo
-			for(var i=0; i < mentors.length; i++){ //find all
+			for(let i=0; i < mentors.length; i++){ //find all
             	let u = mentors[i];
 				let status = mentorstats[u.username] || "offline"; //and get their status
 				let labels = {offline: "default", available: "success", busy: "warning"};
 				fill.mentors.push({username: u.username, fullname: u.fullname, status: status, label: labels[status]}); //and pass this status list to the renderer
 			}
 			//add the ninja based js files, render the file and give it to the user
-			fill.js += '<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.7.2/showdown.min.js"></script>' +
-            	'<script src="./common/js/rtc.js"></script>' +
-            	'<script src="./common/js/ninja.js"></script>' +
-            	'<script src=\"./common/js/socks-ninja.js"></script>' +
-            	'<script src="./common/js/main.js"></script>' +
-            	'<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.8/ace.js" integrity="sha256-198+Grx89n2ofVwo1LWnNTXxIQZIPZJURv+K73cJ93U=" crossorigin="anonymous"></script>' +
-        		'<script src="./common/js/editor.js"></script>' +
-        		'<script src="./common/js/chat.js"></script>';
-			return renderfile("ninja");
+			fill.isNinja = true;
+			res.render("ninja", fill);
         });
     	return;
-	} else if(user.roll == "mentor"){ //if the user is a mentor
+	} else if(user.roll === "mentor"){ //if the user is a mentor
 			//add the mentor based js files, render the file and give it to the user
-		fill.js += '<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.7.2/showdown.min.js"></script>' +
-        	'<script src="./common/js/rtc.js"></script>' +
-            '<script src="./common/js/mentor.js"></script>' +
-            '<script src="./common/js/socks-mentor.js"></script>' +
-            '<script src="./common/js/main.js"></script>' +
-    		'<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.8/ace.js" integrity="sha256-198+Grx89n2ofVwo1LWnNTXxIQZIPZJURv+K73cJ93U=" crossorigin="anonymous"></script>' +
-        	'<script src="./common/js/editor.js"></script>' +
-        	'<script src="./common/js/chat.js"></script>';
-		return renderfile("mentor");
-	} else if(user.roll == "champion"){ //if the user is a champion
-		fill.js += "<script src=\"./common/js/socks-champion.js\"></script>";
-		return renderfile("champion");
-	} else if(user.roll == "admin"){ //if the user is a admin
-		fill.js += "<script src=\"./common/js/socks-admin.js\"></script>";
-		return renderfile("admin");
+		fill.isMentor = true;
+		res.render("mentor", fill);
+		return;
+	} else if(user.roll === "champion"){ //if the user is a champion
+		fill.isChampion = true;
+		res.render("champion", fill);
+		return;
+	} else if(user.roll === "admin"){ //if the user is a admin
+		fill.isAdmin = true;
+		res.render("admin", fill);
+		return;
 	}
 
-    console.log(user);
-	renderfile("404"); //this shouldn't have to run
+    console.error(user);
+	res.render("404", fill); //this shouldn't have to run
 });});
 // End of main express processing
 
@@ -323,83 +324,83 @@ app.use("/", function(req, res){
 // takes the unauthorised socket and a callback
 // if the socket becomes authorised, the callback with the authorised socket is called
 // More info on socket auth: https://auth0.com/blog/auth-with-socket-io/
-var socketValidate = function(socket, cb, nodupe, ns){
-	var reject = ([err, msg]) =>{
+const socketValidate = function(socket, cb, nodupe, ns){
+	let reject = ([err, msg]) =>{
     	if(err) console.error(err);
         socket.emit("general.disconnect", msg || "Unknown Error");
         socket.emit("sockauth.invalid");
 		socket.disconnect(true);
-    }
+    };
 
-	if(!ns) ns = "/"
+	if(!ns) ns = "/";
 	socket.authorised = false;
 
 	socket.emit("sockauth.request");//initiate the authentication process
 
 	socket.once("sockauth.validate", function(data){ //when the client responds with a auth token, validate it with the user session
-    users.findByUsername(data.usr, (err, user) =>{
-    	if(err) return reject([err]);
-    	if(!user) return reject([null, "Unknown user."]);
-    	user.useToken("sockauth", data.token).catch(reject).then( valid =>{
-        if(!valid) return reject([null, "Invalid authorisation details."]);
-        	if(nodupe){
-        		for(let s in io.of(ns).connected){
-					if(io.of(ns).connected[s].user && io.of(ns).connected[s].user == data.usr){
-                		if(!socket.other) socket.other = [];
-        				socket.other.push( io.of(ns).connected[s]);
+		users.findByUsername(data.usr, (err, user) =>{
+			if(err) return reject([err]);
+			if(!user) return reject([null, "Unknown user."]);
+			user.useToken("sockauth", data.token).catch(reject).then( valid =>{
+			if(!valid) return reject([null, "Invalid authorisation details."]);
+				if(nodupe){
+					for(let s in io.of(ns).connected){
+						if(io.of(ns).connected[s].user && io.of(ns).connected[s].user === data.usr){
+							if(!socket.other) socket.other = [];
+							socket.other.push( io.of(ns).connected[s]);
+						}
 					}
 				}
-            }
-        	socket.user = data.usr;
-        	if(socket.other){
-               	socket.once("sockauth.dupeResolution", function(r){
-                   	if(r && socket.other){
-                       	for(let i = 0; i < socket.other.length; i++){
-            	           	socket.other[i].emit("general.disconnect", "A newer duplicate session has kicked this session.");
-                            socket.other[i].disconnect();
-                        }
-                    	socket.other = null;
-                    	socket.authorised = true;
-						cb(socket); // call the callback, passing the now authorised socket
-						socket.emit("sockauth.valid");
-                    } else {
-            	       	socket.emit("general.disconnect", "An older duplicate session has kicked this session.");
-                        socket.disconnect();
-                    }
-                });
-            	socket.emit("sockauth.dupeConflict");
-            } else {
-				socket.authorised = true;
-				cb(socket); // call the callback, passing the now authorised socket
-				socket.emit("sockauth.valid");
-            }
-			user.save();
+				socket.user = data.usr;
+				if(socket.other){
+					socket.once("sockauth.dupeResolution", function(r){
+						if(r && socket.other){
+							for(let i = 0; i < socket.other.length; i++){
+								socket.other[i].emit("general.disconnect", "A newer duplicate session has kicked this session.");
+								socket.other[i].disconnect();
+							}
+							socket.other = null;
+							socket.authorised = true;
+							cb(socket); // call the callback, passing the now authorised socket
+							socket.emit("sockauth.valid");
+						} else {
+							socket.emit("general.disconnect", "An older duplicate session has kicked this session.");
+							socket.disconnect();
+						}
+					});
+					socket.emit("sockauth.dupeConflict");
+				} else {
+					socket.authorised = true;
+					cb(socket); // call the callback, passing the now authorised socket
+					socket.emit("sockauth.valid");
+				}
+				user.save();
+			});
 		});
-    });
 	});
 };
 
 // basic object to hold info about ninja to mentor sessions (calls)
 // doesn't use the Storage object because calls are not persistent
-var nmsessions = {};
+let nmsessions = {};
 // Helper Function to find a user's session, if any
-var nmsessions_getuser = function(username){
-	for(var i in nmsessions){
-		if(nmsessions[i].ninja.user == username) return i;
-		if(nmsessions[i].mentor.user == username) return i;
+const nmsessions_getuser = function(username){
+	for(let i in nmsessions){
+		if(nmsessions[i].ninja.user === username) return i;
+		if(nmsessions[i].mentor.user === username) return i;
 	}
 	return false;
 };
 // Helper Function to update a mentor's status, and pass that update to everyone relevant
-var updateStatus = function(stat, user){
+const updateStatus = function(stat, user){
 	let update_rooms = udojos => {
-    	for(var i=0; i < udojos.length; i++){
+    	for(let i=0; i < udojos.length; i++){
 			mainio.to(udojos[i]).emit("general.mentorStatus", {username: user.username, status: stat});
 		}
-    }
+    };
 	if (user.allDojos) {
 		dojos.find().catch(console.error).then(all_dojos=>{
-        	var udojos = [];
+        	let udojos = [];
         	for(let i in all_dojos) udojos.push(all_dojos[i].dojoname);
         	update_rooms(udojos)
         });
@@ -409,7 +410,7 @@ var updateStatus = function(stat, user){
 	mentorstats[user.username] = stat;
 };
 
-var mainio = io.of("/main"); //use the '/main' socket.io namespace
+const mainio = io.of("/main"); //use the '/main' socket.io namespace
 mainio.on("connection", function(sock) { socketValidate(sock, function(socket){ //on connection, authorise the socket, then do the following once authorised
 users.findByUsername(socket.user, (err, user) =>{
 	if(err) return console.error(err);
@@ -433,9 +434,9 @@ users.findByUsername(socket.user, (err, user) =>{
         	if(!newuser) return socket.disconnect();
         	user = newuser;
         });
-    }
+    };
 
-	if(user.roll == "mentor"){ // if the user is a mentor
+	if(user.roll === "mentor"){ // if the user is a mentor
 		for(let i in nmsessions) (nmsession =>{ // update the mentor with current open ninja requests
 			if(!nmsession.mentor && (user.allDojos || user.dojos.indexOf(nmsession.dojo) !== -1)){
             	users.findByUsername(nmsession.ninja.user, (err, ninja) =>{
@@ -467,11 +468,11 @@ users.findByUsername(socket.user, (err, user) =>{
 
 		socket.on("mentor.passwordChange", function(data){ // TODO - fix... whatever this is...
         	if(typeof data.newPwd !== "string" || typeof data.curPwd !== "string") return;
-			var pwd = data.newPwd;
-			var curPwd = data.curPwd;
+			let pwd = data.newPwd;
+			let curPwd = data.curPwd;
 
 			// TODO move pwdRules to global scope, perform push at startup only.
-			var pwdRules = [];
+			let pwdRules = [];
 			// pwdRules.push(new RegExp(/.{8,}/)); // minimum 8 characters
 			// pwdRules.push(new RegExp(/^[a-z]/i)) // alpha
 			// pwdRules.push(new RegExp(/[a-z]/)); // lowercase
@@ -480,14 +481,14 @@ users.findByUsername(socket.user, (err, user) =>{
 			// pwdRules.push(new RegExp(/[.\/,<>?;:"'`~!@#$%^&*()[\]{}_+=|\\-]/)); // special character
 			negativePwdRule = new RegExp(/[^a-zA-Z\d.\/,<>?;:"'`~!@#$%^&*()[\]{}_+=|\\-]/); // keyboard character
 
-			var pass = true;  // repeat of checks performed client side.
-			for (var i = 0; i < pwdRules.length; ++i) {
+			let pass = true;  // repeat of checks performed client side.
+			for (let i = 0; i < pwdRules.length; ++i) {
 				if (!pwdRules[i].test(pwd)) {
 					pass = false;
 					break;
 				}
 			}
-        	if(pwd.trim().length < 6) pass = false
+        	if(pwd.trim().length < 6) pass = false;
 			if (negativePwdRule.test(pwd)) pass = false;
 
 
@@ -555,11 +556,11 @@ users.findByUsername(socket.user, (err, user) =>{
             });
 		});
 
-	} else if(user.roll == "ninja"){ // if the user is a ninja
-    	var dojoname = user.dojos[0];
+	} else if(user.roll === "ninja"){ // if the user is a ninja
+    	let dojoname = user.dojos[0];
 		socket.on("ninja.requestMentor", function(){ // when a ninja requests a mentor
 			if(!nmsessions_getuser(socket.user)){ // check that the user is not already currently requesting or receiving help
-				var stok = token(); //generate a token that is used to index this chat request/session
+				let stok = token(); //generate a token that is used to index this chat request/session
 				while(stok in nmsessions) stok = token();
 				nmsessions[stok] = {ninja: socket, mentor: false, dojo: dojoname, chatrooms: null}; //make the session
 				socket.join(stok); // join the room for the session
@@ -570,7 +571,7 @@ users.findByUsername(socket.user, (err, user) =>{
 			}
 		});
 		socket.on("ninja.cancelRequest", function(){ //when a ninja decides to cancel a request
-        	var stok = nmsessions_getuser(socket.user);
+        	let stok = nmsessions_getuser(socket.user);
 			if(stok && !nmsessions[stok].mentor){ //check that the ninja is actually requesting
 				mainio.to(nmsessions[stok].dojo+"-mentor").emit("mentor.cancelRequest", stok); //tell the mentors
 				delete nmsessions[stok]; // delete the request
@@ -596,53 +597,51 @@ users.findByUsername(socket.user, (err, user) =>{
             }
 		});
 		socket.on("disconnect", function(){ //if the ninja disconnects
-			var stok = nmsessions_getuser(socket.user);
+			let stok = nmsessions_getuser(socket.user);
 			if( stok && !nmsessions[stok].mentor){ //check that the ninja is requesting, if so, cancel it
 				mainio.to(nmsessions[stok].dojo+"-mentor").emit("mentor.cancelRequest", stok);
 				delete nmsessions[stok];
 			}
 		});
-	} else if(user.roll == "champion"){ //if the user is a champion
-		var champEmitFullDatabase = function(){ // A highly inefficient but convenient function to update champions after they make changes.
-			var data = {};
+	} else if(user.roll === "champion"){ //if the user is a champion
+		let champEmitFullDatabase = function(){ // A highly inefficient but convenient function to update champions after they make changes.
+			let data = {};
 			data.admins = [];
 			data.champions = [];
 			data.mentors = [];
 			data.dojos = [];
 			data.user = {username: user.username, fullname: user.fullname, email: user.email, dojos: user.dojos, allDojos: user.allDojos};
-        	let userquery = {roll: {$ne: "ninja"}}
-            let dojoquery = {}
+        	let userquery = {roll: {$ne: "ninja"}};
             if(!user.allDojos){
             	userquery.dojos = {$in: user.dojos};
-            	//dojoquery.dojoname = {$in: user.dojos};
             }
         	users.find(userquery).catch(console.error).then(all_users => {
-        		for(var i = 0; i < all_users.length; i++){
-            		var u = all_users[i];
-            		if (u.username == user.username) continue;
-            		if (u.roll == "mentor") data.mentors.push({username: u.username, fullname: u.fullname, email: u.email,
+        		for(let i = 0; i < all_users.length; i++){
+            		let u = all_users[i];
+            		if (u.username === user.username) continue;
+            		if (u.roll === "mentor") data.mentors.push({username: u.username, fullname: u.fullname, email: u.email,
         																dojos: u.dojos, allDojos: u.allDojos});
-            		else if (u.roll == "champion") data.champions.push({username: u.username, fullname: u.fullname, email: u.email,
+            		else if (u.roll === "champion") data.champions.push({username: u.username, fullname: u.fullname, email: u.email,
         																dojos: u.dojos, allDojos: u.allDojos});
-            		else if (u.roll == "admin") data.admins.push({username: u.username, fullname: u.fullname, email: u.email});
+            		else if (u.roll === "admin") data.admins.push({username: u.username, fullname: u.fullname, email: u.email});
 				}
             	dojos.find().catch(console.error).then(all_dojos => {
-					for(var i = 0; i < all_dojos.length; i++){
+					for(let i = 0; i < all_dojos.length; i++){
             			data.dojos.push({dojoname: all_dojos[i].dojoname, name: all_dojos[i].name, email: all_dojos[i].email, location: all_dojos[i].location});
 					}
 					socket.emit("champion.fullDatabase", data);
             	});
         	});
-		}
+		};
         champEmitFullDatabase();
     	socket.on("champion.fullDatabase", champEmitFullDatabase);
 
 		// TODO add admins and champions to a room so as to be updated on any changes (without having to refresh)
 		// This function entirely trusts the admin and champion. Checks may be added here and to the admin/champion pages as required
-		var champAddUserFields = function(data, roll) {
+		let champAddUserFields = function(data, roll) {
         	return new Promise((resolve, reject) => {
-				if (roll === "admin" || (roll === "champion" && data.user != user.username)) resolve([null, {general: "You can only modify mentors and yourself, not other champions and admins"}]);
-				var allDojos = false;
+				if (roll === "admin" || (roll === "champion" && data.user !== user.username)) resolve([null, {general: "You can only modify mentors and yourself, not other champions and admins"}]);
+				let allDojos = false;
 				if (data.dojos && Array.isArray(data.dojos) && data.dojos.indexOf("all") !== -1) {
 					allDojos = true;
 					data.dojos.splice(data.dojos.indexOf("all"),1);
@@ -656,7 +655,7 @@ users.findByUsername(socket.user, (err, user) =>{
                     	if(err) return reject(err);
                     	if(!changee) return resolve([null, {general: "Unknown user attempting to update, try refreshing your page."}]);
                     	let commondojo = false;
-                    	for(var i in changee.dojos){
+                    	for(let i in changee.dojos){
                         	if(user.dojos.indexOf(changee.dojos[i]) !== -1){
                             	commondojo = true;
                             	break;
@@ -668,7 +667,7 @@ users.findByUsername(socket.user, (err, user) =>{
                     });
 				}
             });
-		}
+		};
 
 		socket.on("champion.championEdit", function(data){
 			champAddUserFields(data, "champion").catch(console.error).then(([changee, msgs]) =>{
@@ -718,9 +717,9 @@ users.findByUsername(socket.user, (err, user) =>{
         		users.findByUsername( data.uid || data.user || data.username, (err, changee) => {
             		if(err) return console.error(err);
                 	if(!changee) return socket.emit('general.genalert', "danger", true, "Unknown user attempting to delete, try refreshing your page.");
-					if (changee.roll == "admin" || changee.roll == "champion") return socket.emit('general.genalert', "danger", true, "Only admins can delete other admins/champions.");
+					if (changee.roll === "admin" || changee.roll === "champion") return socket.emit('general.genalert', "danger", true, "Only admins can delete other admins/champions.");
                 	let commondojo = false;
-                    for(var i in changee.dojos){
+                    for(let i in changee.dojos){
                        	if(user.dojos.indexOf(changee.dojos[i]) !== -1){
                            	commondojo = true;
                            	break;
@@ -734,39 +733,39 @@ users.findByUsername(socket.user, (err, user) =>{
             	});
             }
 		});
-	} else if(user.roll == "admin"){ //if the user is an admin
-		var emitFullDatabase = function(){ // A highly inefficient but convenient function to update admins after they make changes.
-			var data = {};
+	} else if(user.roll === "admin"){ //if the user is an admin
+		let emitFullDatabase = function(){ // A highly inefficient but convenient function to update admins after they make changes.
+			let data = {};
 			data.admins = [];
 			data.champions = [];
 			data.mentors = [];
 			data.dojos = [];
 			data.user = {username: user.username, fullname: user.fullname, email: user.email};
         	users.find({roll: {$ne: "ninja"}}).catch(console.error).then(all_users => {
-        		for(var i = 0; i < all_users.length; i++){
-            		var u = all_users[i];
-            		if (u.username == user.username) continue;
-            		if (u.roll == "mentor") data.mentors.push({username: u.username, fullname: u.fullname, email: u.email,
+        		for(let i = 0; i < all_users.length; i++){
+            		let u = all_users[i];
+            		if (u.username === user.username) continue;
+            		if (u.roll === "mentor") data.mentors.push({username: u.username, fullname: u.fullname, email: u.email,
         																dojos: u.dojos, allDojos: u.allDojos});
-            		else if (u.roll == "champion") data.champions.push({username: u.username, fullname: u.fullname, email: u.email,
+            		else if (u.roll === "champion") data.champions.push({username: u.username, fullname: u.fullname, email: u.email,
         																dojos: u.dojos, allDojos: u.allDojos});
-            		else if (u.roll == "admin") data.admins.push({username: u.username, fullname: u.fullname, email: u.email});
+            		else if (u.roll === "admin") data.admins.push({username: u.username, fullname: u.fullname, email: u.email});
 				}
             	dojos.find().catch(console.error).then(all_dojos => {
-					for(var i = 0; i < all_dojos.length; i++){
+					for(let i = 0; i < all_dojos.length; i++){
             			data.dojos.push({dojoname: all_dojos[i].dojoname, name: all_dojos[i].name, email: all_dojos[i].email, location: all_dojos[i].location});
 					}
 					socket.emit("admin.fullDatabase", data);
             	});
         	});
-		}
+		};
         emitFullDatabase();
     	socket.on("admin.fullDatabase", emitFullDatabase);
 
 		// This function entirely trusts the admin and champion. Checks may be added here and to the admin/champion pages as required
-		var addUserFields = function(data, roll) {
+		let addUserFields = function(data, roll) {
 			return new Promise((resolve, reject) => {
-				var allDojos = false;
+				let allDojos = false;
 				if (data.dojos && Array.isArray(data.dojos) && data.dojos.indexOf("all") !== -1) {
 					allDojos = true;
 					data.dojos.splice(data.dojos.indexOf("all"),1);
@@ -784,7 +783,7 @@ users.findByUsername(socket.user, (err, user) =>{
                     });
 				}
             });
-		}
+		};
 
 		socket.on("admin.adminEdit", function(data){
 			addUserFields(data, "admin").catch(console.error).then(([changee, msgs]) =>{
@@ -866,7 +865,7 @@ users.findByUsername(socket.user, (err, user) =>{
 	}
 
 	//Helper function to end a current chat
-	var stopChat = function(){
+	let stopChat = function(){
 		stok = nmsessions_getuser(socket.user);
 		if(stok && nmsessions[stok].mentor){ //check that the user is actually in a chat
 			mainio.to(stok).emit("general.stopChat"); // tell them to stop
@@ -886,40 +885,40 @@ users.findByUsername(socket.user, (err, user) =>{
 
 	// Signaling Server
 	socket.on("rtc.offer", function(desc){
-		var stok = nmsessions_getuser(socket.user);
+		let stok = nmsessions_getuser(socket.user);
 		if( stok && nmsessions[stok].mentor){
 			socket.broadcast.to(stok).emit("rtc.offer", desc);
 		}
 	});
 	socket.on("rtc.answer", function(desc2){
-		var stok = nmsessions_getuser(socket.user);
+		let stok = nmsessions_getuser(socket.user);
 		if( stok && nmsessions[stok].mentor){
 			socket.broadcast.to(stok).emit("rtc.answer", desc2);
 		}
 	});
 	socket.on("rtc.connected", function(){
-		var stok = nmsessions_getuser(socket.user);
+		let stok = nmsessions_getuser(socket.user);
 		if( stok && nmsessions[stok].mentor){
 			mainio.to(stok).emit("rtc.connected");
 		}
 	});
 	socket.on("rtc.negotiate", function(){
-		var stok = nmsessions_getuser(socket.user);
+		let stok = nmsessions_getuser(socket.user);
 		if( stok && nmsessions[stok].mentor){
 			mainio.to(stok).emit("rtc.negotiate");
 		}
 	});
 	socket.on("rtc.iceCandidate", function(candidate){
-		var stok = nmsessions_getuser(socket.user);
+		let stok = nmsessions_getuser(socket.user);
 		if( stok && nmsessions[stok].mentor){
 			socket.broadcast.to(stok).emit("rtc.iceCandidate", candidate);
 		}
 	});
 	socket.on("rtc.datafallback", function(e, a){
-		var stok = nmsessions_getuser(socket.user);
+		let stok = nmsessions_getuser(socket.user);
 		if( stok && nmsessions[stok].mentor){
-			if(user.roll == "mentor") nmsessions[stok].ninja.emit("rtc.datafallback", e, a);
-			if(user.roll == "ninja") nmsessions[stok].mentor.emit("rtc.datafallback", e, a);
+			if(user.roll === "mentor") nmsessions[stok].ninja.emit("rtc.datafallback", e, a);
+			if(user.roll === "ninja") nmsessions[stok].mentor.emit("rtc.datafallback", e, a);
 		}
 	});
 
@@ -930,12 +929,12 @@ users.findByUsername(socket.user, (err, user) =>{
 });
 }, true, "/main");});
 
-var removeUser = function(uid){
+const removeUser = function(uid){
 	return new Promise((resolve, reject) => {
 		if(typeof uid !== "string") return;
 		for(let s in io.of("/main").connected){
-			if(io.of("/main").connected[s].user && io.of("/main").connected[s].user == uid){
-        		io.of("/main").connected[s].emit("general.disconnect", "Your user session has expired. <a class='btn btn-success' href='/' style='position:absolute;top:10px;right:25px;'><i class='fa fa-refresh'></i></a>");
+			if(io.of("/main").connected[s].user && io.of("/main").connected[s].user === uid){
+        		io.of("/main").connected[s].emit("general.disconnect", "Your user session has expired.", true);
 				io.of("/main").connected[s].disconnect();
 			}
 		}
@@ -943,7 +942,7 @@ var removeUser = function(uid){
     });
 };
 
-var removeDojo = function(uid){
+const removeDojo = function(uid){
 	return new Promise((resolve, reject) => {
 		if(typeof uid !== "string") return;
 		dojos.remove({dojoname: uid}).catch(reject).then(resolve);
@@ -951,7 +950,7 @@ var removeDojo = function(uid){
 };
 
 //check that expires expired users
-var checkExpired = function(){
+const checkExpired = function(){
 	users.find({expire: {$gt: new Date(0)}}).catch(console.error).then(expiring_users => {
 		let t = new Date();
 		for(let j=0; j < expiring_users.length; j++){

@@ -23,11 +23,12 @@ class RDEditor {
 		});
     	let options = '';
     	for(let i in this.options) options += '<option value="'+this.options[i].value+'">'+this.options[i].name+'</option>';
-    	$('#'+id+' select').html(options);
-    	$('#'+id+' select').val('text');
-    	$('#'+id+' select').change(e=>{
-        	if(this.mode === $('#'+id+' select').val()) return;
-        	this.mode = $('#'+id+' select').val()
+    	let selector = $('#'+id+' select');
+        selector.html(options);
+        selector.val('text');
+        selector.change(e=>{
+        	if(this.mode === selector.val()) return;
+        	this.mode = selector.val();
         	this.editor.getSession().setMode("ace/mode/"+this.mode);
         	RTC_Data.emit(dataid+"mode", this.mode);
         });
@@ -51,15 +52,15 @@ class RDEditor {
     
     	RTC_Data.on(dataid+"mode", mode =>{
         	this.mode = mode;
-        	$('#'+id+' select').val(this.mode);
         	this.editor.getSession().setMode("ace/mode/"+this.mode);
+            $('#'+id+' select').val(this.mode);
         });
     
     	RTC_Data.on("disconnect", ()=>{
         	destroyTab(id, true);
         });
     
-    	if($(".user-info-panel").data("type") == "mentor"){
+    	if($(".user-info-panel").data("type") === "mentor"){
         	$('.workarea .nav-tabs .tab-'+id).dblclick(dblfocus);
         }
     }

@@ -1,8 +1,6 @@
 // work in progress
 
-var localVis, remoteVis;
-var quadrent = 0;
-var quadrent2 = 4;
+let localVis, remoteVis;
 
 $(function(){
 
@@ -15,7 +13,7 @@ $(function(){
 
 	//var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-	var elem = {local: {}, remote: {}};
+	let elem = {local: {}, remote: {}};
 
 	elem.local.v = $(".dump video.dump-local").get(0);
 	elem.local.a = $(".dump audio.dump-local").get(0);
@@ -27,8 +25,8 @@ $(function(){
 	elem.remote.c = $(".screen-remote-canvas").get(0);
 	elem.remote.context = elem.remote.c.getContext("2d");
 
-	var cw = 1280;
-	var ch = 720;
+	let cw = 1280;
+	let ch = 720;
 	elem.local.c.width = cw;
 	elem.local.c.height = ch;
 	elem.remote.c.width = cw;
@@ -41,9 +39,9 @@ $(function(){
 		draw(this,elem.remote.context,cw,ch,false);
 	},false);
 
-	var cursorImg = new Image();
+	let cursorImg = new Image();
 	cursorImg.src = "common/images/cursor.png";
-	var cursorShowing = true; // TODO tie to button or checkbox, set to false if sharing webcam
+	let cursorShowing = true; // TODO tie to button or checkbox, set to false if sharing webcam
 	function draw(v,c,w,h,l) {
 		if(v.paused || v.ended) {
 			c.clearRect(0, 0, cw, ch);
@@ -60,13 +58,8 @@ $(function(){
 	class AudioVis {
     	constructor (selector){
         	this.selector = selector;
-        	this.stream;
         	this.live = 0;
         	this.ac = new (window.AudioContext || window.webkitAudioContext)();
-        	this.analyser;
-        	this.source;
-        	this.bufferLength;
-        	this.dataArray;
     	}
     	start (stream){
         	this.stream = stream;
@@ -117,19 +110,20 @@ $(function(){
 	localVis = new AudioVis(".levels-local .progress-bar");
     remoteVis = new AudioVis(".levels-remote .progress-bar");
 
-	if($(".user-info-panel").attr("data-demo-mode")){
-		if($(".user-info-panel").attr("data-expire")){
-			var expire = (new Date($(".user-info-panel").attr("data-expire"))).getTime();
-			var expireTimer = function(){
-				var timeleft = Math.floor(( expire - Date.now() ) / 1000);
+    let user_info_panel = $(".user-info-panel");
+	if(user_info_panel.attr("data-demo-mode")){
+		if(user_info_panel.attr("data-expire")){
+			let expire = (new Date(user_info_panel.attr("data-expire"))).getTime();
+			let expireTimer = function(){
+				let timeleft = Math.floor(( expire - Date.now() ) / 1000);
 				if(timeleft < 0) timeleft = 0;
-				var seconds = timeleft % 60;
+				let seconds = timeleft % 60;
 				if(seconds < 10) seconds = "0"+seconds;
-				var minutes = Math.floor(timeleft / 60);
+				let minutes = Math.floor(timeleft / 60);
 				if(minutes < 10) minutes = "0"+minutes;
 				$(".button-menu-buttons .expiry-count-down").text(minutes + ":" + seconds);
 				if(timeleft > 0) setTimeout(expireTimer, 100);
-			}
+			};
 			expireTimer();
 			$(".button-menu-buttons .expiry-wrap").show();
 		}
@@ -149,12 +143,15 @@ $(function(){
 
 
 // generates a html/bootstrap alert to display to the user
-var genalert = function(type, havediss, msg, timeout){
-	var diss = "'";
-	var eid = "alert-" + Math.random().toString(36).substr(2);
-	while($("#"+eid).length) eid = "alert-" + Math.random().toString(36).substr(2);
-	if(timeout && timeout > 0) setTimeout(function(){$("#"+eid).remove();}, timeout);
-	if(havediss) diss = "alert-dismissable'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>×</button";
-	return "<div id='"+eid+"' class='alert alert-"+type+" "+diss+">"+msg+"</div>";
-}
+const genalert_template = Handlebars.compile(
+    "<div id='{{eid}}' class='alert alert-{{type}} {{#if diss}}alert-dismissable{{/if}}'>" +
+	"{{#if diss}}<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>×</button>{{/if}}" +
+	"{{msg}}</div>"
+);
+const genalert = function(type, diss, msg, timeout){
+    let eid = "alert-" + Math.random().toString(36).substr(2);
+    while($("#"+eid).length) eid = "alert-" + Math.random().toString(36).substr(2);
+    if(timeout && timeout > 0) setTimeout(function(){$("#"+eid).remove();}, timeout);
+    return genalert_template({type, diss, msg, eid});
+};
 

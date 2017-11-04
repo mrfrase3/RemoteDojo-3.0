@@ -1,14 +1,13 @@
-var socket = io.connect('/main');
-var live = false;
-var initAuth = false;
-var answeredRequest = false; // answeredRequest is distinct from 'live' in that it occurs before rtc connection.
+const socket = io.connect('/main');
+let live = false;
+let initAuth = false;
+let answeredRequest = false; // answeredRequest is distinct from 'live' in that it occurs before rtc connection.
 
-$('.hidden').hide();
-$('.hidden').removeClass('hidden');
+$('.hidden').hide().removeClass('hidden');
 
 //Helper Function to authenticate the connection
 // socket and callback are passed, callback is called if the socket is authenticated
-var authSock = function(sock, cb){
+let authSock = function(sock, cb){
 	sock.on('sockauth.request', function(){ //when the server requests authentication
 		$.get('/sockauth'+window.location.search, function(res){ //get the user session token to prove identity
 			if(res.err){
@@ -35,12 +34,12 @@ var authSock = function(sock, cb){
 		console.log('Failed to authorise socket connection: Token was not valid.');
 	});
 	initAuth = true;
-}
+};
 
 
 
 //Helper Function for when the chat needs to stop
-var stopChat = function(){
+let stopChat = function(){
 	if (!live) return;
 	stopRTC();
 	live = false;
@@ -55,7 +54,7 @@ var stopChat = function(){
 	$('.presentations-panel').show();
 	$('.chat-body-stop').hide();
 	// TODO Show for ninja
-	var isNinja = $(".user-info-panel").data("type") == "ninja";
+	let isNinja = $(".user-info-panel").data("type") === "ninja";
 	if (isNinja) $('.chat-body-request').show();
 	else { 
     	$('.chat-panel').hide();
@@ -63,7 +62,7 @@ var stopChat = function(){
     }
 	$(".chat-list-wrap .chat-list").empty(); // TODO Only the mentor forgets the chat, ninja sends on connection to a mentor.
 	//if(videosOutOfPosition) switchVideoPositions();
-}
+};
 
 // Socket Processing
 
@@ -84,7 +83,9 @@ socket.on('disconnect', function(){
 	stopChat();
 });
 
-socket.on('general.disconnect', function(m){
+socket.on('general.disconnect', function(m, r){
+	m = $('<div/>').text(m).html();
+	if(r) m += "<a class='btn btn-success' href='/' style='position:absolute;top:10px;right:25px;'><i class='fa fa-refresh'></i></a>";
 	$(".alert-wrapper").prepend(genalert("danger", false, "You were disconnected from the server!<br>Because " + m));
 });
 
@@ -94,10 +95,11 @@ socket.on('general.genalert', function(level, diss, msg, timeout=4000){
 
 socket.on('general.mentorStatus',function(data){ // change a mentors status if theres a list
 	labels = {offline: 'default', available: 'success', busy: 'warning'};
-	currstat = $('#mentor-'+data.username + ' .label').html();
-	$('#mentor-'+data.username + ' .label').removeClass('label-' + labels[currstat]);
-	$('#mentor-'+data.username + ' .label').addClass('label-' + labels[data.status]);
-	$('#mentor-'+data.username + ' .label').html(data.status);
+	let mentorlabel = $('#mentor-'+data.username + ' .label');
+	currstat = mentorlabel.html();
+    mentorlabel.removeClass('label-' + labels[currstat]);
+    mentorlabel.addClass('label-' + labels[data.status]);
+    mentorlabel.html(data.status);
 });
 
 socket.on('general.startChat',function(){ //start a chat session when the server's made one
@@ -105,7 +107,7 @@ socket.on('general.startChat',function(){ //start a chat session when the server
 	$(".remote-name").text("...");
 	answeredRequest = true;
 	if (live) return;
-	var isNinja = $(".user-info-panel").data("type") == "ninja";
+	let isNinja = $(".user-info-panel").data("type") === "ninja";
 	if (isNinja) $('.mentor-list-panel').hide();
 	startRTC(isNinja);
 	//setTimeout(Mediaconn.openOrJoin,joinDelay,data.ninja, onJoin); // the ninja and mentor cannot connect at the same time, so one is delayed (look in their socks files)
@@ -136,14 +138,3 @@ $(function(){
 		$(".chat-btn-stop").popover("hide"); //for tutorial, hide leave chat popup if it's still showing
 	});
 });
-
-if(!genalert){
-	var genalert = function(type, havediss, msg, timeout){
-		var diss = "'";
-		var eid = "alert-" + Math.random().toString(36).substr(2);
-		while($("#"+eid).length) eid = "alert-" + Math.random().toString(36).substr(2);
-		if(timeout && timeout > 0) setTimeout(function(){$("#"+eid).remove();}, timeout);
-		if(havediss) diss = "alert-dismissable'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>×</button";
-		return "<div id='"+eid+"' class='alert alert-"+type+" "+diss+">"+msg+"</div>";
-	}
-}

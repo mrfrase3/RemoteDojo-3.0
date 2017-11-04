@@ -1,16 +1,16 @@
-var doTutorial = false;
+let doTutorial = false;
 
-var addPreCallTutorialPopups = function() {
+const addPreCallTutorialPopups = function() {
 	$('[data-toggle="popover"]').popover();
 	$(".starttutorial").popover('hide');
 
-	var alertdiv = "<div class=\"alert alert-info alert-dismissible\" role=\"alert\"> \
+	const alertdiv = "<div class=\"alert alert-info alert-dismissible\" role=\"alert\"> \
 			<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button> \
 			Hover your mouse over anything you'd like to know more about. Try the blue panel labelled \"Mentors\". To end the tutorial, reload the page.\
 	</div>";
 			$(".container").before(alertdiv);
 	doTutorial = true;
-	$("#intro").remove()
+	$("#intro").remove();
 
 	$(".mentor-list-panel div.panel-heading").popover({"title" : "List of Mentors",
 																							"content" : "Shows a list of online mentors and whether they are busy or available to help.",
@@ -33,7 +33,7 @@ var addPreCallTutorialPopups = function() {
 	}
 };
 
-var addCallTutorialPopups = function() {
+const addCallTutorialPopups = function() {
 	$(".levels-local").popover({"title" : "Your Volume",
 																							"content" : "This shows the volume of your microphone.",
 																							"trigger" : "hover",
@@ -58,38 +58,41 @@ var addCallTutorialPopups = function() {
 																						"content" : "Clicking this button will end the chat session.",
 																						"trigger" : "hover",
 																						"container" : "body"});
-}
+};
 
-var offerTutorial = function() {
-	$(".starttutorial").popover({"title" : "Start Tutorial",
+const offerTutorial = function() {
+	let startTutorial = $(".starttutorial");
+    startTutorial.popover({"title" : "Start Tutorial",
 																						"placement" : "top",
 																						"content" : "Click here to start the tutorial!",
 																						"trigger" : "hover",
 																						"container" : "body"});
-	$(".starttutorial").click(addPreCallTutorialPopups);
-	$	(".starttutorial").popover('show');
+    startTutorial.click(addPreCallTutorialPopups);
+    startTutorial.popover('show');
 	setTimeout(function() {
-		$(".starttutorial").popover('hide');
+        startTutorial.popover('hide');
 	}, 3000);
-}
+};
 
 $(".lastname-submit").click(() => {
-	var name = $("input.animal-radio:checked").val();
+	let name = $("input.animal-radio:checked").val();
 	
 	socket.emit('ninja.lastnameChange', name);
 	$('#profileOverlay').modal('hide');
 });
 
 socket.on('ninja.lastname', name => {
-	$(".user-info-panel .animals").removeClass($(".info-lastname").text()).addClass(name);
-	$(".info-lastname").text(name);
-	$(".info-panel").data("name", $(".info-fullname").text());
-	if(RTCData.datachan) RTCData.emit("name.change", $(".info-fullname").text());
+	let fullname_el = $(".info-fullname");
+    let lastname_el = $(".info-lastname");
+	$(".user-info-panel .animals").removeClass(lastname_el.text()).addClass(name);
+    lastname_el.text(name);
+	$(".info-panel").data("name", fullname_el.text());
+	if(RTC_Data && RTC_Data.datachan) RTC_Data.emit("name.change", fullname_el.text());
 });
 
 $(function() {
 
-	var callingTimeout = function(totaltime, lapse, waited){
+	const callingTimeout = function(totaltime, lapse, waited){
 		if(!$('.chat-body-start').data("calling")) return;
 		if(waited < totaltime){
 			$(".chat-body-start .progress-bar").width(((waited/totaltime)*100) + "%");
@@ -97,15 +100,14 @@ $(function() {
 		} else {
 			$('.chat-btn-cancel').click();
 		}
-	}
+	};
 
 	$('.chat-btn-start').click(function(){ // add even to the 'request a mentor' button
 		console.log('sending mentor request');
 		socket.emit('ninja.requestMentor');
 		$('.chat-body-request').hide();
-		$('.chat-body-start').show();
+		$('.chat-body-start').show().data("calling", true);
 		addCallTutorialPopups();
-		$('.chat-body-start').data("calling", true);
 		callingTimeout(120000, 200, 0);
 	});
 
@@ -114,8 +116,7 @@ $(function() {
 		socket.emit('ninja.cancelRequest');
 		$('.mentor-list-panel').show();
 		$('.chat-body-request').show();
-		$('.chat-body-start').hide();
-		$('.chat-body-start').data("calling", false);
+		$('.chat-body-start').hide().data("calling", false);
 	});
 
 	offerTutorial();

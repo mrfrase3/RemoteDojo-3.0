@@ -1,25 +1,25 @@
 //load the template to render ninja help requests with
-var request_source   = $(".req-list-item-template").html();
-var request_template = Handlebars.compile(request_source);
+let request_source   = $(".req-list-item-template").html();
+let request_template = Handlebars.compile(request_source);
 
-var doTutorial = false;
+let doTutorial = false;
 
-var pwdRules = [];
-var negativePwdRule;
+let pwdRules = [];
+let negativePwdRule;
 
 joinDelay = 1000; //delay for joining the RTC room
 
-var addPreCallTutorialPopups = function() {
+const addPreCallTutorialPopups = function() {
 	$('[data-toggle="popover"]').popover();
 	$(".starttutorial").popover('hide');
 
-	var alertdiv = "<div class=\"alert alert-info alert-dismissible\" role=\"alert\"> \
+	const alertdiv = "<div class=\"alert alert-info alert-dismissible\" role=\"alert\"> \
 			<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button> \
 			Hover your mouse over anything you'd like to know more about. Try the blue panel labelled \"Chat\". To end the tutorial, reload the page. \
 	</div>";
 			$(".container").before(alertdiv);
 	doTutorial = true;
-	$("#intro").remove()
+	$("#intro").remove();
 
 	$(".chat-panel div.panel-heading").popover({"title" : "Chat Panel",
 																							"content" : "If any Ninjas need help, their names will appear here. When a green \"Answer\" button appears, click it to start a conversation.",
@@ -42,7 +42,7 @@ var addPreCallTutorialPopups = function() {
 	}
 };
 
-var addCallTutorialPopups = function() {
+const addCallTutorialPopups = function() {
 	$(".levels-local").popover({"title" : "Your Volume",
 																							"content" : "This shows the volume of your microphone.",
 																							"trigger" : "hover",
@@ -71,33 +71,36 @@ var addCallTutorialPopups = function() {
 																						"content" : "Clicking this button will end the chat session.",
 																						"trigger" : "hover",
 																						"container" : "body"});
-}
+};
 
-var offerTutorial = function() {
-	$(".starttutorial").popover({"title" : "Start Tutorial",
-																						"placement" : "top",
-																						"content" : "Click here to start the tutorial!",
-																						"trigger" : "hover",
-																						"container" : "body"});
-	$(".starttutorial").click(addPreCallTutorialPopups);
-	$	(".starttutorial").popover('show');
-	setTimeout(function() {
-		$(".starttutorial").popover('hide');
-	}, 3000);
+const offerTutorial = function() {
+    let startTutorial = $(".starttutorial");
+    startTutorial.popover({
+        "title": "Start Tutorial",
+        "placement": "top",
+        "content": "Click here to start the tutorial!",
+        "trigger": "hover",
+        "container": "body"
+    });
+    startTutorial.click(addPreCallTutorialPopups);
+    startTutorial.popover('show');
+    setTimeout(function () {
+        startTutorial.popover('hide');
+    }, 3000);
 }
 
 $(()=>{
 
-var hideInputDiv = function(id){
-	var p = $(".input-div[data-id=" + id + "]");
+const hideInputDiv = function(id){
+	let p = $(".input-div[data-id=" + id + "]");
 	p.hide();
 	p.children("input").val("");
 	$(".input-edit[data-id=" + id + "]").show();
-}
+};
 
-var checkPwdStrength = function(pwd){
-	var pass = true;
-	for (var i = 0; i < pwdRules.length; ++i) {
+const checkPwdStrength = function(pwd){
+	let pass = true;
+	for (let i = 0; i < pwdRules.length; ++i) {
 		if (!pwdRules[i].test(pwd)) {
 			pass = false;
 			break;
@@ -105,73 +108,74 @@ var checkPwdStrength = function(pwd){
 	}
 	if (negativePwdRule.test(pwd)) pass = false;
 	return pass;
-}
+};
 
 // TODO sanitise
-var submitPassword = function(){
+const submitPassword = function(){
 	$(".alert-current-password").hide();
-	$(".alert-password").hide();
-	$(".alert-password2").hide();
-	var curPwd = $("#input-current-password").val().trim();
-	var pwd = $("#input-password").val().trim();
-	var pwd2 = $("#input-password2").val().trim();
+	let curPwd = $("#input-current-password").val().trim();
+	let pwd = $("#input-password").val().trim();
+	let pwd2 = $("#input-password2").val().trim();
 
-	var pass = checkPwdStrength(pwd);
+	let pass = checkPwdStrength(pwd);
 	$(".alert-password").toggle(!pass);
 	
-	var match = pwd === pwd2;
+	let match = pwd === pwd2;
 	if (!match) $(".alert-password2").show();
+	else $(".alert-password2").hide();
 
 	if (pass && match) {
 		socket.emit('mentor.passwordChange', {newPwd: pwd, curPwd: curPwd});
 	}
-}
+};
 
 $("#input-current-password").on("change keyup keypress blur", function(){
 	$(".alert-current-password").hide();
 });
 
 $("#input-password").on("change keyup keypress blur", function(){
-	var pwd = $("#input-password").val();
-	var pass = checkPwdStrength(pwd);
+	let pwd = $("#input-password").val();
+	let pass = checkPwdStrength(pwd);
 	$(".alert-password").toggle(!pass);
 });
 
 $("#input-password, #input-password2").on("change keyup keypress blur", function(){
-	var pwd = $("#input-password").val();
-	var pwd2 = $("#input-password2").val();
+	let pwd = $("#input-password").val();
+    let pwd2 = $("#input-password2").val();
 	$(".alert-password2").toggle(!(pwd === pwd2));
 });
 
 $(".fullname-submit").click(function(){
 	$(".alert-fullname").hide();
-	var firstname = $("#input-firstname").val().trim();
+    let firstname = $("#input-firstname").val().trim();
 	if(firstname) socket.emit("mentor.firstnameChange", firstname);
-	var lastname = $("#input-lastname").val().trim();
+    let lastname = $("#input-lastname").val().trim();
 	if(lastname) socket.emit("mentor.lastnameChange", lastname);
 	hideInputDiv($(this).data("id"));
 });
 
 socket.on("mentor.firstname", firstname => {
 	$(".info-firstname").text(firstname);
-	$(".info-panel").attr("data-name", $(".user-info-panel .info-fullname").text());
-	if(RTCData.datachan) RTCData.emit("name.change", $(".user-info-panel .info-fullname").text());
+	let fullname = $(".user-info-panel .info-fullname").text();
+	$(".info-panel").attr("data-name", fullname);
+	if(RTC_Data && RTC_Data.datachan) RTC_Data.emit("name.change", fullname);
 });
 
 socket.on("mentor.lastname", lastname => {
 	$(".info-lastname").text(lastname);
-	$(".info-panel").data("name",$(".user-info-panel .info-fullname").text());
-	if(RTCData.datachan) RTCData.emit("name.change", $(".user-info-panel .info-fullname").text());
+    let fullname = $(".user-info-panel .info-fullname").text();
+	$(".info-panel").data("name",fullname);
+	if(RTC_Data && RTC_Data.datachan) RTC_Data.emit("name.change", fullname);
 });
 
-var submitEmail = function(){
+const submitEmail = function(){
 	// TODO check email validity
-	var email = $("#input-email").val().trim();
+	let email = $("#input-email").val().trim();
 	$(".info-email").html(email);
 	$(".info-panel").data("email",email);
 	socket.emit("mentor.emailChange", email);
 	return true;
-}
+};
 
 socket.on("mentor.passwordChange", function(data){
 	if (data) {
@@ -186,12 +190,12 @@ socket.on("mentor.passwordChange", function(data){
 $(".password-submit").click(submitPassword);
 
 $(".email-submit").click(function(){
-	var success = submitEmail();
+    let success = submitEmail();
 	if (success) hideInputDiv($(this).data("id"));
 });
 
 $(".input-edit").click(function(){
-	var id = $(this).data("id");
+	let id = $(this).data("id");
 	$(".input-div[data-id=" + id + "]").show();
 	$(this).hide();
 });
@@ -209,8 +213,8 @@ socket.on('mentor.requestMentor', function(data){ // when a ninja has requested 
 	$('.chat-body-start').show();
 	data.cleanstok = JSON.stringify(data.sessiontoken).replace(/\W/g, ''); // ensure the username is classname friendly
 	$('.req-list').append(request_template(data));
-	
-	var answerbtn = $('#req-btn-'+data.cleanstok);
+
+    let answerbtn = $('#req-btn-'+data.cleanstok);
 	if (answeredRequest) answerbtn.addClass("disabled");
 	answerbtn.click(function(){ //add click event to the 'Answer' button
 		if (answeredRequest) return;
@@ -227,12 +231,12 @@ socket.on('mentor.requestMentor', function(data){ // when a ninja has requested 
 });
 
 // Helper function, that really shouldn't exist
-var request_checkEmpty = function(){ // Hide the queue if empty
+const request_checkEmpty = function(){ // Hide the queue if empty
 	if($('.req-list-item').length < 1){
 		$('.chat-body-request').show();
 		$('.chat-body-start').hide();
 	}
-}
+};
 
 socket.on('mentor.cancelRequest', function(stok){ // when a ninja cancels a request
 	console.log('#req-' + JSON.stringify(stok).replace(/\W/g, ''));

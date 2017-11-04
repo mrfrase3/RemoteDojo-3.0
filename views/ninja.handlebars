@@ -1,6 +1,5 @@
-{{head}}
-<body style="height: 100%;">
-	<div class="heading-spacer" style="height:42px;width:100%"></div>
+
+	<div class="heading-spacer"></div>
 	<div class="container">
 		<div class="modal fade profileModal" id="profileOverlay">
 			<div class="modal-dialog">
@@ -54,7 +53,7 @@
 					<div class="panel-heading">
 						<h3 class="panel-title">Mentors</h3>
 					</div>
-					<ul class="panel-body list-group mentor-list" style="padding: 0px;">
+					<ul class="panel-body list-group mentor-list" style="padding: 0;">
 						{{#each mentors}}
 							<li class="list-group-item mentor-list-item titlecaps" data-username="{{this.username}}" id="mentor-{{this.username}}">
 								<span class="label label-{{this.label}}" style="float: right">{{this.status}}</span>
@@ -76,7 +75,7 @@
 						<div class="col-xs-4" style="font-size: 3em;"><i class="fa fa-comments fa-3"></i></div>
 						<div class="col-xs-8">Finding a mentor, hold on a moment!<br><br></div>
 						<div class="col-xs-12 progress" style="margin: 0; height: 3px; padding: 0;">
-							<div class="progress-bar progress-bar-warning" style="width:0%"></div>
+							<div class="progress-bar progress-bar-warning" style="width:0"></div>
 						</div>
 						<div class="col-xs-12 btn btn-default chat-btn-cancel">Leave Chat</div>
 					</div>
@@ -87,13 +86,13 @@
 						<div class="col-xs-12">
 							Your Microphone:<br>
 							<div class="progress levels-local">
-								<div class="progress-bar progress-bar-success" style="width: 0%"></div>
+								<div class="progress-bar progress-bar-success" style="width: 0"></div>
 							</div>
 						</div>
 						<div class="col-xs-12">
 							Mentor's Microphone:<br>
 							<div class="progress levels-remote">
-								<div class="progress-bar progress-bar-success" style="width: 0%"></div>
+								<div class="progress-bar progress-bar-success" style="width: 0"></div>
 							</div>
 						</div>
 						<!--<div class="col-xs-12 screen-local-box hidden">
@@ -124,9 +123,9 @@
       							Share <span class="caret"></span>
     						</a>
     						<ul class="dropdown-menu">
-      							<li><a class="screen-local-start" href="javascript:;"><i class="fa fa-desktop"></i> Screen</a></li>
+      							<li><a class="screen-local-start" href="javascript:"><i class="fa fa-desktop"></i> Screen</a></li>
       							<li class="divider"></li>
-      							<li><a class="new-editor" href="javascript:;"><i class="fa fa-i-cursor"></i> Text Editor</a></li>
+      							<li><a class="new-editor" href="javascript:"><i class="fa fa-i-cursor"></i> Text Editor</a></li>
     						</ul>
   						</li>
 					</ul>
@@ -161,6 +160,3 @@
 		</div>
 	</div>
 	<div class="footer-spacer"></div>
-	
-</body>
-{{foot}}
